@@ -1,0 +1,51 @@
+// src/lib/i18n.js
+const strings = {
+  tr: {
+    mainTitle: 'Animation',
+    mainTitleAccent: 'Maker',
+    subTitle: 'Match Cut Efekti',
+    customize: 'ÖZELLEŞTİR',
+    phraseLabel: 'Match Cut İfadesi',
+    fontFamilyLabel: 'Yazı Tipi',
+    videoLengthLabel: 'Video Uzunluğu',
+    blurLabel: 'Bulanıklık Yoğunluğu',
+    speedLabel: 'Hız',
+    darkThemeLabel: 'Koyu Tema (Video)',
+    highlightLabel: 'Metin Vurgulama',
+    formatLabel: 'Video Formatı',
+    formatHorizontal: 'Yatay',
+    formatVertical: 'Dikey',
+    generateButton: 'Videoyu Oluştur',
+    generatingButton: 'Oluşturuluyor...',
+    previewTitle: 'Önizleme Alanı',
+    generatingTitle: 'Video Oluşturuluyor...',
+    statusSuccess: 'Videonuz Hazır!',
+    downloadButton: 'İndir',
+  },
+  en: {
+    mainTitle: 'Animation',
+    mainTitleAccent: 'Maker',
+    subTitle: 'Match Cut Effect',
+    customize: 'CUSTOMIZE',
+    phraseLabel: 'Match Cut Phrase',
+    fontFamilyLabel: 'Font Family',
+    videoLengthLabel: 'Video Length',
+    blurLabel: 'Blur Intensity',
+    speedLabel: 'Speed',
+    darkThemeLabel: 'Dark Theme (Video)',
+    highlightLabel: 'Text Highlight',
+    formatLabel: 'Video Format',
+    formatHorizontal: 'Horizontal',
+    formatVertical: 'Vertical',
+    generateButton: 'Generate Video',
+    generatingButton: 'Generating...',
+    previewTitle: 'Preview Area',
+    generatingTitle: 'Generating Video...',
+    statusSuccess: 'Your Video is Ready!',
+    downloadButton: 'Download',
+  },
+};
+
+export const t = (key, lang = 'tr') => {
+  return strings[lang]?.[key] || key;
+};
