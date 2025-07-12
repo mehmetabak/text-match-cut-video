@@ -13,3 +13,4 @@ export function generateRandomText(phrase) {
 
     return { fullText, positions };
 }
+
