@@ -1,16 +1,17 @@
 // src/lib/textUtils.js
-const LOREM_IPSUM = "The match cut is a cinematic technique. In film editing, a match cut is a cut from one shot to another where the two shots are matched by the action or subject matter. For example, a character may be shown opening a door in one shot, and the next shot may show the same character opening a different door. This creates a sense of continuity. The use of a match cut is a powerful tool. The director wanted a special match cut for the final scene. This helps to create a seamless transition between the two shots. The term match cut is essential for filmmakers. It allows for a more fluid and engaging viewing experience. That match cut was truly brilliant.";
+const LOREM_IPSUM = "In the world of cinematography, the match cut is a pivotal editing technique. A match cut transitions from one shot to another by matching the action or subject, creating a seamless flow. For instance, a shot of a spinning wheel could match cut to a spinning galaxy. This powerful tool, the match cut, helps bridge time and space within a narrative. Directors often use a clever match cut to surprise or delight the audience. It's not just a transition; it's a statement. Understanding the match cut is essential for any aspiring filmmaker. Its elegance lies in its simplicity and its profound impact on storytelling. Another great example of a match cut can be seen in classic cinema where a bone thrown by a hominid becomes a satellite orbiting Earth. This match cut represents millions of years of evolution in a single, breathtaking moment. The editor searched for the perfect match cut for the climax. Every frame was considered to make the match cut flawless.";
 
 export function generateRandomText(phrase) {
-    // Metni kasıtlı olarak ifadeyle zenginleştiriyoruz.
+    // Metni, aranan ifadeyle zenginleştirerek daha fazla bulunma olasılığı sağlıyoruz.
     const fullText = LOREM_IPSUM.replace(/match cut/gi, phrase);
     const positions = [];
 
+    // Kelimenin tüm geçtiği yerlerin başlangıç indekslerini bul
     let lastIndex = -1;
     while ((lastIndex = fullText.toLowerCase().indexOf(phrase.toLowerCase(), lastIndex + 1)) !== -1) {
         positions.push(lastIndex);
     }
 
-    return { fullText, positions };
+    // Hata 1'i düzeltmek için: `phrase`'i de geri döndür.
+    return { fullText, positions, phrase };
 }
-

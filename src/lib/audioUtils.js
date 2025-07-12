@@ -1,38 +1,46 @@
 // src/lib/audioUtils.js
+// eslint-disable-next-line no-unused-vars
+import { toBlobURL } from '@ffmpeg/util';
+
 export class AudioGenerator {
-    constructor(speed) {
-        this.speed = speed;
+    constructor(whooshBuffer) {
+        this.whooshBuffer = whooshBuffer;
     }
 
-    async generateAudio(frameCount, fps) {
-        const duration = frameCount / fps;
-        const audioContext = new OfflineAudioContext(1, 44100 * duration, 44100);
-        
-        const timePerCut = (120 / this.speed) / 1000;
-        let currentTime = 0;
+    // Asenkron olarak ses dosyasını yükleyip AudioGenerator örneği oluşturan fabrika metodu
+    static async create(soundUrl) {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const response = await fetch(soundUrl);
+        const arrayBuffer = await response.arrayBuffer();
+        const whooshBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        return new AudioGenerator(whooshBuffer);
+    }
 
-        while(currentTime < duration) {
-            this.playClick(audioContext, currentTime);
-            currentTime += timePerCut;
+    async generateAudio(totalFrames, fps, framesPerCut) {
+        const totalDuration = totalFrames / fps;
+        const durationPerCut = framesPerCut / fps;
+        const numCuts = Math.floor(totalFrames / framesPerCut);
+
+        const audioContext = new OfflineAudioContext(
+            this.whooshBuffer.numberOfChannels,
+            Math.ceil(totalDuration * this.whooshBuffer.sampleRate),
+            this.whooshBuffer.sampleRate
+        );
+
+        // Her kesimin başına "whoosh" sesini yerleştir
+        for (let i = 0; i < numCuts; i++) {
+            const time = i * durationPerCut;
+            const source = audioContext.createBufferSource();
+            source.buffer = this.whooshBuffer;
+            source.connect(audioContext.destination);
+            source.start(time);
         }
 
         const renderedBuffer = await audioContext.startRendering();
         return this.bufferToWave(renderedBuffer, renderedBuffer.length);
     }
 
-    playClick(ctx, time) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(1000, time);
-        gain.gain.setValueAtTime(0.3, time);
-        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(time);
-        osc.stop(time + 0.1);
-    }
-    
+    // Bu yardımcı fonksiyon değiştirilmedi, WAV formatına dönüştürme işini yapıyor.
     bufferToWave(abuffer, len) {
         let numOfChan = abuffer.numberOfChannels,
             length = len * numOfChan * 2 + 44,
@@ -42,20 +50,12 @@ export class AudioGenerator {
             offset = 0,
             pos = 0;
 
-        function setUint16(data) {
-            view.setUint16(pos, data, true);
-            pos += 2;
-        }
-
-        function setUint32(data) {
-            view.setUint32(pos, data, true);
-            pos += 4;
-        }
+        function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
+        function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
 
         setUint32(0x46464952); // "RIFF"
         setUint32(length - 8); // file length - 8
         setUint32(0x45564157); // "WAVE"
-
         setUint32(0x20746d66); // "fmt " chunk
         setUint32(16); // length = 16
         setUint16(1); // PCM (uncompressed)
@@ -64,7 +64,6 @@ export class AudioGenerator {
         setUint32(abuffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
         setUint16(numOfChan * 2); // block-align
         setUint16(16); // 16-bit
-
         setUint32(0x61746164); // "data" - chunk
         setUint32(length - pos - 4); // chunk length
 
@@ -78,9 +77,8 @@ export class AudioGenerator {
                 view.setInt16(pos, sample, true);
                 pos += 2;
             }
-            offset++
+            offset++;
         }
-
         return new Blob([buffer], { type: "audio/wav" });
     }
 }
