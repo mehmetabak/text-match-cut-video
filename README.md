@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://animaker.m0s.space/" target="_blank">
-    <img src="https://i.imgur.com/zvqhXnC.gif" alt="AnimationMaker Demo" width="100%" style="border-radius: 12px;"/>
+    <img src="https://i.imgur.com/zvqhXnC.gif" alt="AnimationMaker Demo" />
   </a>
 </p>
 
