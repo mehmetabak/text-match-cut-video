@@ -1,13 +1,10 @@
 // src/lib/audioUtils.js
-// eslint-disable-next-line no-unused-vars
-import { toBlobURL } from '@ffmpeg/util';
 
 export class AudioGenerator {
     constructor(whooshBuffer) {
         this.whooshBuffer = whooshBuffer;
     }
 
-    // Asenkron olarak ses dosyasını yükleyip AudioGenerator örneği oluşturan fabrika metodu
     static async create(soundUrl) {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const response = await fetch(soundUrl);
@@ -16,10 +13,15 @@ export class AudioGenerator {
         return new AudioGenerator(whooshBuffer);
     }
 
-    async generateAudio(totalFrames, fps, framesPerCut) {
-        const totalDuration = totalFrames / fps;
-        const durationPerCut = framesPerCut / fps;
-        const numCuts = Math.floor(totalFrames / framesPerCut);
+    // GÜNCELLENDİ: Metodun imzası, hatayı ortadan kaldırmak için değiştirildi.
+    // Artık kesin sahne sayısını ve toplam süreyi alıyor.
+    async generateAudio(numberOfCuts, totalDuration) {
+        if (numberOfCuts === 0) {
+            // Hiç kesim yoksa boş bir ses dosyası döndür.
+            const emptyContext = new OfflineAudioContext(1, 1, 44100);
+            const buffer = await emptyContext.startRendering();
+            return this.bufferToWave(buffer, 0);
+        }
 
         const audioContext = new OfflineAudioContext(
             this.whooshBuffer.numberOfChannels,
@@ -27,8 +29,11 @@ export class AudioGenerator {
             this.whooshBuffer.sampleRate
         );
 
-        // Her kesimin başına "whoosh" sesini yerleştir
-        for (let i = 0; i < numCuts; i++) {
+        const durationPerCut = totalDuration / numberOfCuts;
+
+        // Her kesimin başına "whoosh" sesini yerleştir.
+        // Bu döngü artık %100 doğru sayıda çalışacak.
+        for (let i = 0; i < numberOfCuts; i++) {
             const time = i * durationPerCut;
             const source = audioContext.createBufferSource();
             source.buffer = this.whooshBuffer;
@@ -39,8 +44,8 @@ export class AudioGenerator {
         const renderedBuffer = await audioContext.startRendering();
         return this.bufferToWave(renderedBuffer, renderedBuffer.length);
     }
-
-    // Bu yardımcı fonksiyon değiştirilmedi, WAV formatına dönüştürme işini yapıyor.
+    
+    // bufferToWave fonksiyonu değişmeden kalıyor.
     bufferToWave(abuffer, len) {
         let numOfChan = abuffer.numberOfChannels,
             length = len * numOfChan * 2 + 44,
