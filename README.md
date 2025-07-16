@@ -2,7 +2,7 @@
 
 [![View on Vercel](https://vercel.com/button)](https://animaker.m0s.space)
 
-![AnimationMaker Demo](https://i.imgur.com/zvqhXnC.gif)
+<img src='./misc/preview.gif'>
 
 🎬 **AnimationMaker** is a web-based tool that automates complex video effects and animations, allowing you to create professional-looking videos in seconds. Our goal is to simplify and accelerate the video editing process for content creators and developers.
 
