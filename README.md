@@ -1,6 +1,6 @@
 # AnimationMaker 🚀
 
-[![View on Vercel](https://vercel.com/button)](https://animation-maker-link.vercel.app/)
+[![View on Vercel](https://vercel.com/button)](https://animationmaker.vercel.app/)
 
 <p align="center">
   <img src="https://i.imgur.com/8Qz9Z3k.gif" alt="AnimationMaker Demo" width="800"/>
@@ -26,7 +26,7 @@ The initial tool in this project allows you to effortlessly create a cinematic *
 
 Using the tool is incredibly simple:
 
-1.  **Go to the Website:** Visit [AnimationMaker](https://animation-maker-link.vercel.app/).
+1.  **Go to the Website:** Visit [AnimationMaker](https://animationmaker.vercel.app/).
 2.  **Customize Settings:** Use the "CUSTOMIZE" panel on the left to configure the settings:
     - Enter your `Match Cut Phrase`.
     - Select a `Font Type`.
