@@ -1,12 +1,10 @@
 # AnimationMaker 🚀
 
-[![View on Vercel](https://vercel.com/button)](https://animaker.m0s.space/)
+[![View on Vercel](https://vercel.com/button)](https://animaker.m0s.space)
 
-<p align="center">
-  <img src="https://i.imgur.com/8Qz9Z3k.gif" alt="AnimationMaker Demo" width="800"/>
-</p>
+<img src='./misc/preview.gif'>
 
-**AnimationMaker** is a web-based tool that automates complex video effects and animations, allowing you to create professional-looking videos in seconds. Our goal is to simplify and accelerate the video editing process for content creators and developers.
+🎬 **AnimationMaker** is a web-based tool that automates complex video effects and animations, allowing you to create professional-looking videos in seconds. Our goal is to simplify and accelerate the video editing process for content creators and developers.
 
 The initial tool in this project allows you to effortlessly create a cinematic **Match Cut Effect**.
 
