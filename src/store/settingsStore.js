@@ -1,5 +1,9 @@
-// src/store/settingsStore.js
 import { create } from 'zustand';
+
+function detectLanguage() {
+  const browserLang = navigator.language || (navigator.languages && navigator.languages[0]) || 'en';
+  return browserLang.startsWith('tr') ? 'tr' : 'en';
+}
 
 export const useSettingsStore = create((set) => ({
   // Ayarlar
@@ -11,14 +15,14 @@ export const useSettingsStore = create((set) => ({
   textHighlight: true,
   blurIntensity: 'Medium',
   fontFamily: "'Times New Roman', Times, serif",
-  lang: 'tr',
+  lang: detectLanguage(),  // Otomatik dil tespiti
   
   // Uygulama Durumu
   isGenerating: false,
   progress: 0,
   videoUrl: null,
   statusText: '', // Yeni durum metni
-  
+
   // Fonksiyonlar
   setSetting: (key, value) => set({ [key]: value }),
   setGenerationState: (state) => set(state),
