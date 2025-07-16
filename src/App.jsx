@@ -49,7 +49,7 @@ function App() {
               <p className="text-gray-300 text-sm md:text-base">{t('subTitle', lang)}</p>
             </div>
             <div className="flex items-center space-x-3">
-              <a href="https://github.com" title="GitHub" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors"><Github size={24} /></a>
+              <a href="https://github.com/mehmetabak/text-match-cut-video" title="GitHub" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors"><Github size={24} /></a>
               <div className="flex items-center space-x-1 bg-black/20 border border-gray-600 rounded-md p-1">
                 <button onClick={() => setSetting('lang', 'tr')} className={`px-2 py-0.5 text-sm rounded transition-colors ${lang === 'tr' ? 'bg-yellow-500 text-black font-bold' : 'hover:bg-zinc-700'}`}>TR</button>
                 <button onClick={() => setSetting('lang', 'en')} className={`px-2 py-0.5 text-sm rounded transition-colors ${lang === 'en' ? 'bg-yellow-500 text-black font-bold' : 'hover:bg-zinc-700'}`}>EN</button>
