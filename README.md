@@ -4,8 +4,6 @@
 
 ![AnimationMaker Demo](https://i.imgur.com/zvqhXnC.gif)
 
-🔗 Try it now → [https://animaker.m0s.space](https://animaker.m0s.space)
-
 🎬 **AnimationMaker** is a web-based tool that automates complex video effects and animations, allowing you to create professional-looking videos in seconds. Our goal is to simplify and accelerate the video editing process for content creators and developers.
 
 The initial tool in this project allows you to effortlessly create a cinematic **Match Cut Effect**.
