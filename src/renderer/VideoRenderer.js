@@ -4,7 +4,7 @@ import { applyCameraShake } from './effects';
 import { AudioGenerator } from '../lib/audioUtils';
 import { createVideoFromFrames } from '../lib/ffmpeg';
 
-const DURATION_PER_CUT_S = 0.24; // TO-DO: Her kesim için 0.24 saniye, kullanıcı bildirimine göre değiştirilecek
+const DURATION_PER_CUT_S = 0.25; // TO-DO: Her kesim için 0.25 saniye, kullanıcı bildirimine göre değiştirilecek
 
 export class VideoRenderer {
     constructor(canvas, settings, textData, onProgress) {
