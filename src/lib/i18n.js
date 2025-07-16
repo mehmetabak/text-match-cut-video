@@ -21,6 +21,11 @@ const strings = {
     generatingTitle: 'Video Oluşturuluyor...',
     statusSuccess: 'Videonuz Hazır!',
     downloadButton: 'İndir',
+    short: 'Kısa',
+    medium: 'Orta',
+    long: 'Uzun',
+    low: 'Düşük',
+    high: 'Yüksek',
   },
   en: {
     mainTitle: 'Animation',
@@ -43,6 +48,11 @@ const strings = {
     generatingTitle: 'Generating Video...',
     statusSuccess: 'Your Video is Ready!',
     downloadButton: 'Download',
+    short: 'Short',
+    medium: 'Medium',
+    long: 'Long',
+    low: 'Low',
+    high: 'High',
   },
 };
 
