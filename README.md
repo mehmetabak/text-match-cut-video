@@ -42,6 +42,7 @@ And that's it!
 
 This project is under continuous development. Here are some of the features on our roadmap:
 
+- **New Background Types:** New backgrounds for editing your videos.
 - **More Video Effects:**
   - Ken Burns effect
   - Glitch effect
