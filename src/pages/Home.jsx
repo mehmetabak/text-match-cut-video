@@ -20,18 +20,19 @@ const HeroCutWord = ({ word }) => {
 
   const playAnimation = () => {
     setStyleIndex(1);
-    setTimeout(() => setStyleIndex(2), 100);
-    setTimeout(() => setStyleIndex(3), 200);
-    setTimeout(() => setStyleIndex(4), 300);
-    setTimeout(() => setStyleIndex(5), 450);
+    setTimeout(() => setStyleIndex(2), 120);
+    setTimeout(() => setStyleIndex(3), 240);
+    setTimeout(() => setStyleIndex(4), 360);
+    setTimeout(() => setStyleIndex(5), 500);
   };
 
   useEffect(() => {
-    // Play once immediately
-    playAnimation();
-    // Play a second time
-    const t = setTimeout(playAnimation, 600);
-    return () => clearTimeout(t);
+    const t1 = setTimeout(playAnimation, 250);
+    const t2 = setTimeout(playAnimation, 900);
+    return () => { 
+      clearTimeout(t1); 
+      clearTimeout(t2); 
+    };
   }, []);
 
   return (
