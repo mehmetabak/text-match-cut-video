@@ -2,7 +2,9 @@ import { create } from 'zustand';
 
 function detectLanguage() {
   const browserLang = navigator.language || (navigator.languages && navigator.languages[0]) || 'en';
-  return browserLang.startsWith('tr') ? 'tr' : 'en';
+  const langCode = browserLang.split('-')[0].toLowerCase();
+  const supported = ['en', 'tr', 'de', 'fr', 'es', 'zh', 'ar', 'ko', 'ja', 'id', 'th', 'hi', 'ru', 'pt'];
+  return supported.includes(langCode) ? langCode : 'en';
 }
 
 export const useSettingsStore = create((set) => ({
@@ -16,6 +18,7 @@ export const useSettingsStore = create((set) => ({
   blurIntensity: 'Medium',
   fontFamily: "'Times New Roman', Times, serif",
   lang: detectLanguage(),  // Otomatik dil tespiti
+  cookieConsent: { analytics: true, essential: true, hasConsented: false },
   
   // Uygulama Durumu
   isGenerating: false,

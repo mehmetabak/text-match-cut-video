@@ -12,6 +12,19 @@ export default {
       colors: {
         'accent': '#4f46e5',
         'accent-hover': '#4338ca',
+        'bg-base': '#0B0B0D',
+        'surface': '#16161A',
+        'surface-raised': '#1D1D22',
+        'border-color': '#2A2A30',
+        'accent-gold': '#F5B301',
+        'accent-green': '#22A559',
+        'text-primary': '#F5F5F7',
+        'text-muted': '#9A9AA2',
+      },
+      fontFamily: {
+        'display': ['Clash Display', 'General Sans', 'Inter', 'sans-serif'],
+        'body': ['Inter', 'Satoshi', 'sans-serif'],
+        'mono': ['JetBrains Mono', 'IBM Plex Mono', 'monospace'],
       }
     },
   },

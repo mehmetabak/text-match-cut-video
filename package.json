@@ -15,9 +15,13 @@
     "@tailwindcss/vite": "^4.1.11",
     "canvas-capture": "^2.1.1",
     "ccapture.js": "^1.1.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.42.2",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-router-dom": "^7.18.1",
+    "tailwind-merge": "^3.6.0",
     "zustand": "^5.0.6"
   },
   "devDependencies": {
