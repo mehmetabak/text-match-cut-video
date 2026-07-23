@@ -38,7 +38,7 @@ const HeroCutWord = ({ word }) => {
   return (
     <span 
       onMouseEnter={playAnimation}
-      className="inline-block transition-none font-display tracking-normal cursor-pointer"
+      className="inline-block transition-none font-display tracking-normal cursor-pointer whitespace-nowrap"
       style={{
         ...styles[styleIndex],
         borderRadius: '4px',
