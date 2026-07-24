@@ -1,28 +1,52 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Settings, Menu, X, ChevronsDown, ChevronsUp, ArrowUp } from 'lucide-react';
+import { Settings, Menu, X, ChevronsDown, ChevronsUp, ArrowUp, User, LogOut, Folder, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SettingsModal from '../modals/SettingsModal';
+import AuthModal from '../modals/AuthModal';
 import { useSettingsStore } from '../../store/settingsStore';
+import { useAuthStore } from '../../store/authStore';
 import { t } from '../../lib/i18n';
 
 const Layout = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeHash, setActiveHash] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
-  const { lang } = useSettingsStore();
+  const lang = useSettingsStore((state) => state.lang);
+  const isHeaderCollapsed = useSettingsStore((state) => state.isHeaderCollapsed);
+  const setSetting = useSettingsStore((state) => state.setSetting);
+  
+  const user = useAuthStore((state) => state.user);
+  const loading = useAuthStore((state) => state.loading);
+  const logout = useAuthStore((state) => state.logout);
+  const openAuthModal = useAuthStore((state) => state.openAuthModal);
+  
   const scrollRef = useRef(null);
+  const profileDropdownRef = useRef(null);
 
   const isToolPage = location.pathname === '/match-cut';
-  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(isToolPage);
 
-  // Auto-collapse header only when navigating to actual tool pages
+  // Profil menüsü dışına tıklanınca kapatma
   useEffect(() => {
-    setIsHeaderCollapsed(location.pathname === '/match-cut');
-  }, [location.pathname]);
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Auto-collapse header only when navigating to actual tool pages if it wasn't set by user
+  useEffect(() => {
+    if (location.pathname === '/match-cut') {
+      setSetting('isHeaderCollapsed', true);
+    }
+  }, [location.pathname, setSetting]);
 
   // Scroll to top on pathname change
   useEffect(() => {
@@ -142,7 +166,7 @@ const Layout = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.8 }}
             transition={{ duration: 0.2 }}
-            onClick={() => setIsHeaderCollapsed(false)}
+            onClick={() => setSetting('isHeaderCollapsed', false)}
             className="fixed top-4 right-4 z-50 flex items-center justify-center gap-1.5 px-4 py-1.5 bg-zinc-900/95 backdrop-blur-md border border-zinc-700/50 rounded-full text-zinc-400 hover:text-white shadow-lg hover:bg-zinc-800 transition-colors text-xs font-bold uppercase tracking-wider"
             title="Show Menu"
           >
@@ -158,7 +182,7 @@ const Layout = () => {
         transition={{ duration: 0.4, ease: 'easeInOut' }}
         className="fixed top-0 left-0 right-0 z-40 flex justify-center pt-[env(safe-area-inset-top)] pointer-events-none"
       >
-        <div className={`pointer-events-auto flex items-center justify-between transition-all duration-500 w-full overflow-hidden ${
+        <div className={`pointer-events-auto flex items-center justify-between transition-all duration-500 w-full ${
           isScrolled 
             ? 'max-w-[92vw] sm:max-w-[850px] mt-3 h-14 px-4 sm:px-6 bg-zinc-950/90 backdrop-blur-md border border-zinc-800/80 shadow-xl rounded-full' 
             : 'max-w-full sm:max-w-[1600px] mt-0 h-16 sm:h-20 px-4 sm:px-8 lg:px-12 bg-transparent border-transparent rounded-none'
@@ -174,20 +198,68 @@ const Layout = () => {
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Try Now Button */}
-            {!isToolPage && (
-              <Link
-                to="/match-cut"
-                className="px-4 py-1.5 sm:px-5 sm:py-2 bg-[#F5B301] hover:bg-yellow-400 text-black font-bold rounded-full text-xs sm:text-sm shadow-[0_0_15px_rgba(245,179,1,0.2)] hover:shadow-[0_0_25px_rgba(245,179,1,0.6)] transition-all duration-300 transform hover:scale-105 active:scale-95 whitespace-nowrap"
-              >
-                {t('tryNowButton', lang)}
-              </Link>
+            {/* Try Now Button or Profile */}
+            {loading ? (
+              <div className="w-8 h-8 sm:w-28 sm:h-10 bg-zinc-800/50 animate-pulse rounded-full"></div>
+            ) : user ? (
+              <div className="relative" ref={profileDropdownRef}>
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-2 px-2 py-1 bg-zinc-900/50 hover:bg-zinc-800 rounded-full border border-zinc-800 transition-colors cursor-pointer"
+                >
+                  {user.photoURL ? (
+                    <img src={user.photoURL} referrerPolicy="no-referrer" alt="Profile" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full" />
+                  ) : (
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent-gold text-black flex items-center justify-center font-bold text-xs">
+                      {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
+                    </div>
+                  )}
+                  <span className="text-sm font-medium hidden md:block max-w-[100px] truncate">{user.displayName || user.email?.split('@')[0]}</span>
+                </button>
+                
+                <AnimatePresence>
+                  {isProfileOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 mt-2 w-56 bg-surface border border-border-color rounded-xl shadow-2xl py-2 z-50"
+                    >
+                      <div className="px-4 py-2 border-b border-border-color/50 mb-2">
+                        <p className="text-sm font-bold text-white truncate">{user.displayName}</p>
+                        <p className="text-xs text-text-muted truncate">{user.email}</p>
+                      </div>
+                      
+                      <div className="px-4 py-2 flex items-center gap-2 text-accent-gold border-b border-border-color/50 mb-2">
+                        <Star size={16} />
+                        <span className="text-sm font-bold">{user.adRewardPoints || 0} {t('rewardPoints', lang) || 'Points'}</span>
+                      </div>
+
+                      <button onClick={() => { setIsProfileOpen(false); navigate('/projects'); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer">
+                        <Folder size={16} /> {t('myProjects', lang) || 'Projelerim'}
+                      </button>
+                      <button onClick={() => { setIsProfileOpen(false); logout(); navigate('/'); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-zinc-800 hover:text-red-300 transition-colors cursor-pointer">
+                        <LogOut size={16} /> {t('logout', lang) || 'Çıkış Yap'}
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              !isToolPage && (
+                <button
+                  onClick={() => openAuthModal({ type: 'NAVIGATE', payload: '/match-cut' })}
+                  className="px-4 py-1.5 sm:px-5 sm:py-2 bg-[#F5B301] hover:bg-yellow-400 text-black font-bold rounded-full text-xs sm:text-sm shadow-[0_0_15px_rgba(245,179,1,0.2)] hover:shadow-[0_0_25px_rgba(245,179,1,0.6)] transition-all duration-300 transform hover:scale-105 active:scale-95 whitespace-nowrap cursor-pointer"
+                >
+                  {t('tryNowButton', lang)}
+                </button>
+              )
             )}
 
             {/* Collapse Button (Only on tool pages) */}
             {isToolPage && (
               <button
-                onClick={() => setIsHeaderCollapsed(true)}
+                onClick={() => setSetting('isHeaderCollapsed', true)}
                 className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors flex items-center gap-2"
                 title="Collapse Menu"
               >
@@ -238,6 +310,7 @@ const Layout = () => {
         )}
       </AnimatePresence>
 
+      <AuthModal />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );

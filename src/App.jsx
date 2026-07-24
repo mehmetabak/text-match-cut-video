@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import MatchCutTool from './pages/MatchCutTool';
+import Projects from './pages/Projects';
 import LegalPage from './pages/LegalPage';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="match-cut" element={<MatchCutTool />} />
+          <Route path="projects" element={<Projects />} />
           <Route path="terms" element={<LegalPage title="Terms of Service" />} />
           <Route path="privacy" element={<LegalPage title="Privacy Policy" />} />
           <Route path="cookies" element={<LegalPage title="Cookie Policy" />} />

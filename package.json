@@ -16,6 +16,7 @@
     "canvas-capture": "^2.1.1",
     "ccapture.js": "^1.1.0",
     "clsx": "^2.1.1",
+    "firebase": "^12.16.0",
     "framer-motion": "^12.42.2",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
