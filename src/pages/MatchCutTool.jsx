@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAuthStore } from '../store/authStore';
 import { generateRandomText } from '../lib/textUtils';
@@ -36,6 +36,7 @@ function MatchCutTool() {
 
   const canvasRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const [projectId, setProjectId] = useState(null);
   const [saveStatus, setSaveStatus] = useState('');
   const [projectName, setProjectName] = useState('');
@@ -152,6 +153,7 @@ function MatchCutTool() {
       const savedId = await saveProject('match-cut', projectSettings, targetProjectId);
       if (savedId && savedId !== projectId) {
         setProjectId(savedId);
+        navigate(`?draft=${savedId}`, { replace: true });
       }
       setSaveStatus('Saved to Cloud');
       setTimeout(() => setSaveStatus(''), 2000);
