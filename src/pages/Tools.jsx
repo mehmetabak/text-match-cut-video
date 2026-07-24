@@ -245,6 +245,383 @@ const TOOLS = [
         )}
       </div>
     )
+  },
+  {
+    id: 'text-morph',
+    titleKey: 'tool_morph_title',
+    descKey: 'tool_morph_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-fuchsia-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40">
+        <motion.div
+          animate={{ filter: isHovered ? ['blur(10px)', 'blur(0px)', 'blur(10px)'] : 'blur(5px)' }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="text-white text-3xl font-serif"
+        >
+          Morph
+        </motion.div>
+      </div>
+    )
+  },
+  {
+    id: 'scanline',
+    titleKey: 'tool_scanline_title',
+    descKey: 'tool_scanline_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-emerald-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 overflow-hidden opacity-40">
+        {isHovered && (
+          <motion.div
+            animate={{ y: ['-100%', '300%'] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            className="w-full h-8 bg-emerald-400/20 shadow-[0_0_20px_rgba(52,211,153,0.5)] absolute top-0"
+          />
+        )}
+        <div className="absolute inset-0 bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVQIW2NkYGD4z8DAwMgAI0AMDA4FAfzD4QAAAABJRU5ErkJggg==')] opacity-20 mix-blend-overlay"></div>
+      </div>
+    )
+  },
+  {
+    id: 'typewriter',
+    titleKey: 'tool_typewriter_title',
+    descKey: 'tool_typewriter_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-zinc-700 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40">
+        <motion.div
+          animate={{ opacity: isHovered ? [0, 1] : 1, width: isHovered ? ['0%', '100%'] : 'auto' }}
+          transition={{ duration: 1, repeat: isHovered ? Infinity : 0, repeatDelay: 1 }}
+          className="text-white font-mono text-xl whitespace-nowrap overflow-hidden border-r-2 border-white pr-1"
+        >
+          _Typewriter
+        </motion.div>
+      </div>
+    )
+  },
+  {
+    id: 'vhs-tape',
+    titleKey: 'tool_vhs_title',
+    descKey: 'tool_vhs_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-blue-800 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40 overflow-hidden">
+        {isHovered && (
+          <>
+            <motion.div
+              animate={{ x: [-5, 5, -3, 4, 0] }}
+              transition={{ duration: 0.2, repeat: Infinity }}
+              className="absolute inset-0 bg-red-500/10 mix-blend-screen"
+            />
+            <motion.div
+              animate={{ x: [5, -5, 4, -3, 0] }}
+              transition={{ duration: 0.2, repeat: Infinity, delay: 0.1 }}
+              className="absolute inset-0 bg-blue-500/10 mix-blend-screen"
+            />
+          </>
+        )}
+        <div className="text-3xl font-black text-white/40 tracking-widest uppercase italic">VHS</div>
+      </div>
+    )
+  },
+  {
+    id: 'magazine-letters',
+    titleKey: 'tool_magazine_title',
+    descKey: 'tool_magazine_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-pink-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex flex-wrap gap-2 items-center justify-center opacity-50 p-8">
+        {['R', 'A', 'N', 'S', 'O', 'M'].map((letter, i) => (
+          <motion.div
+            key={i}
+            animate={{ rotate: isHovered ? [0, -10 + Math.random() * 20, 0] : (i%2==0 ? 5 : -5) }}
+            transition={{ duration: 0.5, repeat: isHovered ? Infinity : 0, delay: i * 0.1 }}
+            className={`w-10 h-12 flex items-center justify-center font-bold text-xl shadow-lg ${['bg-red-200 text-black', 'bg-blue-900 text-white', 'bg-yellow-300 text-black', 'bg-zinc-200 text-black', 'bg-green-800 text-white', 'bg-pink-300 text-black'][i]}`}
+          >
+            {letter}
+          </motion.div>
+        ))}
+      </div>
+    )
+  },
+  {
+    id: 'word-orbit',
+    titleKey: 'tool_orbit_title',
+    descKey: 'tool_orbit_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-sky-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40">
+        <motion.div
+          animate={{ rotate: isHovered ? 360 : 0 }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          className="w-40 h-40 border border-sky-400/20 rounded-full relative"
+        >
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-sky-400/50 text-xs px-2 rounded-full font-mono">orbit</div>
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 bg-sky-400/50 text-xs px-2 rounded-full font-mono">words</div>
+        </motion.div>
+      </div>
+    )
+  },
+  {
+    id: 'echo',
+    titleKey: 'tool_echo_title',
+    descKey: 'tool_echo_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-indigo-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40">
+        {isHovered ? (
+          <>
+            <motion.div animate={{ scale: [1, 2.5], opacity: [0.8, 0] }} transition={{ duration: 1.5, repeat: Infinity }} className="absolute w-16 h-16 border-2 border-indigo-400 rounded-full" />
+            <motion.div animate={{ scale: [1, 2.5], opacity: [0.8, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }} className="absolute w-16 h-16 border-2 border-indigo-400 rounded-full" />
+            <motion.div animate={{ scale: [1, 2.5], opacity: [0.8, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 1 }} className="absolute w-16 h-16 border-2 border-indigo-400 rounded-full" />
+          </>
+        ) : (
+          <div className="w-16 h-16 border-2 border-indigo-400/50 rounded-full" />
+        )}
+      </div>
+    )
+  },
+  {
+    id: 'droste',
+    titleKey: 'tool_droste_title',
+    descKey: 'tool_droste_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-amber-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40 overflow-hidden">
+        <motion.div
+          animate={{ scale: isHovered ? [1, 0.5] : 1 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-48 h-48 border-4 border-amber-500/50 flex items-center justify-center bg-zinc-900/50"
+        >
+          <div className="w-24 h-24 border-4 border-amber-500/50 flex items-center justify-center bg-zinc-900/50">
+             <div className="w-12 h-12 border-4 border-amber-500/50 bg-zinc-900/50" />
+          </div>
+        </motion.div>
+      </div>
+    )
+  },
+  {
+    id: 'ascii',
+    titleKey: 'tool_ascii_title',
+    descKey: 'tool_ascii_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-green-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40 font-mono text-green-400 text-[10px] overflow-hidden leading-none break-all p-4">
+        {isHovered ? (
+          <motion.div animate={{ y: [0, -40] }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+            {'10'.repeat(150)}<br/>{'01'.repeat(150)}<br/>{'11'.repeat(150)}<br/>{'00'.repeat(150)}<br/>{'10'.repeat(150)}<br/>{'01'.repeat(150)}
+          </motion.div>
+        ) : (
+          <div>{'10'.repeat(150)}<br/>{'01'.repeat(150)}<br/>{'11'.repeat(150)}<br/>{'00'.repeat(150)}</div>
+        )}
+      </div>
+    )
+  },
+  {
+    id: 'halftone',
+    titleKey: 'tool_halftone_title',
+    descKey: 'tool_halftone_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-gray-700 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-30">
+        <div className={`w-full h-full bg-[radial-gradient(circle,theme(colors.white)_2px,transparent_2px)] bg-[length:12px_12px] ${isHovered ? 'animate-pulse' : ''}`}></div>
+      </div>
+    )
+  },
+  {
+    id: 'velocity',
+    titleKey: 'tool_velocity_title',
+    descKey: 'tool_velocity_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-violet-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40">
+        {isHovered ? (
+          <motion.div
+            animate={{ scaleX: [1, 3], opacity: [1, 0], x: [0, 50] }}
+            transition={{ duration: 0.5, repeat: Infinity }}
+            className="w-24 h-2 bg-violet-400 blur-sm rounded-full"
+          />
+        ) : (
+          <div className="w-24 h-2 bg-violet-400/50 rounded-full" />
+        )}
+      </div>
+    )
+  },
+  {
+    id: 'magnifier',
+    titleKey: 'tool_magnifier_title',
+    descKey: 'tool_magnifier_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-teal-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40 overflow-hidden">
+        <div className="w-full text-xs text-teal-200/20 font-serif p-4 blur-[1px]">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        </div>
+        {isHovered && (
+          <motion.div
+            animate={{ x: [-80, 80, -80] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute w-24 h-24 border-4 border-teal-400/50 rounded-full backdrop-blur-sm bg-teal-400/10 shadow-[inset_0_0_20px_rgba(45,212,191,0.3)]"
+          />
+        )}
+      </div>
+    )
+  },
+  {
+    id: 'paper-fold',
+    titleKey: 'tool_paperfold_title',
+    descKey: 'tool_paperfold_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-rose-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40" style={{ perspective: '800px' }}>
+        <motion.div
+          animate={{ rotateX: isHovered ? [0, 60, 0] : 0 }}
+          transition={{ duration: 1, repeat: Infinity }}
+          className="w-24 h-24 bg-white/10 shadow-lg border-b border-white/30"
+          style={{ transformOrigin: 'bottom' }}
+        >
+           <motion.div
+            animate={{ rotateX: isHovered ? [0, -120, 0] : 0 }}
+            transition={{ duration: 1, repeat: Infinity }}
+            className="w-full h-full bg-white/20 border-t border-white/30 absolute bottom-full origin-bottom"
+          />
+        </motion.div>
+      </div>
+    )
+  },
+  {
+    id: 'mixed-media',
+    titleKey: 'tool_mixedmedia_title',
+    descKey: 'tool_mixedmedia_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-yellow-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40">
+        <div className="w-24 h-24 bg-zinc-800 rounded-md relative flex items-center justify-center border border-zinc-700">
+          <div className="w-16 h-16 bg-zinc-700 rounded-sm"></div>
+        </div>
+        {isHovered && (
+          <motion.svg
+            animate={{ pathLength: [0, 1], opacity: [1, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="absolute w-32 h-32 text-yellow-400"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </motion.svg>
+        )}
+      </div>
+    )
+  },
+  {
+    id: 'google-search',
+    titleKey: 'tool_gsearch_title',
+    descKey: 'tool_gsearch_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-gray-800 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40">
+        <div className="w-48 h-12 bg-white/10 rounded-full border border-white/20 flex items-center px-4 overflow-hidden relative">
+          <div className="w-4 h-4 rounded-full border-2 border-blue-400 mr-2 flex-shrink-0" />
+          <motion.div
+            animate={{ width: isHovered ? ['0%', '100%'] : '100%' }}
+            transition={{ duration: 1.5, ease: "easeInOut", repeat: isHovered ? Infinity : 0, repeatDelay: 1 }}
+            className="h-2 bg-white/30 rounded-full w-full origin-left"
+          />
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'newspaper',
+    titleKey: 'tool_newspaper_title',
+    descKey: 'tool_newspaper_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-orange-900/50 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex flex-col items-center justify-center opacity-30 px-6 sepia-[.5]">
+        <div className="w-full h-8 border-b-4 border-double border-white/30 mb-2 flex items-center justify-center">
+           <div className="text-xl font-serif font-black tracking-widest text-white/50">NEWS</div>
+        </div>
+        <div className="w-full flex gap-4">
+           <div className="flex-1 flex flex-col gap-2">
+             <div className="w-full h-2 bg-white/20"></div>
+             <div className="w-full h-2 bg-white/20"></div>
+             <div className="w-3/4 h-2 bg-white/20"></div>
+           </div>
+           <div className="w-16 h-16 bg-white/10 shrink-0 relative overflow-hidden">
+             {isHovered && <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 3, repeat: Infinity }} className="absolute inset-0 bg-white/10" />}
+           </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'book',
+    titleKey: 'tool_book_title',
+    descKey: 'tool_book_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-stone-800 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-40 perspective-1000">
+        <div className="w-32 h-40 bg-white/10 border-r border-white/30 relative origin-left" style={{ transformStyle: 'preserve-3d' }}>
+           {isHovered && (
+             <motion.div
+               animate={{ rotateY: [0, -180] }}
+               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.5 }}
+               className="absolute inset-0 bg-white/20 border border-white/30 origin-left"
+             />
+           )}
+        </div>
+        <div className="w-32 h-40 bg-white/5 border-l border-white/30"></div>
+      </div>
+    )
   }
 ];
 
