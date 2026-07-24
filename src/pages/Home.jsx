@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { MousePointer2, Volume2, Zap, Settings, Palette, Download, Play, Layers, ChevronDown, Check, Wand2, Mail, ArrowRight, LayoutGrid } from 'lucide-react';
 import { useSettingsStore } from '../store/settingsStore';
+import { useAuthStore } from '../store/authStore';
 import { t } from '../lib/i18n';
 import CookieModal from '../components/modals/CookieModal';
 
@@ -43,15 +44,24 @@ const HeroCutWord = ({ word }) => {
   }, []);
 
   return (
-    <span 
-      onMouseEnter={playAnimation}
-      className="inline-block transition-none font-display tracking-normal cursor-pointer whitespace-nowrap"
-      style={{
-        ...styles[styleIndex],
-        borderRadius: '4px',
-      }}
-    >
-      {word}
+    <span className="relative inline-block">
+      {/* Invisible spacer to reserve maximum space and prevent layout shifting */}
+      <span className="invisible inline-block px-4 font-display tracking-normal" aria-hidden="true">
+        {word}
+      </span>
+      {/* Absolute wrapper perfectly centering the mutating text */}
+      <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <span 
+          onMouseEnter={playAnimation}
+          className="inline-block transition-none cursor-pointer whitespace-nowrap pointer-events-auto"
+          style={{
+            ...styles[styleIndex],
+            borderRadius: '4px',
+          }}
+        >
+          {word}
+        </span>
+      </span>
     </span>
   );
 };
@@ -130,10 +140,18 @@ const ToolCard = ({ tool }) => (
 
 const Home = () => {
   const { lang } = useSettingsStore();
+  const { user, openAuthModal } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [isCookieModalOpen, setIsCookieModalOpen] = useState(false);
   const isRtl = lang === 'ar';
+
+  const handleStartProject = (e) => {
+    if (!user) {
+      e.preventDefault();
+      openAuthModal({ type: 'NAVIGATE', payload: '/match-cut' });
+    }
+  };
 
   useEffect(() => {
     if (location.hash === '#contact') {
@@ -231,6 +249,7 @@ const Home = () => {
         <motion.div initial="hidden" animate="visible" variants={revealVar} className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto">
           <Link 
             to="/match-cut" 
+            onClick={handleStartProject}
             className="group relative w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-accent-gold to-[#FF9D00] text-bg-base font-bold text-lg rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,179,1,0.4)] flex items-center justify-center gap-3 overflow-hidden"
           >
             {/* Elegant and subtle hover gradient shift */}
@@ -350,7 +369,11 @@ const Home = () => {
                 </li>
               ))}
             </ul>
-            <Link to="/match-cut" className="w-full py-3 rounded-lg border border-border-color text-center font-bold hover:bg-surface-raised transition-colors">
+            <Link 
+              to="/match-cut" 
+              onClick={handleStartProject}
+              className="w-full py-3 rounded-lg border border-border-color text-center font-bold hover:bg-surface-raised transition-colors"
+            >
               {t('heroCTA', lang)}
             </Link>
           </motion.div>
