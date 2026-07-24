@@ -144,6 +144,47 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  isRewardModalOpen: false,
+  setRewardModalOpen: (isOpen) => set({ isRewardModalOpen: isOpen }),
+
+  earnRewardPoints: async (pointsToAdd) => {
+    const { user } = get();
+    if (!user) return { success: false, message: "Giriş yapmanız gerekiyor." };
+    
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const today = new Date().toISOString().split('T')[0];
+      
+      let adsToday = user.adRewardsToday || 0;
+      let lastDate = user.lastAdRewardDate || '';
+      
+      if (lastDate !== today) {
+        adsToday = 0;
+        lastDate = today;
+      }
+      
+      if (adsToday >= 5) {
+        return { success: false, message: "Günlük reklam izleme limitine (5) ulaştınız. Yarın tekrar deneyin!" };
+      }
+      
+      const newPoints = (user.adRewardPoints || 0) + pointsToAdd;
+      adsToday += 1;
+      
+      await setDoc(userRef, { 
+        adRewardPoints: newPoints,
+        adRewardsToday: adsToday,
+        lastAdRewardDate: lastDate
+      }, { merge: true });
+      
+      // Update local state immediately
+      set({ user: { ...user, adRewardPoints: newPoints, adRewardsToday: adsToday, lastAdRewardDate: lastDate } });
+      return { success: true };
+    } catch (error) {
+      console.error("Ödül puanı eklenirken hata:", error);
+      return { success: false, message: "Bir hata oluştu." };
+    }
+  },
+
   deleteProject: async (projectId) => {
     const { user } = get();
     if (!user || !projectId) return false;

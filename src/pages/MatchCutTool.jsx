@@ -207,10 +207,10 @@ function MatchCutTool() {
           </div>
 
           {/* AdMob Banner Column */}
-          <div className="w-full lg:w-[160px] flex-shrink-0 flex flex-col items-center lg:items-end justify-center mt-2 lg:mt-0 lg:h-full min-h-0 pt-4 lg:pt-0">
-            {/* Mobile: Smart Banner (~320x100). Desktop: 160x600 Vertical */}
-            <div className="w-full lg:w-[160px] h-[100px] lg:h-[600px] lg:max-h-full">
-              <AdPlaceholder className="w-full h-full rounded-xl lg:rounded-2xl" />
+          <div className="w-full lg:w-[160px] flex-shrink-0 flex flex-col mt-2 lg:mt-0 h-auto lg:h-full pt-4 lg:pt-0 lg:pb-0">
+            {/* Mobile: Smart Banner (~320x100). Desktop: matches sibling height */}
+            <div className="w-full lg:w-full min-h-[100px] h-full flex overflow-hidden">
+              <AdPlaceholder className="flex-1 rounded-xl lg:rounded-2xl" />
             </div>
           </div>
         </main>

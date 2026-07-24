@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { MousePointer2, Volume2, Zap, Settings, Palette, Download, Play, Layers, ChevronDown, Check, Wand2, Mail } from 'lucide-react';
+import { MousePointer2, Volume2, Zap, Settings, Palette, Download, Play, Layers, ChevronDown, Check, Wand2, Mail, ArrowRight, LayoutGrid } from 'lucide-react';
 import { useSettingsStore } from '../store/settingsStore';
 import { t } from '../lib/i18n';
 import CookieModal from '../components/modals/CookieModal';
@@ -9,26 +9,33 @@ import CookieModal from '../components/modals/CookieModal';
 // A component that simulates a cinematic "match cut" effect for the hero word
 const HeroCutWord = ({ word }) => {
   const [styleIndex, setStyleIndex] = useState(0);
+  
   const styles = [
-    { fontFamily: 'Inter', fontWeight: 800, color: 'white', backgroundColor: 'transparent' },
-    { fontFamily: 'JetBrains Mono', fontWeight: 700, color: '#F5B301', backgroundColor: '#1D1D22', padding: '0 8px' },
-    { fontFamily: 'var(--font-display, "Clash Display")', fontWeight: 600, color: '#16161A', backgroundColor: '#F5B301', padding: '0 8px' },
-    { fontFamily: 'Inter', fontWeight: 900, color: 'transparent', WebkitTextStroke: '1px #F5B301', backgroundColor: 'transparent' },
-    { fontFamily: 'JetBrains Mono', fontWeight: 700, color: '#22C55E', backgroundColor: 'transparent', fontStyle: 'italic' },
-    { fontFamily: 'var(--font-display, "Clash Display")', fontWeight: 700, color: '#F5B301', backgroundColor: 'transparent' },
+    { fontFamily: 'Inter', fontWeight: 800, color: 'white', backgroundColor: 'transparent' }, // 0
+    { fontFamily: 'JetBrains Mono', fontWeight: 700, color: '#F5B301', backgroundColor: '#1D1D22', padding: '0 8px' }, // 1
+    { fontFamily: 'var(--font-display, "Clash Display")', fontWeight: 600, color: '#16161A', backgroundColor: '#F5B301', padding: '0 8px' }, // 2
+    { fontFamily: 'Inter', fontWeight: 900, color: 'transparent', WebkitTextStroke: '1px #F5B301', backgroundColor: 'transparent' }, // 3
+    { fontFamily: 'JetBrains Mono', fontWeight: 700, color: '#22C55E', backgroundColor: 'transparent', fontStyle: 'italic' }, // 4
+    { fontFamily: 'Inter', fontWeight: 800, color: 'white', backgroundColor: '#B026FF', padding: '0 12px', transform: 'skewX(-15deg)' }, // 5: Glitch Purple
+    { fontFamily: 'var(--font-display, "Clash Display")', fontWeight: 900, color: '#16161A', backgroundColor: '#FFFFFF', padding: '0 16px', letterSpacing: '-2px' }, // 6: Inverted Flash
+    { fontFamily: 'JetBrains Mono', fontWeight: 900, color: 'transparent', WebkitTextStroke: '2px #EF4444', backgroundColor: 'transparent', filter: 'drop-shadow(0 0 10px rgba(239, 68, 68, 0.8))' }, // 7: Red Neon
+    { fontFamily: 'var(--font-display, "Clash Display")', fontWeight: 700, color: '#F5B301', backgroundColor: 'transparent' }, // 8: Final
   ];
 
   const playAnimation = () => {
     setStyleIndex(1);
-    setTimeout(() => setStyleIndex(2), 120);
-    setTimeout(() => setStyleIndex(3), 240);
-    setTimeout(() => setStyleIndex(4), 360);
-    setTimeout(() => setStyleIndex(5), 500);
+    setTimeout(() => setStyleIndex(2), 100);
+    setTimeout(() => setStyleIndex(3), 200);
+    setTimeout(() => setStyleIndex(4), 300);
+    setTimeout(() => setStyleIndex(5), 400);
+    setTimeout(() => setStyleIndex(6), 500);
+    setTimeout(() => setStyleIndex(7), 600);
+    setTimeout(() => setStyleIndex(8), 750);
   };
 
   useEffect(() => {
     const t1 = setTimeout(playAnimation, 250);
-    const t2 = setTimeout(playAnimation, 900);
+    const t2 = setTimeout(playAnimation, 1200);
     return () => { 
       clearTimeout(t1); 
       clearTimeout(t2); 
@@ -271,6 +278,22 @@ const Home = () => {
               </motion.div>
             ))}
           </div>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-12 flex justify-center"
+          >
+            <Link 
+              to="/tools" 
+              className="group relative px-6 py-3 bg-zinc-900 border border-zinc-700 hover:border-[#F5B301] text-white font-medium rounded-full transition-all duration-300 hover:shadow-[0_0_15px_rgba(245,179,1,0.2)] flex items-center justify-center gap-2 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-[#F5B301]/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
+              <LayoutGrid size={18} className="relative z-10 group-hover:text-[#F5B301] transition-colors" />
+              <span className="relative z-10 tracking-wide">{t('seeAllTools', lang) || 'View All Tools'}</span>
+            </Link>
+          </motion.div>
         </div>
       </section>
 
