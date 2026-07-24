@@ -263,13 +263,6 @@ function MatchCutTool() {
              <Preview />
           </div>
 
-          {/* AdMob Banner Column */}
-          <div className="w-full lg:w-[160px] flex-shrink-0 flex flex-col mt-2 lg:mt-0 h-auto lg:h-full pt-4 lg:pt-0 lg:pb-0">
-            {/* Mobile: Smart Banner (~320x100). Desktop: matches sibling height */}
-            <div className="w-full lg:w-full min-h-[100px] h-full flex overflow-hidden">
-              <AdPlaceholder className="flex-1 rounded-xl lg:rounded-2xl" />
-            </div>
-          </div>
         </main>
       </motion.div>
     </div>
