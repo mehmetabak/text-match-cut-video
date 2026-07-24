@@ -51,8 +51,12 @@ const Layout = () => {
   }, []);
 
   useEffect(() => {
+    // Sadece araç içindeyken (match-cut) üst barın gizlenme/daralma (collapse) özelliği aktif olabilir.
+    // Ana sayfa, Profil veya Araçlar menüsüne geçildiğinde üst bar KESİNLİKLE görünür (açık) olmalıdır.
     if (location.pathname === '/match-cut') {
       setSetting('isHeaderCollapsed', true);
+    } else {
+      setSetting('isHeaderCollapsed', false);
     }
   }, [location.pathname, setSetting]);
 

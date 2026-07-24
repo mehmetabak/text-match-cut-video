@@ -8,10 +8,13 @@ import Projects from './pages/Projects';
 import Account from './pages/Account';
 import Tools from './pages/Tools';
 import LegalPage from './pages/LegalPage';
+import NotFound from './pages/NotFound';
+import NoConnection from './components/layout/NoConnection';
 
 function App() {
   return (
     <BrowserRouter>
+      <NoConnection />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
@@ -23,6 +26,7 @@ function App() {
           <Route path="privacy" element={<LegalPage title="Privacy Policy" />} />
           <Route path="cookies" element={<LegalPage title="Cookie Policy" />} />
           <Route path="refund" element={<LegalPage title="Refund Policy" />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </BrowserRouter>

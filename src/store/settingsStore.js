@@ -36,11 +36,10 @@ export const useSettingsStore = create(
     }),
     {
       name: 'settings-storage', // name of the item in the storage (must be unique)
-      partialize: (state) => ({ 
-        isHeaderCollapsed: state.isHeaderCollapsed,
-        lang: state.lang,
-        darkTheme: state.darkTheme
-      }),
+      partialize: (state) => {
+        const { isGenerating, progress, videoUrl, statusText, ...rest } = state;
+        return rest;
+      },
     }
   )
 );

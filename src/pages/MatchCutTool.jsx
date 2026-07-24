@@ -24,6 +24,11 @@ function MatchCutTool() {
   const speed = useSettingsStore(state => state.speed);
   const resolution = useSettingsStore(state => state.resolution);
   const fps = useSettingsStore(state => state.fps);
+  const format = useSettingsStore(state => state.format);
+  const videoLength = useSettingsStore(state => state.videoLength);
+  const textHighlight = useSettingsStore(state => state.textHighlight);
+  const blurIntensity = useSettingsStore(state => state.blurIntensity);
+  const darkTheme = useSettingsStore(state => state.darkTheme);
   
   const user = useAuthStore(state => state.user);
   const saveProject = useAuthStore(state => state.saveProject);
@@ -36,31 +41,65 @@ function MatchCutTool() {
   const [projectName, setProjectName] = useState('');
   const [isEditingName, setIsEditingName] = useState(false);
   const inputRef = useRef(null);
+  const hasInitialized = useRef(false);
 
-  // 1. Taslak Projeyi Yükle
+  // 1. Taslak Projeyi Yükle veya Yeni Proje İçin Sıfırla
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const draftId = searchParams.get('draft');
     
-    if (draftId) {
+    // Eğer linkte draft yoksa (Yeni Proje tıklanmışsa) ve bizde eski proje açık kalmışsa veya ilk kez açıyorsak, her şeyi sıfırla
+    if (!draftId && (!hasInitialized.current || projectId)) {
+      hasInitialized.current = true;
+      setProjectId(null);
+      setProjectName('');
+      setSetting('phrase', 'match cut');
+      setSetting('format', 'horizontal');
+      setSetting('videoLength', 'Medium');
+      setSetting('speed', 2.5);
+      setSetting('darkTheme', true);
+      setSetting('textHighlight', true);
+      setSetting('blurIntensity', 'Medium');
+      setSetting('fontFamily', "'Times New Roman', Times, serif");
+      return;
+    }
+
+    // Eğer linkte draft varsa ve henüz bu projeyi yüklemediysek
+    if (draftId && draftId !== projectId) {
+      hasInitialized.current = true;
+      // Önce localStorage'dan dene (Projects.jsx'ten geldiyse)
       const savedDraft = localStorage.getItem('draft_project');
       if (savedDraft) {
         try {
           const draftData = JSON.parse(savedDraft);
-          setProjectId(draftData.id);
-          if (draftData.projectName) setProjectName(draftData.projectName);
-          Object.keys(draftData).forEach(key => {
-            if (key !== 'id') {
-              setSetting(key, draftData[key]);
-            }
-          });
-          localStorage.removeItem('draft_project');
+          if (draftData.id === draftId) {
+            setProjectId(draftData.id);
+            if (draftData.projectName) setProjectName(draftData.projectName);
+            Object.keys(draftData).forEach(key => {
+              if (key !== 'id') setSetting(key, draftData[key]);
+            });
+            localStorage.removeItem('draft_project');
+            return;
+          }
         } catch (e) {
           console.error("Draft error", e);
         }
       }
+
+      // LocalStorage'da yoksa veya uyuşmuyorsa, Bulut projelerinden (projects) bul
+      // Bu sayede linkle dışarıdan giren biri de projeyi açabilir
+      if (projects && projects.length > 0) {
+        const cloudDraft = projects.find(p => p.id === draftId);
+        if (cloudDraft) {
+          setProjectId(cloudDraft.id);
+          if (cloudDraft.settings?.projectName) setProjectName(cloudDraft.settings.projectName);
+          Object.keys(cloudDraft.settings || {}).forEach(key => {
+            setSetting(key, cloudDraft.settings[key]);
+          });
+        }
+      }
     }
-  }, [location.search, setSetting]);
+  }, [location.search, setSetting, projects, projectId]);
 
   // 2. Auto-save (Debounced)
   useEffect(() => {
@@ -68,12 +107,25 @@ function MatchCutTool() {
 
     const timeoutId = setTimeout(async () => {
       setSaveStatus('Saving...');
-      const projectSettings = { phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps };
+      const projectSettings = { 
+        phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps,
+        format, videoLength, textHighlight, blurIntensity, darkTheme
+      };
       
-      // Boş proje kaydetmeyi engelle
-      if (!projectName.trim() && phrase === 'match cut' && speed === 2.5 && !projectId) {
+      // Varsayılan ayarlardan sapma olup olmadığını kontrol et
+      const isDefault = 
+        phrase === 'match cut' && 
+        speed === 2.5 && 
+        format === 'horizontal' && 
+        videoLength === 'Medium' && 
+        darkTheme === true && 
+        textHighlight === true && 
+        blurIntensity === 'Medium';
+
+      // Boş proje kaydetmeyi engelle (İsim yok, proje ID yok ve her şey varsayılan)
+      if (!projectName.trim() && !projectId && isDefault) {
         setSaveStatus('');
-        return; // Varsayılan ayarlardaysa ve ismi yoksa, yeni bir çöplük oluşturma
+        return; 
       }
 
       // Firestore undefined değerleri kabul etmez, temizle
@@ -106,7 +158,7 @@ function MatchCutTool() {
     }, 1500); // 1.5 saniye bekle (Debounce)
 
     return () => clearTimeout(timeoutId);
-  }, [phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps, user, projectId, projectName, saveProject]);
+  }, [phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps, format, videoLength, textHighlight, blurIntensity, darkTheme, user, projectId, projectName, saveProject]);
 
   const handleGenerate = useCallback(async () => {
     if (!phrase.trim()) {
@@ -186,10 +238,13 @@ function MatchCutTool() {
             </p>
           </div>
           {saveStatus && (
-            <div className="hidden sm:flex items-center gap-2 text-xs font-mono bg-zinc-900/80 px-3 py-1.5 rounded-full text-zinc-400 border border-zinc-800">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+              className="flex items-center gap-2 text-xs font-mono bg-zinc-900/90 px-3 py-1.5 rounded-full text-zinc-300 border border-zinc-700 shadow-lg absolute top-4 right-4 sm:relative sm:top-0 sm:right-0"
+            >
               <span className={`w-2 h-2 rounded-full ${saveStatus === 'Saving...' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
               {saveStatus}
-            </div>
+            </motion.div>
           )}
         </header>
 
