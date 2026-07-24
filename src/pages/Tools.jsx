@@ -256,13 +256,17 @@ const TOOLS = [
     bgClass: 'from-fuchsia-900 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 flex items-center justify-center opacity-40">
-        <motion.div
-          animate={{ filter: isHovered ? ['blur(10px)', 'blur(0px)', 'blur(10px)'] : 'blur(5px)' }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="text-white text-3xl font-serif"
-        >
-          Morph
-        </motion.div>
+        {isHovered ? (
+          <motion.div
+            animate={{ filter: ['blur(10px)', 'blur(0px)', 'blur(10px)'] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="text-white text-3xl font-serif"
+          >
+            Morph
+          </motion.div>
+        ) : (
+          <div className="text-white text-3xl font-serif blur-[5px]">Morph</div>
+        )}
       </div>
     )
   },
@@ -297,13 +301,17 @@ const TOOLS = [
     bgClass: 'from-zinc-700 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 flex items-center justify-center opacity-40">
-        <motion.div
-          animate={{ opacity: isHovered ? [0, 1] : 1, width: isHovered ? ['0%', '100%'] : 'auto' }}
-          transition={{ duration: 1, repeat: isHovered ? Infinity : 0, repeatDelay: 1 }}
-          className="text-white font-mono text-xl whitespace-nowrap overflow-hidden border-r-2 border-white pr-1"
-        >
-          _Typewriter
-        </motion.div>
+        {isHovered ? (
+          <motion.div
+            animate={{ opacity: [0, 1], width: ['0%', '100%'] }}
+            transition={{ duration: 1, repeat: Infinity, repeatDelay: 1 }}
+            className="text-white font-mono text-xl whitespace-nowrap overflow-hidden border-r-2 border-white pr-1"
+          >
+            _Typewriter
+          </motion.div>
+        ) : (
+          <div className="text-white font-mono text-xl whitespace-nowrap">_Typewriter</div>
+        )}
       </div>
     )
   },
@@ -346,14 +354,20 @@ const TOOLS = [
     effect: (isHovered) => (
       <div className="absolute inset-0 flex flex-wrap gap-2 items-center justify-center opacity-50 p-8">
         {['R', 'A', 'N', 'S', 'O', 'M'].map((letter, i) => (
-          <motion.div
-            key={i}
-            animate={{ rotate: isHovered ? [0, -10 + Math.random() * 20, 0] : (i%2==0 ? 5 : -5) }}
-            transition={{ duration: 0.5, repeat: isHovered ? Infinity : 0, delay: i * 0.1 }}
-            className={`w-10 h-12 flex items-center justify-center font-bold text-xl shadow-lg ${['bg-red-200 text-black', 'bg-blue-900 text-white', 'bg-yellow-300 text-black', 'bg-zinc-200 text-black', 'bg-green-800 text-white', 'bg-pink-300 text-black'][i]}`}
-          >
-            {letter}
-          </motion.div>
+          isHovered ? (
+            <motion.div
+              key={i}
+              animate={{ rotate: [-10 + Math.random() * 20, 10 - Math.random() * 20, -10 + Math.random() * 20] }}
+              transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
+              className={`w-10 h-12 flex items-center justify-center font-bold text-xl shadow-lg ${['bg-red-200 text-black', 'bg-blue-900 text-white', 'bg-yellow-300 text-black', 'bg-zinc-200 text-black', 'bg-green-800 text-white', 'bg-pink-300 text-black'][i]}`}
+            >
+              {letter}
+            </motion.div>
+          ) : (
+            <div key={i} className={`w-10 h-12 flex items-center justify-center font-bold text-xl shadow-lg ${['bg-red-200 text-black', 'bg-blue-900 text-white', 'bg-yellow-300 text-black', 'bg-zinc-200 text-black', 'bg-green-800 text-white', 'bg-pink-300 text-black'][i]} ${i%2===0?'rotate-[5deg]':'-rotate-[5deg]'}`}>
+              {letter}
+            </div>
+          )
         ))}
       </div>
     )
@@ -368,14 +382,21 @@ const TOOLS = [
     bgClass: 'from-sky-900 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 flex items-center justify-center opacity-40">
-        <motion.div
-          animate={{ rotate: isHovered ? 360 : 0 }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-          className="w-40 h-40 border border-sky-400/20 rounded-full relative"
-        >
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-sky-400/50 text-xs px-2 rounded-full font-mono">orbit</div>
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 bg-sky-400/50 text-xs px-2 rounded-full font-mono">words</div>
-        </motion.div>
+        {isHovered ? (
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            className="w-40 h-40 border border-sky-400/20 rounded-full relative"
+          >
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-sky-400/50 text-xs px-2 rounded-full font-mono">orbit</div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 bg-sky-400/50 text-xs px-2 rounded-full font-mono">words</div>
+          </motion.div>
+        ) : (
+          <div className="w-40 h-40 border border-sky-400/20 rounded-full relative">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-sky-400/50 text-xs px-2 rounded-full font-mono">orbit</div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 bg-sky-400/50 text-xs px-2 rounded-full font-mono">words</div>
+          </div>
+        )}
       </div>
     )
   },
@@ -411,15 +432,23 @@ const TOOLS = [
     bgClass: 'from-amber-900 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 flex items-center justify-center opacity-40 overflow-hidden">
-        <motion.div
-          animate={{ scale: isHovered ? [1, 0.5] : 1 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-48 h-48 border-4 border-amber-500/50 flex items-center justify-center bg-zinc-900/50"
-        >
-          <div className="w-24 h-24 border-4 border-amber-500/50 flex items-center justify-center bg-zinc-900/50">
-             <div className="w-12 h-12 border-4 border-amber-500/50 bg-zinc-900/50" />
+        {isHovered ? (
+          <motion.div
+            animate={{ scale: [1, 0.5] }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-48 h-48 border-4 border-amber-500/50 flex items-center justify-center bg-zinc-900/50"
+          >
+            <div className="w-24 h-24 border-4 border-amber-500/50 flex items-center justify-center bg-zinc-900/50">
+               <div className="w-12 h-12 border-4 border-amber-500/50 bg-zinc-900/50" />
+            </div>
+          </motion.div>
+        ) : (
+          <div className="w-48 h-48 border-4 border-amber-500/50 flex items-center justify-center bg-zinc-900/50">
+            <div className="w-24 h-24 border-4 border-amber-500/50 flex items-center justify-center bg-zinc-900/50">
+               <div className="w-12 h-12 border-4 border-amber-500/50 bg-zinc-900/50" />
+            </div>
           </div>
-        </motion.div>
+        )}
       </div>
     )
   },
@@ -435,10 +464,10 @@ const TOOLS = [
       <div className="absolute inset-0 flex items-center justify-center opacity-40 font-mono text-green-400 text-[10px] overflow-hidden leading-none break-all p-4">
         {isHovered ? (
           <motion.div animate={{ y: [0, -40] }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
-            {'10'.repeat(150)}<br/>{'01'.repeat(150)}<br/>{'11'.repeat(150)}<br/>{'00'.repeat(150)}<br/>{'10'.repeat(150)}<br/>{'01'.repeat(150)}
+            {'10'.repeat(50)}<br/>{'01'.repeat(50)}<br/>{'11'.repeat(50)}<br/>{'00'.repeat(50)}<br/>{'10'.repeat(50)}<br/>{'01'.repeat(50)}
           </motion.div>
         ) : (
-          <div>{'10'.repeat(150)}<br/>{'01'.repeat(150)}<br/>{'11'.repeat(150)}<br/>{'00'.repeat(150)}</div>
+          <div>{'10'.repeat(50)}<br/>{'01'.repeat(50)}<br/>{'11'.repeat(50)}<br/>{'00'.repeat(50)}</div>
         )}
       </div>
     )
@@ -512,18 +541,24 @@ const TOOLS = [
     bgClass: 'from-rose-900 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 flex items-center justify-center opacity-40" style={{ perspective: '800px' }}>
-        <motion.div
-          animate={{ rotateX: isHovered ? [0, 60, 0] : 0 }}
-          transition={{ duration: 1, repeat: Infinity }}
-          className="w-24 h-24 bg-white/10 shadow-lg border-b border-white/30"
-          style={{ transformOrigin: 'bottom' }}
-        >
-           <motion.div
-            animate={{ rotateX: isHovered ? [0, -120, 0] : 0 }}
+        {isHovered ? (
+          <motion.div
+            animate={{ rotateX: [0, 60, 0] }}
             transition={{ duration: 1, repeat: Infinity }}
-            className="w-full h-full bg-white/20 border-t border-white/30 absolute bottom-full origin-bottom"
-          />
-        </motion.div>
+            className="w-24 h-24 bg-white/10 shadow-lg border-b border-white/30"
+            style={{ transformOrigin: 'bottom' }}
+          >
+            <motion.div
+              animate={{ rotateX: [0, -120, 0] }}
+              transition={{ duration: 1, repeat: Infinity }}
+              className="w-full h-full bg-white/20 border-t border-white/30 absolute bottom-full origin-bottom"
+            />
+          </motion.div>
+        ) : (
+          <div className="w-24 h-24 bg-white/10 shadow-lg border-b border-white/30" style={{ transformOrigin: 'bottom' }}>
+            <div className="w-full h-full bg-white/20 border-t border-white/30 absolute bottom-full origin-bottom" />
+          </div>
+        )}
       </div>
     )
   },
@@ -565,11 +600,15 @@ const TOOLS = [
       <div className="absolute inset-0 flex items-center justify-center opacity-40">
         <div className="w-48 h-12 bg-white/10 rounded-full border border-white/20 flex items-center px-4 overflow-hidden relative">
           <div className="w-4 h-4 rounded-full border-2 border-blue-400 mr-2 flex-shrink-0" />
-          <motion.div
-            animate={{ width: isHovered ? ['0%', '100%'] : '100%' }}
-            transition={{ duration: 1.5, ease: "easeInOut", repeat: isHovered ? Infinity : 0, repeatDelay: 1 }}
-            className="h-2 bg-white/30 rounded-full w-full origin-left"
-          />
+          {isHovered ? (
+            <motion.div
+              animate={{ width: ['0%', '100%'] }}
+              transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity, repeatDelay: 1 }}
+              className="h-2 bg-white/30 rounded-full w-full origin-left"
+            />
+          ) : (
+            <div className="h-2 bg-white/30 rounded-full w-full origin-left" />
+          )}
         </div>
       </div>
     )
