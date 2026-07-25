@@ -152,36 +152,38 @@ export const useAuthStore = create((set, get) => ({
     if (!user) return { success: false, message: "Giriş yapmanız gerekiyor." };
     
     try {
-      const userRef = doc(db, 'users', user.uid);
-      const today = new Date().toISOString().split('T')[0];
+      // 1. Get Firebase Auth Token securely
+      const token = await auth.currentUser.getIdToken(true);
       
-      let adsToday = user.adRewardsToday || 0;
-      let lastDate = user.lastAdRewardDate || '';
+      // 2. Call our secure backend to handle the reward logic
+      const response = await fetch('/api/earn-reward', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ points: pointsToAdd })
+      });
       
-      if (lastDate !== today) {
-        adsToday = 0;
-        lastDate = today;
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        return { success: false, message: data.message || "Günlük limitinize ulaştınız veya bir hata oluştu." };
       }
       
-      if (adsToday >= 5) {
-        return { success: false, message: "Günlük reklam izleme limitine (5) ulaştınız. Yarın tekrar deneyin!" };
-      }
-      
-      const newPoints = (user.adRewardPoints || 0) + pointsToAdd;
-      adsToday += 1;
-      
-      await setDoc(userRef, { 
-        adRewardPoints: newPoints,
-        adRewardsToday: adsToday,
-        lastAdRewardDate: lastDate
-      }, { merge: true });
-      
-      // Update local state immediately
-      set({ user: { ...user, adRewardPoints: newPoints, adRewardsToday: adsToday, lastAdRewardDate: lastDate } });
+      // 3. Update local state immediately with verified backend data
+      set({ 
+        user: { 
+          ...user, 
+          adRewardPoints: data.data.adRewardPoints, 
+          adRewardsToday: data.data.adRewardsToday, 
+          lastAdRewardDate: data.data.lastAdRewardDate 
+        } 
+      });
       return { success: true };
     } catch (error) {
       console.error("Ödül puanı eklenirken hata:", error);
-      return { success: false, message: "Bir hata oluştu." };
+      return { success: false, message: "Bir hata oluştu. Lütfen tekrar deneyin." };
     }
   },
 

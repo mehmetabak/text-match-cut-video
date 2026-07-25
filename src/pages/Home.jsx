@@ -397,9 +397,12 @@ const Home = () => {
                 </li>
               ))}
             </ul>
-            <button disabled className="w-full py-3 rounded-lg bg-accent-gold/20 text-accent-gold text-center font-bold cursor-not-allowed opacity-80">
-              {t('badgeSoon', lang)}
-            </button>
+            <Link 
+              to="/pricing"
+              className="w-full py-3 rounded-lg bg-accent-gold text-bg-base text-center font-bold hover:bg-yellow-400 transition-colors block"
+            >
+              {t('pricingUpgrade', lang) || 'Upgrade to PRO'}
+            </Link>
           </motion.div>
         </div>
       </section>

@@ -221,6 +221,20 @@ const Layout = () => {
               <LayoutGrid size={16} className="shrink-0" />
               <span className="hidden sm:inline-block">{t('toolsMenu', lang) || 'Tools'}</span>
             </Link>
+            
+            {/* Pricing Link */}
+            <Link 
+              to="/pricing" 
+              title={t('pricingTitle', lang) || 'Pricing'}
+              className={`flex items-center justify-center gap-1.5 w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full font-bold text-sm transition-all ${
+                location.pathname === '/pricing' 
+                  ? 'bg-zinc-800 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' 
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+              }`}
+            >
+              <Star size={16} className="shrink-0 text-purple-400" />
+              <span className="hidden sm:inline-block text-purple-400">{t('pricingPro', lang) || 'Pro'}</span>
+            </Link>
 
             {/* Points Indicator Button (always visible) */}
             {!loading && (

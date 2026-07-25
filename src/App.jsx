@@ -9,6 +9,7 @@ import Account from './pages/Account';
 import Tools from './pages/Tools';
 import LegalPage from './pages/LegalPage';
 import NotFound from './pages/NotFound';
+import Pricing from './pages/Pricing';
 import NoConnection from './components/layout/NoConnection';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Route path="match-cut" element={<MatchCutTool />} />
           <Route path="projects" element={<Projects />} />
           <Route path="account" element={<Account />} />
+          <Route path="pricing" element={<Pricing />} />
           <Route path="terms" element={<LegalPage title="Terms of Service" />} />
           <Route path="privacy" element={<LegalPage title="Privacy Policy" />} />
           <Route path="cookies" element={<LegalPage title="Cookie Policy" />} />

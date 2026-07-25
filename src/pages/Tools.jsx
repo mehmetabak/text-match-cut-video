@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { t } from '../lib/i18n';
 import { useSettingsStore } from '../store/settingsStore';
+import { useAuthStore } from '../store/authStore';
 
 // Component dışına taşındı: artık her render'da yeniden oluşturulmuyor
 const containerVariants = {
@@ -666,12 +667,14 @@ const TOOLS = [
 
 // Her kart artık kendi hover state'ini tutuyor -> bir karta hover yapmak
 // diğer 8 kartı yeniden render etmiyor (asıl kasma buradaydı)
-const ToolCard = memo(function ToolCard({ tool, lang, onNavigate }) {
+const ToolCard = memo(function ToolCard({ tool, lang, onNavigate, user }) {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = useCallback((e) => {
     e.preventDefault();
-    if (tool.path !== '#') {
+    if (tool.isPro && !user?.isPro) {
+      onNavigate('/pricing');
+    } else if (tool.path !== '#') {
       onNavigate(tool.path);
     } else {
       const el = e.currentTarget;
@@ -683,7 +686,7 @@ const ToolCard = memo(function ToolCard({ tool, lang, onNavigate }) {
         { transform: 'translateX(0)' }
       ], { duration: 300 });
     }
-  }, [tool.path, onNavigate]);
+  }, [tool.path, tool.isPro, user?.isPro, onNavigate]);
 
   return (
     <motion.a
@@ -739,6 +742,7 @@ const ToolCard = memo(function ToolCard({ tool, lang, onNavigate }) {
 
 const Tools = () => {
   const lang = useSettingsStore((state) => state.lang);
+  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const gridRef = useRef(null);
   const scrollTimeout = useRef(null);
@@ -793,7 +797,7 @@ const Tools = () => {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8"
       >
         {TOOLS.map((tool) => (
-          <ToolCard key={tool.id} tool={tool} lang={lang} onNavigate={navigate} />
+          <ToolCard key={tool.id} tool={tool} lang={lang} onNavigate={navigate} user={user} />
         ))}
       </motion.div>
     </div>

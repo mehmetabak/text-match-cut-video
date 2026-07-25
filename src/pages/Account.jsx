@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, CreditCard, Activity, Check, LogOut, Play, Gift, Sparkles } from 'lucide-react';
 import { t } from '../lib/i18n';
 import RewardAdModal from '../components/monetization/RewardAdModal';
+import { auth } from '../lib/firebase';
 
 const Account = () => {
   const user = useAuthStore(state => state.user);
@@ -21,6 +22,8 @@ const Account = () => {
   
   // Backward compatibility state for UI button
   const [isWatchingAd, setIsWatchingAd] = useState(false);
+
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -54,6 +57,30 @@ const Account = () => {
   const handleWatchAdClick = () => {
     setRewardError('');
     setRewardModalOpen(true);
+  };
+
+
+  const handleManageSubscription = async () => {
+    try {
+      setIsPortalLoading(true);
+      const token = await auth.currentUser.getIdToken(true);
+      const response = await fetch('/api/manage-subscription', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.message || 'Portal linki alınamadı.');
+      }
+    } catch (error) {
+      console.error('Portal error:', error);
+      alert(error.message || 'Müşteri portalına erişilemedi. Lütfen e-postanızı kontrol edin.');
+    } finally {
+      setIsPortalLoading(false);
+    }
   };
 
   const handleRewardEarned = (points) => {
@@ -175,7 +202,9 @@ const Account = () => {
                           <Sparkles size={20} className="text-accent-gold" />
                           {t('proMonthly', lang)}
                         </h3>
-                        <p className="text-zinc-500 text-sm mt-1">{t('inactive', lang)}</p>
+                        <p className={user.isPro ? "text-green-500 text-sm mt-1 font-medium" : "text-zinc-500 text-sm mt-1"}>
+                          {user.isPro ? t('active', lang) : t('inactive', lang)}
+                        </p>
                       </div>
                     </div>
 
@@ -190,8 +219,11 @@ const Account = () => {
                       ))}
                     </div>
 
-                    <button className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-medium py-3 rounded-xl transition-all border border-zinc-700 hover:border-zinc-600 relative z-10">
-                      {t('subscribe', lang)}
+                    <button 
+                      onClick={() => user.isPro ? handleManageSubscription() : navigate('/pricing')}
+                      disabled={isPortalLoading}
+                      className={`w-full font-medium py-3 rounded-xl transition-all border relative z-10 ${user.isPro ? 'bg-white text-black hover:bg-zinc-200 border-white' : 'bg-zinc-800 hover:bg-zinc-700 text-white border-zinc-700 hover:border-zinc-600'} disabled:opacity-50`}>
+                      {isPortalLoading ? 'Loading...' : (user.isPro ? t('manageSubscription', lang) : t('subscribe', lang))}
                     </button>
                   </motion.div>
 
@@ -261,15 +293,24 @@ const Account = () => {
                 className="flex flex-col items-center justify-center h-full min-h-[400px] text-center"
               >
                 <motion.div variants={itemVariants} className="w-20 h-20 bg-zinc-800/50 rounded-full flex items-center justify-center mb-6">
-                  <CreditCard size={32} className="text-zinc-500" />
+                  <CreditCard size={32} className={user.isPro ? "text-purple-400" : "text-zinc-500"} />
                 </motion.div>
                 <motion.h3 variants={itemVariants} className="text-2xl font-bold text-white mb-2">{t('billingTab', lang)}</motion.h3>
-                <motion.p variants={itemVariants} className="text-zinc-400 max-w-sm mb-6">
-                  Manage your payment methods, view invoices, and purchase additional credits securely.
+                <motion.p variants={itemVariants} className="text-zinc-400 max-w-sm mb-8">
+                  {user.isPro 
+                    ? t('billingProDesc', lang)
+                    : t('billingFreeDesc', lang)}
                 </motion.p>
-                <motion.span variants={itemVariants} className="text-xs font-bold uppercase tracking-widest text-accent-gold bg-accent-gold/10 border border-accent-gold/20 px-4 py-2 rounded-full shadow-[0_0_20px_rgba(245,179,1,0.1)]">
-                  Coming Soon
-                </motion.span>
+                
+                <motion.button 
+                  variants={itemVariants} 
+                  onClick={() => user.isPro ? handleManageSubscription() : navigate('/pricing')}
+                  disabled={isPortalLoading}
+                  className={`px-8 py-3 rounded-xl font-bold transition-all shadow-lg flex items-center gap-2 ${user.isPro ? 'bg-white text-black hover:bg-zinc-200' : 'bg-[#F5B301] text-black hover:bg-yellow-400'} disabled:opacity-50`}
+                >
+                  <CreditCard size={18} />
+                  {isPortalLoading ? 'Loading...' : (user.isPro ? t('manageSubscription', lang) : t('pricingUpgrade', lang))}
+                </motion.button>
               </motion.div>
             )}
 

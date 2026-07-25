@@ -10,19 +10,24 @@ const RewardAdModal = ({ isOpen, onClose, onReward, rewardAmount = 10, requiredS
   const [timeLeft, setTimeLeft] = useState(requiredSeconds);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const rewardGivenRef = React.useRef(false);
 
   useEffect(() => {
     let timer;
     if (isOpen && !isCompleted) {
       setTimeLeft(requiredSeconds);
       setShowWarning(false);
+      rewardGivenRef.current = false;
       
       timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
             setIsCompleted(true);
-            onReward(rewardAmount);
+            if (!rewardGivenRef.current) {
+              rewardGivenRef.current = true;
+              onReward(rewardAmount);
+            }
             return 0;
           }
           return prev - 1;
