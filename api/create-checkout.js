@@ -42,8 +42,9 @@ export default async function handler(req, res) {
     const customerEmail = decodedToken.email;
 
     // 2. Setup Polar SDK
-    const polarAccessToken = process.env.POLAR_ACCESS_TOKEN;
-    const polarProductId = process.env.POLAR_PRODUCT_ID;
+    const isSandbox = process.env.POLAR_ENV === 'sandbox';
+    const polarAccessToken = isSandbox ? process.env.POLAR_SANDBOX_ACCESS_TOKEN : process.env.POLAR_ACCESS_TOKEN;
+    const polarProductId = isSandbox ? process.env.POLAR_SANDBOX_PRODUCT_ID : process.env.POLAR_PRODUCT_ID;
 
     if (!polarAccessToken || !polarProductId) {
       console.error('Missing Polar credentials (POLAR_ACCESS_TOKEN or POLAR_PRODUCT_ID)');
@@ -52,7 +53,7 @@ export default async function handler(req, res) {
 
     const polar = new Polar({
       accessToken: polarAccessToken,
-      server: 'production', // User requested to take it out of sandbox for testing
+      server: isSandbox ? 'sandbox' : 'production',
     });
 
     // 3. Create Checkout Session

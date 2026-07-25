@@ -33,9 +33,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const webhookSecret = process.env.POLAR_WEBHOOK_SECRET;
+    const isSandbox = process.env.POLAR_ENV === 'sandbox';
+    const webhookSecret = isSandbox ? process.env.POLAR_SANDBOX_WEBHOOK_SECRET : process.env.POLAR_WEBHOOK_SECRET;
     if (!webhookSecret) {
-      console.error('CRITICAL: POLAR_WEBHOOK_SECRET is not configured');
+      console.error('CRITICAL: POLAR_WEBHOOK_SECRET or Sandbox Secret is not configured');
       return res.status(500).json({ error: 'Server configuration error' });
     }
 

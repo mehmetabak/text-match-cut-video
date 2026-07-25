@@ -59,14 +59,15 @@ export default async function handler(req, res) {
     }
 
     // 3. Setup Polar SDK
-    const polarAccessToken = process.env.POLAR_ACCESS_TOKEN;
+    const isSandbox = process.env.POLAR_ENV === 'sandbox';
+    const polarAccessToken = isSandbox ? process.env.POLAR_SANDBOX_ACCESS_TOKEN : process.env.POLAR_ACCESS_TOKEN;
     if (!polarAccessToken) {
       return res.status(500).json({ message: 'Server configuration error' });
     }
 
     const polar = new Polar({
       accessToken: polarAccessToken,
-      server: 'production',
+      server: isSandbox ? 'sandbox' : 'production',
     });
 
     // 4. Create Customer Session (Portal)
