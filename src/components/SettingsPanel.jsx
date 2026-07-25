@@ -70,6 +70,7 @@ const SettingsPanel = ({ onGenerate }) => {
         </div>
         <Switch label={t('darkThemeLabel', lang)} checked={settings.darkTheme} onChange={(e) => setSetting('darkTheme', e.target.checked)} />
         <Switch label={t('highlightLabel', lang)} checked={settings.textHighlight} onChange={(e) => setSetting('textHighlight', e.target.checked)} />
+        <Switch label={t('highQualityLabel', lang)} checked={settings.highQuality} onChange={(e) => setSetting('highQuality', e.target.checked)} />
       </div>
 
       <div className="border-t border-zinc-700 pt-4 flex-shrink-0">

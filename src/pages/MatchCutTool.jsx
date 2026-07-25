@@ -29,6 +29,7 @@ function MatchCutTool() {
   const textHighlight = useSettingsStore(state => state.textHighlight);
   const blurIntensity = useSettingsStore(state => state.blurIntensity);
   const darkTheme = useSettingsStore(state => state.darkTheme);
+  const highQuality = useSettingsStore(state => state.highQuality);
   
   const user = useAuthStore(state => state.user);
   const saveProject = useAuthStore(state => state.saveProject);
@@ -62,6 +63,7 @@ function MatchCutTool() {
       setSetting('textHighlight', true);
       setSetting('blurIntensity', 'Medium');
       setSetting('fontFamily', "'Times New Roman', Times, serif");
+      setSetting('highQuality', false);
       return;
     }
 
@@ -110,7 +112,7 @@ function MatchCutTool() {
       setSaveStatus('Saving...');
       const projectSettings = { 
         phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps,
-        format, videoLength, textHighlight, blurIntensity, darkTheme
+        format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality
       };
       
       // Varsayılan ayarlardan sapma olup olmadığını kontrol et
@@ -160,7 +162,7 @@ function MatchCutTool() {
     }, 1500); // 1.5 saniye bekle (Debounce)
 
     return () => clearTimeout(timeoutId);
-  }, [phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps, format, videoLength, textHighlight, blurIntensity, darkTheme, user, projectId, projectName, saveProject]);
+  }, [phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps, format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, user, projectId, projectName, saveProject]);
 
   const handleGenerate = useCallback(async () => {
     if (!phrase.trim()) {

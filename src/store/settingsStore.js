@@ -22,6 +22,7 @@ export const useSettingsStore = create(
       blurIntensity: 'Medium',
       fontFamily: "'Times New Roman', Times, serif",
       lang: detectLanguage(),  // Otomatik dil tespiti
+      highQuality: false, // Beta yüksek kalite ayarı
       cookieConsent: { analytics: true, essential: true, hasConsented: false },
       
       // Uygulama Durumu

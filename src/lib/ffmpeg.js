@@ -18,13 +18,15 @@ export async function loadFfmpeg() {
     return ffmpeg;
 }
 
-export async function createVideoFromFrames(frames, audioBlob, fps, onProgress) {
+export async function createVideoFromFrames(frames, audioBlob, fps, highQuality = false, onProgress) {
     const ffmpeg = await loadFfmpeg();
 
     await ffmpeg.writeFile('audio.wav', new Uint8Array(await audioBlob.arrayBuffer()));
 
+    const ext = highQuality ? 'png' : 'jpg';
+
     for (let i = 0; i < frames.length; i++) {
-        const name = `frame${String(i).padStart(4, '0')}.png`;
+        const name = `frame${String(i).padStart(4, '0')}.${ext}`;
         await ffmpeg.writeFile(name, frames[i]);
         if (onProgress) onProgress((i / frames.length) * 50);
     }
@@ -33,11 +35,15 @@ export async function createVideoFromFrames(frames, audioBlob, fps, onProgress) 
         if (onProgress) onProgress(50 + progress * 50);
     });
 
+    const preset = highQuality ? 'fast' : 'ultrafast';
+
     await ffmpeg.exec([
         '-framerate', `${fps}`,
-        '-i', 'frame%04d.png',
+        '-i', `frame%04d.${ext}`,
         '-i', 'audio.wav',
         '-c:v', 'libx264',
+        '-preset', preset,
+        '-threads', '2',
         '-c:a', 'aac',
         '-pix_fmt', 'yuv420p',
         '-shortest',

@@ -116,7 +116,8 @@ export class VideoRenderer {
 
         if (this.settings.textHighlight) {
             this.ctx.fillStyle = 'rgba(255, 255, 0, 0.6)';
-            this.ctx.fillRect(phraseX - phraseWidth / 2 - 10, phraseY - FONT_SIZE / 1.5, phraseWidth + 20, FONT_SIZE * 1.8);
+            // Start the box a bit above the middle (0.55x font size) and make its height 1.1x font size
+            this.ctx.fillRect(phraseX - phraseWidth / 2 - 10, phraseY - (FONT_SIZE * 0.55), phraseWidth + 20, FONT_SIZE * 1.1);
         }
         
         this.ctx.textAlign = 'center';
@@ -136,7 +137,9 @@ export class VideoRenderer {
                 for (let f = 0; f < framesPerCut; f++) {
                     const p = f / framesPerCut;
                     this.drawScene({ lineIndex: lineIdx, lineText: line, metrics, progress: p });
-                    const blob = await new Promise(res => this.canvas.toBlob(res, 'image/png'));
+                    const format = this.settings.highQuality ? 'image/png' : 'image/jpeg';
+                    const quality = this.settings.highQuality ? undefined : 0.9;
+                    const blob = await new Promise(res => this.canvas.toBlob(res, format, quality));
                     const arrayBuffer = await blob.arrayBuffer();
                     frameList.push(new Uint8Array(arrayBuffer));
                     const currentProgress = ((cutIndex + p) / totalCuts) * 90;
@@ -180,7 +183,7 @@ export class VideoRenderer {
         const audioBlob = await audioGen.generateAudio(positions.length, totalDuration);
         
         this.onProgress(90);
-        const videoUrl = await createVideoFromFrames(allFrames, audioBlob, fps, p => this.onProgress(90 + p * 0.1));
+        const videoUrl = await createVideoFromFrames(allFrames, audioBlob, fps, this.settings.highQuality, p => this.onProgress(90 + p * 0.1));
         return videoUrl;
     }
 }

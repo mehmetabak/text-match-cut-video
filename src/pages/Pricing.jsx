@@ -8,8 +8,8 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 
 const Pricing = () => {
-  const { language } = useSettingsStore();
-  const t = strings[language] || strings['en'];
+  const { lang } = useSettingsStore();
+  const t = strings[lang] || strings['en'];
   const { user } = useAuthStore();
   
 
