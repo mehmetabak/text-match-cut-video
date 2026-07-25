@@ -25,7 +25,7 @@ if (!getApps().length) {
   }
 }
 
-const db = admin.firestore();
+// Removed admin.firestore() to prevent ReferenceError
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -66,7 +66,15 @@ export default async function handler(req, res) {
     }
 
     // Handle the verified event
-    if (event.type === 'subscription.created' || event.type === 'subscription.active' || event.type === 'order.created') {
+    const subscriptionEvents = [
+      'subscription.created',
+      'subscription.updated',
+      'subscription.active',
+      'subscription.canceled',
+      'subscription.revoked'
+    ];
+
+    if (subscriptionEvents.includes(event.type) || event.type === 'order.created') {
       const data = event.data;
       
       // Look for the firebaseUid we attached to the checkout link metadata securely
@@ -75,18 +83,36 @@ export default async function handler(req, res) {
       console.log(`[Webhook] Event Received: ${event.type} for UID: ${firebaseUid}`);
 
       if (firebaseUid) {
-        // Upgrade user in Firestore
+        // Evaluate if user is PRO based on the status of the subscription/order
+        let isPro = false;
+        
+        // Single-time order logic
+        if (event.type === 'order.created') {
+          isPro = true;
+        } else {
+          // Subscription logic based on status
+          const activeStatuses = ['active', 'trialing'];
+          if (activeStatuses.includes(data.status) && event.type !== 'subscription.revoked') {
+            isPro = true;
+          } else {
+            // Status is canceled, past_due, unpaid, incomplete_expired, or event is revoked
+            isPro = false;
+          }
+        }
+
+        // Update user in Firestore
         const db = getFirestore();
         const userRef = db.collection('users').doc(firebaseUid);
         
         await userRef.set({
-          isPro: true,
+          isPro: isPro,
           polarSubscriptionId: data.id,
           polarCustomerId: data.customer_id,
+          polarStatus: data.status || 'unknown',
           updatedAt: FieldValue.serverTimestamp()
         }, { merge: true });
         
-        console.log(`[Webhook] Successfully upgraded user ${firebaseUid} to PRO!`);
+        console.log(`[Webhook] Successfully updated user ${firebaseUid} isPro: ${isPro}`);
       } else {
         console.error('[Webhook] No firebaseUid found in the webhook payload metadata:', JSON.stringify(data.metadata));
       }

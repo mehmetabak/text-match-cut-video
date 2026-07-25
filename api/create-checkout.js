@@ -56,23 +56,42 @@ export default async function handler(req, res) {
       server: isSandbox ? 'sandbox' : 'production',
     });
 
-    // 3. Create Checkout Session
+    // 3. Fetch User from Firestore to get polarCustomerId
+    const { getFirestore } = await import('firebase-admin/firestore');
+    const db = getFirestore();
+    const userDoc = await db.collection('users').doc(firebaseUid).get();
+    let existingCustomerId = null;
+    
+    if (userDoc.exists) {
+      existingCustomerId = userDoc.data().polarCustomerId;
+    }
+
+    // 4. Create Checkout Session
     // Using absolute URL for success page based on request headers
     const protocol = req.headers['x-forwarded-proto'] || 'http';
     const host = req.headers.host;
     const successUrl = `${protocol}://${host}/account?payment=success&checkout_id={CHECKOUT_ID}`;
 
-    const checkout = await polar.checkouts.create({
+    const checkoutConfig = {
       products: [polarProductId],
-      customerEmail: customerEmail,
       successUrl: successUrl,
       // CRITICAL: Bind the user's UID securely in the session metadata
       metadata: {
         firebaseUid: firebaseUid,
       },
-    });
+    };
 
-    // 4. Return Checkout URL to Frontend
+    // If user already has a Polar customer ID, use it so Polar links them perfectly.
+    // Otherwise, pass their email so Polar can create a new customer or match by email.
+    if (existingCustomerId) {
+      checkoutConfig.customerId = existingCustomerId;
+    } else {
+      checkoutConfig.customerEmail = customerEmail;
+    }
+
+    const checkout = await polar.checkouts.create(checkoutConfig);
+
+    // 5. Return Checkout URL to Frontend
     return res.status(200).json({ url: checkout.url });
 
   } catch (error) {
