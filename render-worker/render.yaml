@@ -1,0 +1,51 @@
+services:
+  # 1. FastAPI Web API
+  - type: web
+    name: matchcut-api
+    env: docker
+    region: frankfurt
+    plan: free
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    dockerCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: matchcut-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: matchcut-redis
+          property: connectionString
+      - key: WORKER_API_KEY
+        generateValue: true
+
+  # 2. Celery Worker
+  - type: worker
+    name: matchcut-worker
+    env: docker
+    region: frankfurt
+    plan: free
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    dockerCommand: celery -A app.workers.celery_app worker --loglevel=info --concurrency=1
+    envVars:
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: matchcut-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: matchcut-redis
+          property: connectionString
+
+  # 3. Redis Queue
+  - type: redis
+    name: matchcut-redis
+    region: frankfurt
+    plan: free
+    maxmemoryPolicy: noeviction

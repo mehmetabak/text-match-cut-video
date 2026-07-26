@@ -1,0 +1,9 @@
+fastapi==0.103.2
+uvicorn==0.23.2
+celery==5.3.4
+redis==5.0.1
+pydantic==2.4.2
+pydantic-settings==2.0.3
+python-multipart==0.0.6
+firebase-admin==6.2.0
+ffmpeg-python==0.2.0
