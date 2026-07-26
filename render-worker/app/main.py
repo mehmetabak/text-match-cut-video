@@ -54,30 +54,32 @@ def get_api_key(api_key_header: str = Security(api_key_header)):
         raise HTTPException(status_code=403, detail="Could not validate credentials")
     return api_key_header
 
+import threading
+
 # Global lock to ensure ONLY ONE video is processed at a time (prevent OOM)
-worker_lock = asyncio.Lock()
+worker_lock = threading.Lock()
 
 # --- Firestore Queue Processing Logic ---
-async def process_queue():
+def process_queue():
     """
     Core function that pulls jobs from Firestore and processes them sequentially.
     Never processes more than one job at a time.
     """
-    if worker_lock.locked():
+    if not worker_lock.acquire(blocking=False):
         # Another background task is already processing the queue.
         # Just return, that task will eventually pick up all pending jobs.
         print("Queue is already being processed. Ping ignored.")
         return
 
-    if not db:
-        print("Firestore not initialized. Cannot process queue.")
-        return
+    try:
+        if not db:
+            print("Firestore not initialized. Cannot process queue.")
+            return
 
-    async with worker_lock:
         print("Worker lock acquired. Starting queue processor...")
         
         while True:
-            # 1. Get a pending job (removed order_by to avoid requiring a composite index in Firestore)
+            # 1. Get a pending job
             query = db.collection('render_jobs').where('status', '==', 'pending').limit(1)
             docs = query.stream()
             
@@ -109,7 +111,7 @@ async def process_queue():
             # 3. DO THE HEAVY WORK (FFmpeg/OpenCV)
             try:
                 # Simulate heavy processing (FFmpeg call goes here)
-                await asyncio.sleep(5) 
+                time.sleep(5) 
                 
                 # 4. Mark as completed
                 db.collection('render_jobs').document(job_id).update({
@@ -127,6 +129,9 @@ async def process_queue():
                     'error_message': str(e),
                     'completed_at': firestore.SERVER_TIMESTAMP
                 })
+    finally:
+        worker_lock.release()
+
 
 # --- Endpoints ---
 @app.get("/")
