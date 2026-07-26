@@ -1,44 +1,144 @@
+import asyncio
+import json
+import base64
+import time
+from typing import Dict, Any
+
 from fastapi import FastAPI, HTTPException, Security, Depends, BackgroundTasks
 from fastapi.security.api_key import APIKeyHeader
 from pydantic import BaseModel
-from typing import Dict, Any
-import time
+
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 from app.core.config import settings
 
-app = FastAPI(title=settings.PROJECT_NAME)
+# --- Firebase Initialization ---
+def init_firebase():
+    if not firebase_admin._apps:
+        try:
+            # Parse service account from JSON string or Base64
+            service_account_data = settings.FIREBASE_SERVICE_ACCOUNT_JSON
+            if not service_account_data:
+                print("WARNING: FIREBASE_SERVICE_ACCOUNT_JSON is not set. Firestore will not work.")
+                return None
 
+            try:
+                # Try decoding if it's base64
+                decoded_bytes = base64.b64decode(service_account_data, validate=True)
+                service_account_data = decoded_bytes.decode('utf-8')
+            except Exception:
+                pass # It's probably raw JSON
+
+            cred_dict = json.loads(service_account_data)
+            cred = credentials.Certificate(cred_dict)
+            firebase_admin.initialize_app(cred)
+            print("Firebase Admin initialized successfully.")
+            return firestore.client()
+        except Exception as e:
+            print(f"ERROR initializing Firebase: {e}")
+            return None
+    return firestore.client()
+
+db = init_firebase()
+
+# --- FastAPI App ---
+app = FastAPI(title=settings.PROJECT_NAME)
 api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
 
 def get_api_key(api_key_header: str = Security(api_key_header)):
     if api_key_header != f"Bearer {settings.WORKER_API_KEY}":
-        raise HTTPException(
-            status_code=403, detail="Could not validate credentials"
-        )
+        raise HTTPException(status_code=403, detail="Could not validate credentials")
     return api_key_header
 
-class JobRequest(BaseModel):
-    job_id: str
-    video_url: str
-    params: Dict[str, Any]
+# Global lock to ensure ONLY ONE video is processed at a time (prevent OOM)
+worker_lock = asyncio.Lock()
 
-def process_video_task(job_id: str, video_url: str, params: dict):
-    print(f"[{job_id}] Started processing video from {video_url}")
-    # Simulate processing
-    time.sleep(5)
-    print(f"[{job_id}] Finished processing.")
+# --- Firestore Queue Processing Logic ---
+async def process_queue():
+    """
+    Core function that pulls jobs from Firestore and processes them sequentially.
+    Never processes more than one job at a time.
+    """
+    if worker_lock.locked():
+        # Another background task is already processing the queue.
+        # Just return, that task will eventually pick up all pending jobs.
+        print("Queue is already being processed. Ping ignored.")
+        return
 
+    if not db:
+        print("Firestore not initialized. Cannot process queue.")
+        return
+
+    async with worker_lock:
+        print("Worker lock acquired. Starting queue processor...")
+        
+        while True:
+            # 1. Get the oldest pending job
+            # We use created_at to process in order (FIFO)
+            query = db.collection('render_jobs').where('status', '==', 'pending').order_by('created_at').limit(1)
+            docs = query.stream()
+            
+            job_doc = None
+            for doc in docs:
+                job_doc = doc
+                break
+                
+            if not job_doc:
+                print("Queue is empty. Worker going to sleep.")
+                break # Exit the while loop
+                
+            job_id = job_doc.id
+            job_data = job_doc.to_dict()
+            video_url = job_data.get('video_url', 'unknown_url')
+            
+            print(f"[{job_id}] Pulled from queue. Starting processing...")
+            
+            # 2. Mark as processing
+            try:
+                db.collection('render_jobs').document(job_id).update({
+                    'status': 'processing',
+                    'started_at': firestore.SERVER_TIMESTAMP
+                })
+            except Exception as e:
+                print(f"[{job_id}] Failed to update status to processing: {e}")
+                continue # Skip to next job
+                
+            # 3. DO THE HEAVY WORK (FFmpeg/OpenCV)
+            try:
+                # Simulate heavy processing (FFmpeg call goes here)
+                await asyncio.sleep(5) 
+                
+                # 4. Mark as completed
+                db.collection('render_jobs').document(job_id).update({
+                    'status': 'completed',
+                    'completed_at': firestore.SERVER_TIMESTAMP,
+                    'result_url': 'simulated_firebase_storage_url_here'
+                })
+                print(f"[{job_id}] Processing SUCCESSFUL.")
+                
+            except Exception as e:
+                # Mark as failed
+                print(f"[{job_id}] Processing FAILED: {e}")
+                db.collection('render_jobs').document(job_id).update({
+                    'status': 'failed',
+                    'error_message': str(e),
+                    'completed_at': firestore.SERVER_TIMESTAMP
+                })
+
+# --- Endpoints ---
 @app.get("/")
 def health_check():
-    return {"status": "ok", "message": "Render Worker API is running (Celery-free)"}
+    return {"status": "ok", "message": "Render Worker API is running (Firestore Queue Active)"}
 
-@app.post("/jobs")
-def create_job(request: JobRequest, background_tasks: BackgroundTasks, api_key: str = Depends(get_api_key)):
-    # Dispatch Background Task instead of Celery to save RAM and money
-    background_tasks.add_task(process_video_task, request.job_id, request.video_url, request.params)
-    
+@app.post("/jobs/ping")
+def ping_queue(background_tasks: BackgroundTasks, api_key: str = Depends(get_api_key)):
+    """
+    Endpoint triggered by Frontend/Vercel after adding a job to Firestore.
+    It simply wakes up the queue processor if it's sleeping.
+    """
+    background_tasks.add_task(process_queue)
     return {
         "status": "accepted",
-        "job_id": request.job_id,
-        "message": "Processing started in background"
+        "message": "Ping received. Worker will check Firestore queue."
     }
