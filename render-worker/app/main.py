@@ -17,20 +17,22 @@ from app.core.config import settings
 def init_firebase():
     if not firebase_admin._apps:
         try:
-            # Parse service account from JSON string or Base64
-            service_account_data = settings.FIREBASE_SERVICE_ACCOUNT_JSON
-            if not service_account_data:
-                print("WARNING: FIREBASE_SERVICE_ACCOUNT_JSON is not set. Firestore will not work.")
+            if not settings.FIREBASE_PROJECT_ID:
+                print("WARNING: FIREBASE_PROJECT_ID is not set. Firestore will not work.")
                 return None
 
-            try:
-                # Try decoding if it's base64
-                decoded_bytes = base64.b64decode(service_account_data, validate=True)
-                service_account_data = decoded_bytes.decode('utf-8')
-            except Exception:
-                pass # It's probably raw JSON
+            # Render might escape newlines in env vars, so we fix them
+            private_key = settings.FIREBASE_PRIVATE_KEY.replace('\\n', '\n')
+            # Remove any surrounding quotes if they got copied
+            if private_key.startswith('"') and private_key.endswith('"'):
+                private_key = private_key[1:-1]
 
-            cred_dict = json.loads(service_account_data)
+            cred_dict = {
+                "type": "service_account",
+                "project_id": settings.FIREBASE_PROJECT_ID,
+                "private_key": private_key,
+                "client_email": settings.FIREBASE_CLIENT_EMAIL,
+            }
             cred = credentials.Certificate(cred_dict)
             firebase_admin.initialize_app(cred)
             print("Firebase Admin initialized successfully.")
