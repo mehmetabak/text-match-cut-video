@@ -48,4 +48,5 @@ services:
     name: matchcut-redis
     region: frankfurt
     plan: free
+    ipAllowList: []
     maxmemoryPolicy: noeviction
