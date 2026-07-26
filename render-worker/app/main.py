@@ -77,9 +77,8 @@ async def process_queue():
         print("Worker lock acquired. Starting queue processor...")
         
         while True:
-            # 1. Get the oldest pending job
-            # We use created_at to process in order (FIFO)
-            query = db.collection('render_jobs').where('status', '==', 'pending').order_by('created_at').limit(1)
+            # 1. Get a pending job (removed order_by to avoid requiring a composite index in Firestore)
+            query = db.collection('render_jobs').where('status', '==', 'pending').limit(1)
             docs = query.stream()
             
             job_doc = None
