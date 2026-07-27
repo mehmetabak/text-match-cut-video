@@ -80,7 +80,7 @@ def cleanup_orphans(max_age_hours: float = 2):
     """Worker başlangıcında çalıştır: eski/öksüz dosyaları temizle"""
     now = time.time()
     patterns = [
-        os.path.join(TEMP_DIR, "*_input.mp4"),
+        os.path.join(TEMP_DIR, "*_input.*"),
         os.path.join(TEMP_DIR, "*_output.mp4")
     ]
     for pattern in patterns:
@@ -142,15 +142,17 @@ def process_queue():
                 })
                 continue
 
-            input_path = os.path.join(TEMP_DIR, f"{job_id}_input.mp4")
-            output_path = os.path.join(TEMP_DIR, f"{job_id}_output.mp4")
+            matches = glob.glob(os.path.join(TEMP_DIR, f"{job_id}_input.*"))
             
-            if not os.path.exists(input_path):
+            if not matches:
                 db.collection('render_jobs').document(job_id).update({
                     'status': 'failed',
                     'error_message': 'Uploaded file not found on server.'
                 })
                 continue
+                
+            input_path = matches[0]
+            output_path = os.path.join(TEMP_DIR, f"{job_id}_output.mp4")
             
             try:
                 db.collection('render_jobs').document(job_id).update({
@@ -200,7 +202,12 @@ def health_check():
 async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     """Frontend buraya video yükler, dönen job_id'yi Firestore'a yazar"""
     job_id = uuid.uuid4().hex
-    input_path = os.path.join(TEMP_DIR, f"{job_id}_input.mp4")
+    
+    ext = os.path.splitext(file.filename)[1].lower() if file.filename else ".mp4"
+    if ext not in [".mp4", ".mov", ".avi", ".jpg", ".jpeg", ".png", ".webp"]:
+        ext = ".mp4"
+        
+    input_path = os.path.join(TEMP_DIR, f"{job_id}_input{ext}")
     
     with open(input_path, "wb") as buffer:
         while True:
