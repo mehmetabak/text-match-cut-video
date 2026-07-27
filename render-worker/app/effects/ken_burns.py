@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import cv2
+from PIL import Image
 from moviepy.editor import VideoFileClip, ImageClip
 
 def _is_image(path: str) -> bool:
@@ -19,7 +19,11 @@ def _make_zoom_frame_func(orig_w, orig_h, target_w, target_h, zoom_rate):
         x1 = (orig_w - crop_w) // 2
         y1 = (orig_h - crop_h) // 2
         cropped = frame[y1:y1 + crop_h, x1:x1 + crop_w]
-        return cv2.resize(cropped, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
+        
+        # OOM hatasına yol açan cv2 yerine, hafif Pillow kütüphanesi kullanıyoruz:
+        pil_img = Image.fromarray(cropped)
+        # Resize yap ve tekrar numpy dizisine çevir (MoviePy bunu bekler)
+        return np.array(pil_img.resize((target_w, target_h), Image.Resampling.BILINEAR))
     return frame_func
 
 def apply_ken_burns(input_path: str, output_path: str,

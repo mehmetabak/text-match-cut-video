@@ -6,4 +6,3 @@ python-multipart==0.0.9
 firebase-admin==6.2.0
 ffmpeg-python==0.2.0
 moviepy==1.0.3
-opencv-python-headless==4.9.0.80
