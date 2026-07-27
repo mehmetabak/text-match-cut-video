@@ -27,26 +27,28 @@ def _make_zoom_frame_func(orig_w, orig_h, target_w, target_h, zoom_rate):
     return frame_func
 
 def apply_ken_burns(input_path: str, output_path: str,
-                     duration: float = 8.0, zoom_rate: float = 0.04,
+                     duration: float = None, zoom_rate: float = 0.04,
                      target_width: int = 1280, target_height: int = 720):
-    is_image = _is_image(input_path)
-    if is_image:
-        clip = ImageClip(input_path).set_duration(duration)
+    is_img = _is_image(input_path)
+    if is_img:
+        dur = duration if duration is not None else 8.0
+        clip = ImageClip(input_path).set_duration(dur)
     else:
         clip = VideoFileClip(input_path)
-        clip = clip.subclip(0, min(duration, clip.duration))
-        duration = clip.duration
+        if duration is not None and clip.duration is not None:
+            clip = clip.subclip(0, min(duration, clip.duration))
+        dur = clip.duration
 
     orig_w, orig_h = clip.size
     frame_func = _make_zoom_frame_func(orig_w, orig_h, target_width, target_height, zoom_rate)
 
     final = clip.fl(frame_func, apply_to=[])
-    final = final.set_duration(duration).set_fps(24)
+    final = final.set_duration(dur).set_fps(24)
 
     final.write_videofile(
         output_path,
         codec="libx264",
-        audio=not is_image,          # görselde ses yok
+        audio=not is_img,          # görselde ses yok
         preset="ultrafast",          # RAM/CPU tasarrufu
         threads=2,
         logger=None,                 # tqdm/ilerleme çubuğu overhead'ini kapat

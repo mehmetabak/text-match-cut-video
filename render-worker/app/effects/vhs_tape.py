@@ -23,15 +23,15 @@ def _is_image(path: str) -> bool:
     return os.path.splitext(path)[1].lower() in (".jpg", ".jpeg", ".png", ".webp")
 
 def apply_vhs_tape(input_path: str, output_path: str,
-                    duration: float = 8.0, aberration_strength: float = 1.0):
+                    duration: float = None, aberration_strength: float = 1.0):
     is_img = _is_image(input_path)
     if is_img:
-        clip = ImageClip(input_path).set_duration(duration)
+        dur = duration if duration is not None else 8.0
+        clip = ImageClip(input_path).set_duration(dur)
     else:
         clip = VideoFileClip(input_path)
-        if clip.duration is not None:
-            duration = min(duration, clip.duration)
-        clip = clip.subclip(0, duration)
+        if duration is not None and clip.duration is not None:
+            clip = clip.subclip(0, min(duration, clip.duration))
     
     shift_px = max(1, int(clip.w * 0.003 * aberration_strength))
 

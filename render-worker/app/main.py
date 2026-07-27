@@ -91,7 +91,7 @@ def cleanup_orphans(max_age_hours: float = 2):
             except OSError:
                 pass
 
-def run_isolated_job(job_id, tool_type, input_path, output_path, params, timeout=150):
+def run_isolated_job(job_id, tool_type, input_path, output_path, params, timeout=900):
     runner_path = os.path.join(os.path.dirname(__file__), "job_runner.py")
     cmd = [sys.executable, runner_path, job_id, tool_type, input_path, output_path, json.dumps(params)]
     try:
