@@ -197,7 +197,7 @@ def health_check():
     return {"status": "ok", "message": "Render Worker API is running (Firestore Queue Active)"}
 
 @app.post("/upload")
-async def upload_video(file: UploadFile = File(...)):
+async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
     """Frontend buraya video yükler, dönen job_id'yi Firestore'a yazar"""
     job_id = uuid.uuid4().hex
     input_path = os.path.join(TEMP_DIR, f"{job_id}_input.mp4")
@@ -213,6 +213,9 @@ async def upload_video(file: UploadFile = File(...)):
     if size_mb > MAX_INPUT_MB:
         os.remove(input_path)
         raise HTTPException(status_code=400, detail=f"File too large. Max {MAX_INPUT_MB}MB.")
+        
+    # Arka planda kuyruğu tetikle
+    background_tasks.add_task(process_queue)
         
     return {"job_id": job_id, "status": "uploaded"}
 

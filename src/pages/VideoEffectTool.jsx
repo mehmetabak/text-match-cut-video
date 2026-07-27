@@ -77,14 +77,8 @@ export default function VideoEffectTool() {
         params: {}
       });
       
-      // 3. Render Worker'ı uyandır (Gerekirse)
-      const workerKey = import.meta.env.VITE_WORKER_API_KEY;
-      fetch(`${apiUrl}/jobs/ping`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${workerKey}`
-        }
-      }).catch(err => console.log("Ping warning (worker should still pick it up):", err));
+      // 3. Backend kuyruğu artık upload işlemiyle otomatik tetikleniyor.
+      // (Eski /jobs/ping isteği kaldırıldı)
       
       // 4. Durumu Firestore üzerinden dinle
       const unsubscribe = onSnapshot(jobRef, (docSnap) => {
