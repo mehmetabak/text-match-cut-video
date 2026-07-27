@@ -17,11 +17,21 @@ def _vhs_frame_transform(frame: np.ndarray, shift_px: int) -> np.ndarray:
 
     return np.clip(out, 0, 255).astype(np.uint8)
 
+import os
+
+def _is_image(path: str) -> bool:
+    return os.path.splitext(path)[1].lower() in (".jpg", ".jpeg", ".png", ".webp")
+
 def apply_vhs_tape(input_path: str, output_path: str,
                     duration: float = 8.0, aberration_strength: float = 1.0):
-    clip = VideoFileClip(input_path)
-    duration = min(duration, clip.duration)
-    clip = clip.subclip(0, duration)
+    is_img = _is_image(input_path)
+    if is_img:
+        clip = ImageClip(input_path).set_duration(duration)
+    else:
+        clip = VideoFileClip(input_path)
+        if clip.duration is not None:
+            duration = min(duration, clip.duration)
+        clip = clip.subclip(0, duration)
     
     shift_px = max(1, int(clip.w * 0.003 * aberration_strength))
 
@@ -30,7 +40,7 @@ def apply_vhs_tape(input_path: str, output_path: str,
     processed.write_videofile(
         output_path,
         codec="libx264",
-        audio=True,
+        audio=not is_img,
         preset="ultrafast",
         threads=2,
         logger=None,
