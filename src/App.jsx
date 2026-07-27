@@ -7,6 +7,7 @@ import MatchCutTool from './pages/MatchCutTool';
 import Projects from './pages/Projects';
 import Account from './pages/Account';
 import Tools from './pages/Tools';
+import VideoEffectTool from './pages/VideoEffectTool';
 import LegalPage from './pages/LegalPage';
 import NotFound from './pages/NotFound';
 import Pricing from './pages/Pricing';
@@ -20,6 +21,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="tools" element={<Tools />} />
+          <Route path="effects/:type" element={<VideoEffectTool />} />
           <Route path="match-cut" element={<MatchCutTool />} />
           <Route path="projects" element={<Projects />} />
           <Route path="account" element={<Account />} />

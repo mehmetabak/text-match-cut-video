@@ -56,9 +56,9 @@ const TOOLS = [
     id: 'ken-burns',
     titleKey: 'toolKenBurns',
     descKey: 'toolKenBurnsDesc',
-    path: '#',
+    path: '/effects/ken-burns',
     isPro: true,
-    isSoon: true,
+    isSoon: false,
     bgClass: 'from-[#00E5FF]/20 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 overflow-hidden flex items-center justify-center opacity-40">
@@ -320,9 +320,9 @@ const TOOLS = [
     id: 'vhs-tape',
     titleKey: 'tool_vhs_title',
     descKey: 'tool_vhs_desc',
-    path: '#',
+    path: '/effects/vhs-tape',
     isPro: true,
-    isSoon: true,
+    isSoon: false,
     bgClass: 'from-blue-800 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 flex items-center justify-center opacity-40 overflow-hidden">
