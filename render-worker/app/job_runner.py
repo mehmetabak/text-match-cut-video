@@ -1,21 +1,8 @@
 import sys
 import json
-import resource
 import traceback
 
-def set_memory_limit(mb=380):
-    """
-    Alt-sürecin kendi adres alanını sınırla. Aşılırsa Python MemoryError fırlatır
-    (yakalanabilir) — kernel'in SIGKILL'ine kıyasla çok daha kontrollü bir hata.
-    """
-    try:
-        limit_bytes = mb * 1024 * 1024
-        resource.setrlimit(resource.RLIMIT_AS, (limit_bytes, limit_bytes))
-    except (ValueError, OSError):
-        pass  # RLIMIT_AS Windows'ta veya bazi ortamlarda calismayabilir
-
 def main():
-    set_memory_limit(380)
     if len(sys.argv) < 6:
         print("Eksik argumanlar", file=sys.stderr)
         sys.exit(1)
