@@ -15,7 +15,6 @@ def set_memory_limit(mb=380):
         pass
 
 def main():
-    set_memory_limit(380)
     
     if len(sys.argv) < 6:
         print("Eksik argumanlar", file=sys.stderr)
