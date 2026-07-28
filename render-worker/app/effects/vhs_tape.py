@@ -21,7 +21,7 @@ def build_vhs_tape_cmd(input_path: str, output_path: str, scanline_path: str,
                         duration=None, aberration_strength=1.0, noise_amount=15,
                         target_width=1280, target_height=720):
     is_img = _is_image(input_path)
-    dur = _clamp(duration, 1, 210, 8.0)
+    dur = _clamp(duration, 1, 210, 210.0)
     strength = _clamp(aberration_strength, 0.0, 3.0, 1.0)
     noise_amt = int(_clamp(noise_amount, 0, 40, 15))
     tw = int(_clamp(target_width, 320, 1920, 1280))

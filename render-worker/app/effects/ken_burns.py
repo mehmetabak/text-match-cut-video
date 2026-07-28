@@ -14,7 +14,7 @@ def build_ken_burns_cmd(input_path: str, output_path: str,
                          duration=None, zoom_rate=0.04, zoom_direction="in",
                          pan_style="center", target_width=1280, target_height=720):
     is_img = _is_image(input_path)
-    dur = _clamp(duration, 1, 210, 8.0)
+    dur = _clamp(duration, 1, 210, 210.0)
     zoom_rate = _clamp(zoom_rate, 0.0, 0.15, 0.04)
     tw = int(_clamp(target_width, 320, 1920, 1280))
     th = int(_clamp(target_height, 320, 1920, 720))

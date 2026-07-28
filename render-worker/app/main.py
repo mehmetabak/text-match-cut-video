@@ -122,7 +122,8 @@ def run_isolated_job(job_id, tool_type, input_path, output_path, params, timeout
     runner_path = os.path.join(os.path.dirname(__file__), "job_runner.py")
     cmd = [sys.executable, runner_path, job_id, tool_type, input_path, output_path, json.dumps(params)]
     
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    # Redirect stderr to stdout so we read everything from a single pipe and avoid deadlocks
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     
     start_time = time.time()
     last_update_time = 0
@@ -139,6 +140,8 @@ def run_isolated_job(job_id, tool_type, input_path, output_path, params, timeout
     t.daemon = True
     t.start()
     
+    output_lines = []
+    
     while True:
         if time.time() - start_time > timeout_sec:
             process.kill()
@@ -146,6 +149,10 @@ def run_isolated_job(job_id, tool_type, input_path, output_path, params, timeout
         
         try:
             line = q.get(timeout=1.0).strip()
+            output_lines.append(line)
+            if len(output_lines) > 200:
+                output_lines.pop(0) # Keep only last 200 lines to save memory
+                
             if line.startswith("PROGRESS:"):
                 try:
                     progress = int(line.split(":")[1])
@@ -164,9 +171,12 @@ def run_isolated_job(job_id, tool_type, input_path, output_path, params, timeout
             break
             
     while not q.empty():
-        pass
+        line = q.get().strip()
+        output_lines.append(line)
+        if len(output_lines) > 200:
+            output_lines.pop(0)
         
-    stderr_output = process.stderr.read()
+    stderr_output = "\n".join(output_lines)
     
     if process.returncode == 0:
         return True, None
