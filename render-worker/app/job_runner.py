@@ -1,6 +1,16 @@
 import sys
 import json
 import traceback
+from proglog import ProgressBarLogger
+
+class RenderLogger(ProgressBarLogger):
+    def bars_callback(self, bar, attr, value, old_value):
+        if bar == 't':
+            total = self.bars[bar]['total']
+            if total > 0:
+                prog = int((value / total) * 85) + 10
+                print(f"PROGRESS:{prog}", file=sys.stderr)
+                sys.stderr.flush()
 
 def main():
     if len(sys.argv) < 6:
@@ -14,6 +24,8 @@ def main():
     params_json = sys.argv[5]
     
     params = json.loads(params_json)
+    logger = RenderLogger()
+    params['logger'] = logger
     
     try:
         if tool_type == "ken-burns":

@@ -91,21 +91,50 @@ def cleanup_orphans(max_age_hours: float = 2):
             except OSError:
                 pass
 
+import re
+
 def run_isolated_job(job_id, tool_type, input_path, output_path, params, timeout=900):
     runner_path = os.path.join(os.path.dirname(__file__), "job_runner.py")
     cmd = [sys.executable, runner_path, job_id, tool_type, input_path, output_path, json.dumps(params)]
+    
     try:
-        result = subprocess.run(cmd, capture_output=True, timeout=timeout, text=True)
+        # stdout devnull to prevent pipe deadlock, stderr read line by line
+        process = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, text=True, bufsize=1)
+        
+        last_progress_time = time.time()
+        last_progress_val = 0
+        stderr_output = []
+        
+        for line in process.stderr:
+            stderr_output.append(line)
+            if line.startswith("PROGRESS:"):
+                try:
+                    prog_val = int(line.strip().split(":")[1])
+                    now = time.time()
+                    # Throttle: Her %5 değişimde veya 5 saniyede bir güncelle
+                    if (prog_val >= last_progress_val + 5) or (now - last_progress_time > 5):
+                        db.collection('render_jobs').document(job_id).update({'progress': prog_val})
+                        last_progress_val = prog_val
+                        last_progress_time = now
+                except:
+                    pass
+                    
+        process.wait(timeout=timeout)
     except subprocess.TimeoutExpired:
+        process.kill()
         return False, f"İşlem {timeout} sn içinde tamamlanamadı (timeout)"
+    except Exception as e:
+        return False, f"Süreç başlatma hatası: {str(e)}"
 
-    if result.returncode == 0:
+    if process.returncode == 0:
         return True, None
-    if result.returncode == 2:
+    if process.returncode == 2:
         return False, "Bellek limiti aşıldı (izole alt-süreç koruması devreye girdi)"
-    if result.returncode in (-9, 137):
+    if process.returncode in (-9, 137):
         return False, "Alt-süreç kernel OOM Killer tarafından sonlandırıldı"
-    return False, (result.stderr or "")[-1500:]
+        
+    err_text = "".join(stderr_output)[-1500:]
+    return False, err_text
 
 def process_queue():
     if not worker_lock.acquire(blocking=False):
@@ -132,63 +161,76 @@ def process_queue():
             job_id = job_doc.id
             job_data = job_doc.to_dict()
             tool_type = job_data.get('tool_type')
+            retry_count = job_data.get('retry_count', 0)
             
             print(f"[{job_id}] Pulled from queue. Starting processing...")
-            
-            if tool_type not in ALLOWED_TOOL_TYPES:
-                db.collection('render_jobs').document(job_id).update({
-                    'status': 'failed',
-                    'error_message': f'Unsupported tool_type: {tool_type}'
-                })
-                continue
 
-            matches = glob.glob(os.path.join(TEMP_DIR, f"{job_id}_input.*"))
-            
-            if not matches:
-                db.collection('render_jobs').document(job_id).update({
-                    'status': 'failed',
-                    'error_message': 'Uploaded file not found on server.'
-                })
-                continue
-                
-            input_path = matches[0]
-            output_path = os.path.join(TEMP_DIR, f"{job_id}_output.mp4")
-            
             try:
+                # Sanitization: Sadece alfanumerik ve tire
+                if not re.match(r"^[a-zA-Z0-9_-]+$", job_id):
+                    raise ValueError("Geçersiz job_id formatı (Path Traversal şüphesi)")
+
+                if tool_type not in ALLOWED_TOOL_TYPES:
+                    raise ValueError(f"Unsupported tool_type: {tool_type}")
+
+                matches = glob.glob(os.path.join(TEMP_DIR, f"{job_id}_input.*"))
+                if not matches:
+                    raise FileNotFoundError("Uploaded file not found on server.")
+                    
+                input_path = matches[0]
+                output_path = os.path.join(TEMP_DIR, f"{job_id}_output.mp4")
+                
                 db.collection('render_jobs').document(job_id).update({
                     'status': 'processing',
+                    'progress': 5, # Sanal animasyon için 5'ten başlat
                     'started_at': firestore.SERVER_TIMESTAMP
                 })
-            except Exception as e:
-                print(f"[{job_id}] Failed to update status to processing: {e}")
-                continue
+                    
+                params = job_data.get('params', {})
+                ok, err = run_isolated_job(job_id, tool_type, input_path, output_path, params)
                 
-            params = job_data.get('params', {})
-            
-            ok, err = run_isolated_job(job_id, tool_type, input_path, output_path, params)
-            
-            if ok and os.path.exists(output_path):
-                db.collection('render_jobs').document(job_id).update({
-                    'status': 'completed',
-                    'completed_at': firestore.SERVER_TIMESTAMP,
-                    'result_url': f"/download/{job_id}"
-                })
-                print(f"[{job_id}] Processing SUCCESSFUL.")
-            else:
+                if ok and os.path.exists(output_path):
+                    db.collection('render_jobs').document(job_id).update({
+                        'status': 'completed',
+                        'progress': 100,
+                        'completed_at': firestore.SERVER_TIMESTAMP,
+                        'result_url': f"/download/{job_id}"
+                    })
+                    print(f"[{job_id}] Processing SUCCESSFUL.")
+                    
+                    # Başarılı olduğunda hemen sil (Smart Cleanup)
+                    if os.path.exists(input_path):
+                        try: os.remove(input_path)
+                        except: pass
+                else:
+                    print(f"[{job_id}] Processing FAILED: {err}")
+                    if retry_count < 2:
+                        print(f"[{job_id}] Retrying... ({retry_count+1}/2)")
+                        db.collection('render_jobs').document(job_id).update({
+                            'status': 'pending',
+                            'retry_count': retry_count + 1
+                        })
+                    else:
+                        db.collection('render_jobs').document(job_id).update({
+                            'status': 'failed',
+                            'error_message': err or "Bilinmeyen Hata",
+                            'completed_at': firestore.SERVER_TIMESTAMP
+                        })
+                    # Hata ayıklama için input dosyası SİLİNMİYOR (cleanup_orphans silecek)
+                    
+            except Exception as e:
+                print(f"[{job_id}] Kuyruk işlem hatası: {str(e)}")
+                # Beklenmedik hata (Single point of failure koruması)
                 db.collection('render_jobs').document(job_id).update({
                     'status': 'failed',
-                    'error_message': err or "Bilinmeyen Hata",
-                    'completed_at': firestore.SERVER_TIMESTAMP
+                    'error_message': f"Kuyruk iç hatası: {str(e)}"
                 })
-                print(f"[{job_id}] Processing FAILED: {err}")
-                
-            # Input file cleanup (Output file is kept until downloaded or garbage collected)
-            if os.path.exists(input_path):
-                try:
-                    os.remove(input_path)
-                except:
-                    pass
-
+                # Kritik hatalarda dosyayı temizle ki döngü kilitlenmesin
+                matches = glob.glob(os.path.join(TEMP_DIR, f"{job_id}_input.*"))
+                for m in matches:
+                    try: os.remove(m)
+                    except: pass
+                    
     finally:
         worker_lock.release()
 
@@ -229,6 +271,9 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
 @app.get("/download/{job_id}")
 def download_video(job_id: str):
     """Frontend renderlanmış videoyu buradan indirir"""
+    if not re.match(r"^[a-zA-Z0-9_-]+$", job_id):
+        raise HTTPException(status_code=400, detail="Invalid job_id format")
+        
     output_path = os.path.join(TEMP_DIR, f"{job_id}_output.mp4")
     if not os.path.exists(output_path):
         raise HTTPException(status_code=404, detail="File not found or already deleted/downloaded.")
