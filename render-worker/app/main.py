@@ -238,18 +238,19 @@ def process_queue():
                     raise RuntimeError(err)
 
                 job_ref.update({'status': 'completed', 'progress': 100, 'result_url': f"/download/{job_id}"})
-
+                cleanup_job_files(job_id)
+                
             except Exception as e:
                 retry_count = job_data.get('retry_count', 0)
+                err_msg = str(e)
+                print(f"[job {job_id}] Attempt {retry_count} failed: {err_msg}")
+                
                 if retry_count < MAX_RETRIES:
                     job_ref.update({'status': 'pending', 'retry_count': retry_count + 1})
                 else:
-                    err_msg = str(e)
-                    print(f"[job {job_id}] FAILED: {err_msg}")
+                    print(f"[job {job_id}] FAILED PERMANENTLY: {err_msg}")
                     job_ref.update({'status': 'failed', 'error_message': err_msg})
-
-            finally:
-                cleanup_job_files(job_id)
+                    cleanup_job_files(job_id)
     finally:
         worker_lock.release()
 
