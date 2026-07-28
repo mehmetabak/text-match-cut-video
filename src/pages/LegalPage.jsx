@@ -48,6 +48,10 @@ const LegalPage = ({ title }) => {
           <p>
             {t('legalContactText', lang)}
           </p>
+          <h2 className="text-2xl font-bold text-white mt-10 mb-4">{t('legalRefundTitle', lang)}</h2>
+          <p>
+            {t('legalRefundText', lang)}
+          </p>
         </div>
       </motion.div>
     </div>
