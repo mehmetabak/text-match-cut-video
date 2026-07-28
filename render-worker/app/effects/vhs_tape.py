@@ -1,6 +1,10 @@
 import numpy as np
 import os
 from moviepy.editor import VideoFileClip, ImageClip
+import PIL.Image
+
+if not hasattr(PIL.Image, 'ANTIALIAS'):
+    PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
 
 # O(1) Pre-Generated Noise Mask for True Speed Optimization
 # Generating 2000x2000 noise once takes minimal memory but saves hundreds of millions of CPU cycles per video.
