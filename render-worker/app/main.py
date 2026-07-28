@@ -36,6 +36,8 @@ if not firebase_admin._apps:
             pass
             
         firebase_credentials = os.getenv("FIREBASE_CREDENTIALS")
+        firebase_private_key = os.getenv("FIREBASE_PRIVATE_KEY")
+        
         if firebase_credentials:
             try:
                 # Try parsing as JSON string
@@ -45,8 +47,18 @@ if not firebase_admin._apps:
                 # If not valid JSON, treat it as a file path (common for Render Secret Files)
                 cred = credentials.Certificate(firebase_credentials)
             firebase_admin.initialize_app(cred)
+        elif firebase_private_key:
+            cred_dict = {
+                "type": "service_account",
+                "project_id": os.getenv("FIREBASE_PROJECT_ID", ""),
+                "private_key": firebase_private_key.replace("\\n", "\n"),
+                "client_email": os.getenv("FIREBASE_CLIENT_EMAIL", ""),
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+            cred = credentials.Certificate(cred_dict)
+            firebase_admin.initialize_app(cred)
         else:
-            firebase_setup_error = "FIREBASE_CREDENTIALS env var is missing."
+            firebase_setup_error = "FIREBASE_CREDENTIALS veya FIREBASE_PRIVATE_KEY bulunamadi."
             print(firebase_setup_error)
     except Exception as e:
         firebase_setup_error = f"Firebase setup error: {str(e)}"
