@@ -57,7 +57,7 @@ def _make_zoom_frame_func(orig_w, orig_h, target_w, target_h, zoom_rate, dur, zo
 def apply_ken_burns(input_path: str, output_path: str,
                      duration: float = None, zoom_rate: float = 0.04,
                      quality: str = "720p", aspect_ratio: str = "16:9",
-                     zoom_direction: str = "in", pan_style: str = "center", logger=None):
+                     zoom_direction: str = "in", pan_style: str = "center", logger=None, **kwargs):
     is_img = _is_image(input_path)
     
     if quality == "1080p":

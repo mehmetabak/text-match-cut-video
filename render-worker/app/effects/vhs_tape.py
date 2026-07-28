@@ -40,7 +40,7 @@ def _is_image(path: str) -> bool:
 
 def apply_vhs_tape(input_path: str, output_path: str,
                     duration: float = None, aberration_strength: float = 1.0,
-                    quality: str = "720p", aspect_ratio: str = "16:9", logger=None):
+                    quality: str = "720p", aspect_ratio: str = "16:9", logger=None, **kwargs):
     is_img = _is_image(input_path)
     if is_img:
         dur = duration if duration is not None else 8.0
