@@ -76,6 +76,7 @@ export default function VideoEffectTool() {
       }
       
       formData.append('params', JSON.stringify(params));
+      formData.append('uid', auth.currentUser?.uid || "");
       
       const apiUrl = import.meta.env.VITE_RENDER_API_URL || 'https://matchcut-api-1e38.onrender.com';
       
@@ -85,7 +86,12 @@ export default function VideoEffectTool() {
       });
       
       if (!uploadRes.ok) {
-        throw new Error(`Upload failed on server (Code: ${uploadRes.status}).`);
+        let errMsg = `Upload failed on server (Code: ${uploadRes.status}).`;
+        try {
+            const errData = await uploadRes.json();
+            if (errData.detail) errMsg = errData.detail;
+        } catch (e) {}
+        throw new Error(errMsg);
       }
       
       const uploadData = await uploadRes.json();

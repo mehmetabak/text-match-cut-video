@@ -220,31 +220,41 @@ def process_queue():
         worker_lock.release()
 
 @app.post("/upload")
-async def upload_video(background_tasks: BackgroundTasks, tool_type: str, file: UploadFile = File(...), params: str = Form("{}")):
-    if not db:
-        raise HTTPException(status_code=500, detail="Firestore baglantisi yok")
+async def upload_video(background_tasks: BackgroundTasks, tool_type: str, file: UploadFile = File(...), params: str = Form("{}"), uid: str = Form("")):
+    try:
+        if not db:
+            raise Exception("Firestore baglantisi yok. FIREBASE_CREDENTIALS kontrol edin.")
 
-    job_id = str(uuid.uuid4())
-    ext = os.path.splitext(file.filename)[1].lower() if file.filename else ".mp4"
-    input_path = os.path.join(TEMP_DIR, f"{job_id}_input{ext}")
+        job_id = str(uuid.uuid4())
+        ext = os.path.splitext(file.filename)[1].lower() if file.filename else ".mp4"
+        input_path = os.path.join(TEMP_DIR, f"{job_id}_input{ext}")
 
-    with open(input_path, "wb") as buffer:
-        buffer.write(await file.read())
+        with open(input_path, "wb") as buffer:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                buffer.write(chunk)
 
-    job_data = {
-        "tool_type": tool_type,
-        "status": "pending",
-        "params": json.loads(params),
-        "created_at": firestore.SERVER_TIMESTAMP,
-        "result_url": None,
-        "error_message": None,
-        "progress": 0,
-        "retry_count": 0
-    }
-    db.collection('render_jobs').document(job_id).set(job_data)
+        job_data = {
+            "uid": uid,
+            "tool_type": tool_type,
+            "status": "pending",
+            "params": json.loads(params),
+            "created_at": firestore.SERVER_TIMESTAMP,
+            "result_url": None,
+            "error_message": None,
+            "progress": 0,
+            "retry_count": 0
+        }
+        db.collection('render_jobs').document(job_id).set(job_data)
 
-    background_tasks.add_task(process_queue)
-    return {"job_id": job_id, "status": "pending"}
+        background_tasks.add_task(process_queue)
+        return {"job_id": job_id, "status": "pending"}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Sunucu hatasi: {str(e)}")
 
 @app.get("/download/{job_id}")
 async def download_result(job_id: str):
