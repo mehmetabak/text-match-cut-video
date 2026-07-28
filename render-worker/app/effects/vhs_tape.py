@@ -3,12 +3,13 @@ import os
 from moviepy.editor import VideoFileClip, ImageClip
 import PIL.Image
 
+# Yavaş olan LANCZOS (eski ANTIALIAS) yerine hızlı olan BILINEAR kullanıyoruz (Müthiş hız farkı yaratır)
 if not hasattr(PIL.Image, 'ANTIALIAS'):
-    PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
+    PIL.Image.ANTIALIAS = PIL.Image.Resampling.BILINEAR
 
 # O(1) Pre-Generated Noise Mask for True Speed Optimization
 # Generating 2000x2000 noise once takes minimal memory but saves hundreds of millions of CPU cycles per video.
-PREGEN_NOISE = np.random.randint(-14, 14, (2000, 2000, 1), dtype=np.int16)
+PREGEN_NOISE = np.random.randint(-14, 14, size=(2000, 2000, 1), dtype=np.int16)
 
 def _vhs_frame_transform(frame: np.ndarray, shift_px: int) -> np.ndarray:
     # 1) Chromatic aberration: R kanalını sola, B kanalını sağa kaydır
@@ -73,17 +74,19 @@ def apply_vhs_tape(input_path: str, output_path: str,
     clip_ratio = clip.w / clip.h
     target_ratio = target_w / target_h
     
-    if abs(clip_ratio - target_ratio) > 0.01:
-        if clip_ratio > target_ratio:
-            # Video is wider, resize to match height, then crop sides
-            clip = clip.resize(height=target_h)
-            clip = clip.crop(x_center=clip.w/2, width=target_w)
+    # EĞER ÇÖZÜNÜRLÜK BİREBİR AYNI DEĞİLSE RESIZE YAP (Eğer aynıysa resize'ı atla, yoksa aşırı yavaşlar)
+    if clip.w != target_w or clip.h != target_h:
+        if abs(clip_ratio - target_ratio) > 0.01:
+            if clip_ratio > target_ratio:
+                # Video is wider, resize to match height, then crop sides
+                clip = clip.resize(height=target_h)
+                clip = clip.crop(x_center=clip.w/2, width=target_w)
+            else:
+                # Video is taller, resize to match width, then crop top/bottom
+                clip = clip.resize(width=target_w)
+                clip = clip.crop(y_center=clip.h/2, height=target_h)
         else:
-            # Video is taller, resize to match width, then crop top/bottom
-            clip = clip.resize(width=target_w)
-            clip = clip.crop(y_center=clip.h/2, height=target_h)
-    else:
-        clip = clip.resize(width=target_w, height=target_h)
+            clip = clip.resize(width=target_w, height=target_h)
     
     shift_px = max(1, int(clip.w * 0.003 * aberration_strength))
 

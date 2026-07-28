@@ -281,7 +281,7 @@ def download_video(job_id: str):
     return FileResponse(output_path, media_type="video/mp4", filename=f"{job_id}_processed.mp4")
 
 @app.post("/jobs/ping")
-def ping_queue(background_tasks: BackgroundTasks, api_key: str = Depends(get_api_key)):
+def ping_queue(background_tasks: BackgroundTasks):
     background_tasks.add_task(process_queue)
     return {
         "status": "accepted",

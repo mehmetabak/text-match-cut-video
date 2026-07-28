@@ -5,7 +5,7 @@ from PIL import Image
 from moviepy.editor import VideoFileClip, ImageClip
 
 if not hasattr(PIL.Image, 'ANTIALIAS'):
-    PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
+    PIL.Image.ANTIALIAS = PIL.Image.Resampling.BILINEAR
 
 def _is_image(path: str) -> bool:
     return os.path.splitext(path)[1].lower() in (".jpg", ".jpeg", ".png", ".webp")

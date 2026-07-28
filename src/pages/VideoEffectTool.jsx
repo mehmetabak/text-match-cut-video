@@ -98,7 +98,10 @@ export default function VideoEffectTool() {
         params: params
       });
       
-      // 3. Durumu Firestore üzerinden dinle
+      // 3. Backend'i uyandır (Kuyruğu kontrol etmesi için ping at)
+      fetch(`${apiUrl}/jobs/ping`, { method: 'POST' }).catch(console.error);
+      
+      // 4. Durumu Firestore üzerinden dinle
       const unsubscribe = onSnapshot(jobRef, (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
