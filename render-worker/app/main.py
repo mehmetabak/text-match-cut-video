@@ -9,7 +9,7 @@ import threading
 import time
 import re
 import queue
-from fastapi import FastAPI, BackgroundTasks, UploadFile, File
+from fastapi import FastAPI, BackgroundTasks, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from firebase_admin import credentials, firestore
@@ -215,9 +215,9 @@ def process_queue():
         worker_lock.release()
 
 @app.post("/upload")
-async def upload_video(background_tasks: BackgroundTasks, tool_type: str, file: UploadFile = File(...), params: str = "{}"):
+async def upload_video(background_tasks: BackgroundTasks, tool_type: str, file: UploadFile = File(...), params: str = Form("{}")):
     if not db:
-        return {"error": "Firestore baglantisi yok"}
+        raise HTTPException(status_code=500, detail="Firestore baglantisi yok")
 
     job_id = str(uuid.uuid4())
     ext = os.path.splitext(file.filename)[1].lower() if file.filename else ".mp4"

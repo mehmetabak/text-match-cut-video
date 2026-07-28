@@ -89,7 +89,15 @@ export default function VideoEffectTool() {
       }
       
       const uploadData = await uploadRes.json();
+      
+      if (uploadData.error) {
+         throw new Error(uploadData.error);
+      }
+      
       const jobId = uploadData.job_id;
+      if (!jobId) {
+         throw new Error("Sunucudan geçerli bir is kimligi (job ID) alinamadi.");
+      }
       
       setStatus('processing');
       const jobRef = doc(db, 'render_jobs', jobId);
