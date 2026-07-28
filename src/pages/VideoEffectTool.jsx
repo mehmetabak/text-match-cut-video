@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, setDoc, onSnapshot, serverTimestamp, collection, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { t } from '../lib/i18n';
 import { useSettingsStore } from '../store/settingsStore';
@@ -68,25 +68,12 @@ export default function VideoEffectTool() {
       setStatus('uploading');
       setProgress(0);
       
-      // 1. Backend URL and Job Setup
       const apiUrl = import.meta.env.VITE_RENDER_API_URL || 'https://matchcut-api-1e38.onrender.com';
       
-      const jobRef = doc(collection(db, 'render_jobs'));
-      const jobId = jobRef.id;
-
-      // 2. Önce Firestore'da 'uploading' durumunda görevi aç
-      setStatus('uploading');
-      setProgress(0);
+      // 1. Frontend'de benzersiz job_id oluştur
+      const jobId = crypto.randomUUID().replace(/-/g, '');
       
-      await setDoc(jobRef, {
-        uid: auth.currentUser.uid,
-        tool_type: type,
-        status: 'uploading',
-        created_at: serverTimestamp(),
-        params: params
-      });
-
-      // 3. Dosyayı job_id ile birlikte Render'a yükle
+      // 2. Dosyayı job_id ile birlikte Backend'e yükle
       const formData = new FormData();
       formData.append('file', file);
       formData.append('job_id', jobId);
@@ -97,18 +84,24 @@ export default function VideoEffectTool() {
       });
       
       if (!uploadRes.ok) {
-        await updateDoc(jobRef, { status: 'failed', error_message: `Upload failed (Code: ${uploadRes.status})` });
         throw new Error(`Upload failed on server (Code: ${uploadRes.status}).`);
       }
       
-      // 4. Yükleme başarılı, durumu pending'e çekip kuyruğa sok
+      // 3. Yükleme başarılı → Firestore'da doğrudan 'pending' ile görevi aç (Kurallarla uyumlu)
       setStatus('processing');
-      await updateDoc(jobRef, { status: 'pending' });
+      const jobRef = doc(db, 'render_jobs', jobId);
+      await setDoc(jobRef, {
+        uid: auth.currentUser.uid,
+        tool_type: type,
+        status: 'pending',
+        created_at: serverTimestamp(),
+        params: params
+      });
       
-      // 5. Backend'i uyandır (Kuyruğu kontrol etmesi için ping at)
+      // 4. Backend'i uyandır (Kuyruğu kontrol etmesi için ping at)
       fetch(`${apiUrl}/jobs/ping`, { method: 'POST' }).catch(console.error);
       
-      // 6. Durumu Firestore üzerinden dinle
+      // 5. Durumu Firestore üzerinden dinle
       const unsubscribe = onSnapshot(jobRef, (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
