@@ -234,8 +234,9 @@ def process_queue():
                 if retry_count < MAX_RETRIES:
                     job_ref.update({'status': 'pending', 'retry_count': retry_count + 1})
                 else:
-                    print(f"[job {job_id}] FAILED: {e}")
-                    job_ref.update({'status': 'failed', 'error_message': 'Islem basarisiz oldu'})
+                    err_msg = str(e)
+                    print(f"[job {job_id}] FAILED: {err_msg}")
+                    job_ref.update({'status': 'failed', 'error_message': err_msg})
 
             finally:
                 cleanup_job_files(job_id)

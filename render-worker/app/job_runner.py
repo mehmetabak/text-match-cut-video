@@ -39,7 +39,8 @@ def main():
             cmd = build_ken_burns_cmd(input_path, output_path, **params)
         else:
             from app.effects.vhs_tape import build_vhs_tape_cmd
-            scanline_path = output_path.replace("_output.mp4", "_scanline.png")
+            import tempfile, uuid
+            scanline_path = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}_scanline.png")
             cmd = build_vhs_tape_cmd(input_path, output_path, scanline_path, **params)
 
         # Run ffmpeg and read stderr to extract progress
