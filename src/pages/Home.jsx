@@ -10,7 +10,7 @@ import CookieModal from '../components/modals/CookieModal';
 // A component that simulates a cinematic "match cut" effect for the hero word
 const HeroCutWord = ({ word }) => {
   const [styleIndex, setStyleIndex] = useState(0);
-  
+
   const styles = [
     { fontFamily: 'Inter', fontWeight: 800, color: 'white', backgroundColor: 'transparent' }, // 0
     { fontFamily: 'JetBrains Mono', fontWeight: 700, color: '#F5B301', backgroundColor: '#1D1D22', padding: '0 8px' }, // 1
@@ -37,9 +37,9 @@ const HeroCutWord = ({ word }) => {
   useEffect(() => {
     const t1 = setTimeout(playAnimation, 250);
     const t2 = setTimeout(playAnimation, 1200);
-    return () => { 
-      clearTimeout(t1); 
-      clearTimeout(t2); 
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
     };
   }, []);
 
@@ -51,7 +51,7 @@ const HeroCutWord = ({ word }) => {
       </span>
       {/* Absolute wrapper perfectly centering the mutating text */}
       <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <span 
+        <span
           onMouseEnter={playAnimation}
           className="inline-block transition-none cursor-pointer whitespace-nowrap pointer-events-auto"
           style={{
@@ -70,8 +70,8 @@ const FAQItem = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="border-b border-border-color">
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
+      <button
+        onClick={() => setIsOpen(!isOpen)}
         className="w-full flex justify-between items-center py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold rounded-sm"
       >
         <span className="font-semibold text-text-primary text-lg">{question}</span>
@@ -81,9 +81,9 @@ const FAQItem = ({ question, answer }) => {
       </button>
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
-            initial={{ height: 0, opacity: 0 }} 
-            animate={{ height: 'auto', opacity: 1 }} 
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
@@ -219,7 +219,7 @@ const Home = () => {
 
   return (
     <div className={`w-full flex-grow flex flex-col items-center bg-bg-base text-text-primary overflow-x-hidden ${isRtl ? 'dir-rtl text-right' : 'text-left'}`}>
-      
+
       {/* Subtle Noise Texture Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.015] mix-blend-overlay z-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
 
@@ -228,7 +228,7 @@ const Home = () => {
         <motion.div initial="hidden" animate="visible" variants={revealVar} className="font-mono text-xs font-bold tracking-widest text-text-muted mb-6 uppercase border border-border-color rounded-full px-3 py-1 bg-surface">
           {t('heroEyebrow', lang)}
         </motion.div>
-        
+
         <motion.h1 initial="hidden" animate="visible" variants={revealVar} className="text-5xl md:text-7xl lg:text-[80px] font-display font-extrabold tracking-tight text-white mb-6 leading-[1.05]">
           {t('heroTitle1', lang)} <br className="hidden md:block" />
           <HeroCutWord word={t('heroTitle2', lang)} />
@@ -247,8 +247,8 @@ const Home = () => {
         </motion.div>
 
         <motion.div initial="hidden" animate="visible" variants={revealVar} className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto">
-          <Link 
-            to="/match-cut" 
+          <Link
+            to="/match-cut"
             onClick={handleStartProject}
             className="group relative w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-accent-gold to-[#FF9D00] text-bg-base font-bold text-lg rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,179,1,0.4)] flex items-center justify-center gap-3 overflow-hidden"
           >
@@ -264,14 +264,14 @@ const Home = () => {
       <section className="w-full max-w-[1280px] mx-auto px-6 py-20 relative z-10 border-t border-border-color/50">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
           {bentoItems.map((item, idx) => (
-            <BentoCard 
-              key={idx} 
-              num={item.num} 
-              title={item.title} 
-              desc={item.desc} 
-              icon={item.icon} 
-              fullWidth={item.fullWidth} 
-              delay={idx * 0.1} 
+            <BentoCard
+              key={idx}
+              num={item.num}
+              title={item.title}
+              desc={item.desc}
+              icon={item.icon}
+              fullWidth={item.fullWidth}
+              delay={idx * 0.1}
             />
           ))}
         </div>
@@ -297,15 +297,15 @@ const Home = () => {
               </motion.div>
             ))}
           </div>
-          
-          <motion.div 
+
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="mt-12 flex justify-center"
           >
-            <Link 
-              to="/tools" 
+            <Link
+              to="/tools"
               className="group relative px-6 py-3 bg-zinc-900 border border-zinc-700 hover:border-[#F5B301] text-white font-medium rounded-full transition-all duration-300 hover:shadow-[0_0_15px_rgba(245,179,1,0.2)] flex items-center justify-center gap-2 overflow-hidden"
             >
               <div className="absolute inset-0 bg-[#F5B301]/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
@@ -354,7 +354,7 @@ const Home = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Free Tier */}
-          <motion.div 
+          <motion.div
             whileHover={{ y: -5 }}
             className="border border-border-color rounded-2xl p-8 bg-surface flex flex-col hover:border-text-muted transition-colors"
           >
@@ -369,8 +369,8 @@ const Home = () => {
                 </li>
               ))}
             </ul>
-            <Link 
-              to="/match-cut" 
+            <Link
+              to="/match-cut"
               onClick={handleStartProject}
               className="w-full py-3 rounded-lg border border-border-color text-center font-bold hover:bg-surface-raised transition-colors"
             >
@@ -379,7 +379,7 @@ const Home = () => {
           </motion.div>
 
           {/* Pro Tier */}
-          <motion.div 
+          <motion.div
             whileHover={{ y: -5 }}
             className="border border-accent-gold rounded-2xl p-8 bg-surface relative flex flex-col shadow-[0_0_30px_rgba(245,179,1,0.05)] hover:shadow-[0_0_40px_rgba(245,179,1,0.1)] transition-all"
           >
@@ -397,7 +397,7 @@ const Home = () => {
                 </li>
               ))}
             </ul>
-            <Link 
+            <Link
               to="/pricing"
               className="w-full py-3 rounded-lg bg-accent-gold text-bg-base text-center font-bold hover:bg-yellow-400 transition-colors block"
             >
@@ -430,21 +430,21 @@ const Home = () => {
             <p className="text-text-muted font-body text-sm max-w-sm mb-6 leading-relaxed">
               {t('footerDesc', lang)}
             </p>
-            <a href="mailto:support@animationmaker.app" className="flex items-center gap-2 text-text-muted text-sm font-body mb-6 hover:text-white transition-colors cursor-pointer bg-zinc-800/50 px-4 py-2 rounded-full w-max">
+            <a href="mailto:help@m0s.space" className="flex items-center gap-2 text-text-muted text-sm font-body mb-6 hover:text-white transition-colors cursor-pointer bg-zinc-800/50 px-4 py-2 rounded-full w-max">
               <Mail className="w-4 h-4 text-accent-gold" />
-              <span>{t('supportEmailText', lang)} support@animationmaker.app</span>
+              <span>{t('supportEmailText', lang)} help@m0s.space</span>
             </a>
             <div className="text-text-muted text-sm font-mono opacity-60">
               &copy; {new Date().getFullYear()} — {t('footerRights', lang)}
             </div>
           </div>
-          
+
           <div className="flex flex-col items-center md:items-start gap-4 text-center md:text-left">
             <h4 className="text-white font-bold text-lg mb-2">Legal</h4>
-            <Link to="/terms" onClick={() => window.scrollTo(0,0)} className="text-text-muted hover:text-white transition-colors">Terms of Service</Link>
-            <Link to="/cookies" onClick={() => window.scrollTo(0,0)} className="text-text-muted hover:text-white transition-colors">Cookie Policy</Link>
-            <Link to="/privacy" onClick={() => window.scrollTo(0,0)} className="text-text-muted hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="/refund" onClick={() => window.scrollTo(0,0)} className="text-text-muted hover:text-white transition-colors">Refund Policy</Link>
+            <Link to="/terms" onClick={() => window.scrollTo(0, 0)} className="text-text-muted hover:text-white transition-colors">Terms of Service</Link>
+            <Link to="/cookies" onClick={() => window.scrollTo(0, 0)} className="text-text-muted hover:text-white transition-colors">Cookie Policy</Link>
+            <Link to="/privacy" onClick={() => window.scrollTo(0, 0)} className="text-text-muted hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/refund" onClick={() => window.scrollTo(0, 0)} className="text-text-muted hover:text-white transition-colors">Refund Policy</Link>
           </div>
 
           <div className="flex flex-col items-center md:items-start gap-4 text-center md:text-left">
@@ -453,7 +453,7 @@ const Home = () => {
             <a href="#" className="text-text-muted hover:text-white transition-colors">LinkedIn</a>
             <a href="#" className="text-text-muted hover:text-white transition-colors">Instagram</a>
             <div className="w-full max-w-[120px] h-px bg-border-color my-1"></div>
-            <button 
+            <button
               onClick={() => setIsCookieModalOpen(true)}
               className="text-text-muted hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2"
             >
@@ -462,7 +462,7 @@ const Home = () => {
           </div>
         </div>
       </footer>
-      
+
       {/* Cookie Modal */}
       <CookieModal isOpen={isCookieModalOpen} onClose={() => setIsCookieModalOpen(false)} />
 
