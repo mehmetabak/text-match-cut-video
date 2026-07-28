@@ -27,8 +27,12 @@ app.add_middleware(
 
 if not firebase_admin._apps:
     try:
-        from dotenv import load_dotenv
-        load_dotenv()
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+        except ImportError:
+            pass
+            
         firebase_credentials = os.getenv("FIREBASE_CREDENTIALS")
         if firebase_credentials:
             cred_dict = json.loads(firebase_credentials)
@@ -41,7 +45,8 @@ if not firebase_admin._apps:
 
 try:
     db = firestore.client()
-except Exception:
+except Exception as e:
+    print("Firestore client init error:", e)
     db = None
 
 TEMP_DIR = tempfile.gettempdir()
