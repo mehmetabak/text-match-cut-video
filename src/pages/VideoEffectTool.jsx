@@ -9,13 +9,19 @@ export default function VideoEffectTool() {
   const { type } = useParams();
   const lang = useSettingsStore(state => state.lang);
   const navigate = useNavigate();
+  
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState('idle'); // idle, uploading, processing, completed, error
   const [errorMsg, setErrorMsg] = useState('');
   const [resultUrl, setResultUrl] = useState('');
+  const [progress, setProgress] = useState(0);
   const fileInputRef = useRef(null);
+
+  // Effect parameters
+  const [zoomDirection, setZoomDirection] = useState('in');
+  const [panStyle, setPanStyle] = useState('center');
+  const [aspectRatio, setAspectRatio] = useState('16:9');
   
-  // Desteklenen tipler
   const validTypes = ['ken-burns', 'vhs-tape'];
   
   useEffect(() => {
@@ -30,6 +36,7 @@ export default function VideoEffectTool() {
       setStatus('idle');
       setErrorMsg('');
       setResultUrl('');
+      setProgress(0);
     }
   };
 
@@ -39,22 +46,40 @@ export default function VideoEffectTool() {
       setErrorMsg('Lütfen giriş yapın (Please log in).');
       return;
     }
-    if (file.size > 50 * 1024 * 1024) {
-      setErrorMsg('Maksimum dosya boyutu 50MB olabilir.');
+    if (file.size > 100 * 1024 * 1024) {
+      setErrorMsg('Maksimum dosya boyutu 100MB olabilir.');
       return;
     }
 
     try {
       setStatus('uploading');
+      setProgress(0);
       
       const formData = new FormData();
       formData.append('file', file);
       
-      // Çevresel değişkenlerden backend URL'ini al
+      const aspectRatioMap = {
+        '16:9': { target_width: 1280, target_height: 720 },
+        '9:16': { target_width: 720, target_height: 1280 },
+        '1:1': { target_width: 1080, target_height: 1080 }
+      };
+
+      const params = {};
+      if (type === 'ken-burns') {
+         params.zoom_direction = zoomDirection;
+         params.pan_style = panStyle;
+         params.target_width = aspectRatioMap[aspectRatio].target_width;
+         params.target_height = aspectRatioMap[aspectRatio].target_height;
+      } else if (type === 'vhs-tape') {
+         params.target_width = aspectRatioMap[aspectRatio].target_width;
+         params.target_height = aspectRatioMap[aspectRatio].target_height;
+      }
+      
+      formData.append('params', JSON.stringify(params));
+      
       const apiUrl = import.meta.env.VITE_RENDER_API_URL || 'https://matchcut-api-1e38.onrender.com';
       
-      // 1. Videoyu doğrudan Backend'e (Render'a) yükle
-      const uploadRes = await fetch(`${apiUrl}/upload`, {
+      const uploadRes = await fetch(`${apiUrl}/upload?tool_type=${type}`, {
         method: 'POST',
         body: formData
       });
@@ -66,31 +91,24 @@ export default function VideoEffectTool() {
       const uploadData = await uploadRes.json();
       const jobId = uploadData.job_id;
       
-      // 2. Firestore'da job_id ile bir görev oluştur
       setStatus('processing');
       const jobRef = doc(db, 'render_jobs', jobId);
-      await setDoc(jobRef, {
-        uid: auth.currentUser.uid,
-        tool_type: type,
-        status: 'pending',
-        created_at: serverTimestamp(),
-        params: {}
-      });
       
-      // 3. Backend kuyruğu artık upload işlemiyle otomatik tetikleniyor.
-      // (Eski /jobs/ping isteği kaldırıldı)
-      
-      // 4. Durumu Firestore üzerinden dinle
+      // We don't overwrite the doc created by backend, we just listen to it.
+      // But we can set it up if it takes time to reach backend (though backend already sets it in POST /upload).
+      // So let's just listen.
       const unsubscribe = onSnapshot(jobRef, (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
+          if (data.progress !== undefined) {
+             setProgress(data.progress);
+          }
           if (data.status === 'completed') {
-             // Backend bize `/download/jobId` formatında bir relative path dönüyor
              setResultUrl(`${apiUrl}${data.result_url}`);
              setStatus('completed');
              unsubscribe();
           } else if (data.status === 'failed') {
-             setErrorMsg(data.error_message || 'Processing failed.');
+             setErrorMsg(data.error_message || 'İşlem başarısız oldu (Processing failed).');
              setStatus('error');
              unsubscribe();
           }
@@ -110,14 +128,13 @@ export default function VideoEffectTool() {
     <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-80px)] text-white">
       <h1 className="text-4xl font-black mb-2 uppercase">{effectTitle} Effect</h1>
       <p className="text-zinc-400 mb-8">
-        Upload a video or image (max 50MB) to apply the {effectTitle} effect. Powered by Render Backend.
+        Upload a video or image (max 100MB, 3.5 minutes) to apply the {effectTitle} effect. Powered by native FFmpeg on Render.
       </p>
       
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 flex flex-col items-center justify-center min-h-[400px]">
         {status === 'idle' || status === 'error' ? (
-          <div className="flex flex-col items-center w-full max-w-md">
+          <div className="flex flex-col w-full max-w-xl">
             
-            {/* Sürükle Bırak / Tıkla Alanı */}
             <div 
               onClick={() => fileInputRef.current?.click()}
               className="w-full h-48 border-2 border-dashed border-zinc-700 hover:border-zinc-500 bg-zinc-800/50 hover:bg-zinc-800 transition flex flex-col items-center justify-center rounded-xl cursor-pointer mb-6"
@@ -126,7 +143,7 @@ export default function VideoEffectTool() {
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                </svg>
                <span className="text-zinc-400 font-medium">Click to select a video/image</span>
-               <span className="text-zinc-500 text-sm mt-1">Max 50MB</span>
+               <span className="text-zinc-500 text-sm mt-1">Max 100MB, 3.5 minutes (210s)</span>
             </div>
             
             <input 
@@ -142,6 +159,57 @@ export default function VideoEffectTool() {
                  <div className="truncate text-zinc-300 font-medium">{file.name}</div>
                  <div className="text-zinc-500 text-sm">{(file.size / 1024 / 1024).toFixed(1)} MB</div>
                </div>
+            )}
+
+            {/* Parameters UI */}
+            {file && (
+              <div className="w-full bg-zinc-950 border border-zinc-800 p-6 rounded-xl mb-6 space-y-4">
+                <h3 className="text-lg font-bold text-zinc-200 mb-2 border-b border-zinc-800 pb-2">Effect Parameters</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-1">Aspect Ratio (Format)</label>
+                    <select 
+                      value={aspectRatio}
+                      onChange={(e) => setAspectRatio(e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg p-2.5 focus:border-blue-500 focus:outline-none"
+                    >
+                      <option value="16:9">16:9 (Landscape - YouTube)</option>
+                      <option value="9:16">9:16 (Portrait - TikTok/Reels)</option>
+                      <option value="1:1">1:1 (Square - Instagram)</option>
+                    </select>
+                  </div>
+                  
+                  {type === 'ken-burns' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-400 mb-1">Zoom Direction</label>
+                        <select 
+                          value={zoomDirection}
+                          onChange={(e) => setZoomDirection(e.target.value)}
+                          className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg p-2.5 focus:border-blue-500 focus:outline-none"
+                        >
+                          <option value="in">Zoom In</option>
+                          <option value="out">Zoom Out</option>
+                        </select>
+                      </div>
+                      
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-zinc-400 mb-1">Pan Style (Movement)</label>
+                        <select 
+                          value={panStyle}
+                          onChange={(e) => setPanStyle(e.target.value)}
+                          className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg p-2.5 focus:border-blue-500 focus:outline-none"
+                        >
+                          <option value="center">Center</option>
+                          <option value="left-to-right">Left to Right</option>
+                          <option value="right-to-left">Right to Left</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             )}
             
             {file && (
@@ -168,10 +236,23 @@ export default function VideoEffectTool() {
           </div>
           
         ) : status === 'processing' ? (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center w-full max-w-md">
              <div className="w-16 h-16 border-4 border-[#F5B301] border-t-transparent rounded-full animate-spin mb-6"></div>
              <p className="text-[#F5B301] font-bold text-xl">Applying Effect...</p>
-             <p className="text-zinc-400 text-sm mt-2">Running isolated job runner on Render. Please wait.</p>
+             <p className="text-zinc-400 text-sm mt-2 mb-6">Processing video with native FFmpeg. This may take up to 3.5 minutes.</p>
+             
+             {/* Real-time Progress Bar */}
+             <div className="w-full bg-zinc-800 rounded-full h-4 mb-2 overflow-hidden border border-zinc-700">
+               <div 
+                 className="bg-[#F5B301] h-4 rounded-full transition-all duration-300 relative"
+                 style={{ width: `${progress}%` }}
+               >
+                  <div className="absolute top-0 left-0 bottom-0 right-0 overflow-hidden">
+                    <div className="w-full h-full bg-white/20 animate-[shimmer_1s_infinite_linear] skew-x-12 transform -translate-x-full"></div>
+                  </div>
+               </div>
+             </div>
+             <p className="text-zinc-300 font-bold text-lg">{progress}%</p>
           </div>
           
         ) : status === 'completed' ? (
@@ -192,7 +273,7 @@ export default function VideoEffectTool() {
                  Download Video
                </a>
                <button 
-                 onClick={() => { setStatus('idle'); setFile(null); setResultUrl(''); }}
+                 onClick={() => { setStatus('idle'); setFile(null); setResultUrl(''); setProgress(0); }}
                  className="px-8 py-3 bg-zinc-800 hover:bg-zinc-700 font-bold rounded-lg border border-zinc-700 transition"
                >
                  Create Another
