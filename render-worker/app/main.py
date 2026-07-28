@@ -25,6 +25,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+firebase_setup_error = None
+
 if not firebase_admin._apps:
     try:
         try:
@@ -35,18 +37,27 @@ if not firebase_admin._apps:
             
         firebase_credentials = os.getenv("FIREBASE_CREDENTIALS")
         if firebase_credentials:
-            cred_dict = json.loads(firebase_credentials)
-            cred = credentials.Certificate(cred_dict)
+            try:
+                # Try parsing as JSON string
+                cred_dict = json.loads(firebase_credentials)
+                cred = credentials.Certificate(cred_dict)
+            except ValueError:
+                # If not valid JSON, treat it as a file path (common for Render Secret Files)
+                cred = credentials.Certificate(firebase_credentials)
             firebase_admin.initialize_app(cred)
         else:
-            print("FIREBASE_CREDENTIALS env var is missing.")
+            firebase_setup_error = "FIREBASE_CREDENTIALS env var is missing."
+            print(firebase_setup_error)
     except Exception as e:
-        print("Firebase setup error:", e)
+        firebase_setup_error = f"Firebase setup error: {str(e)}"
+        print(firebase_setup_error)
 
 try:
     db = firestore.client()
 except Exception as e:
-    print("Firestore client init error:", e)
+    if firebase_setup_error is None:
+        firebase_setup_error = f"Firestore client init error: {str(e)}"
+    print(firebase_setup_error)
     db = None
 
 TEMP_DIR = tempfile.gettempdir()
@@ -223,7 +234,7 @@ def process_queue():
 async def upload_video(background_tasks: BackgroundTasks, tool_type: str, file: UploadFile = File(...), params: str = Form("{}"), uid: str = Form("")):
     try:
         if not db:
-            raise Exception("Firestore baglantisi yok. FIREBASE_CREDENTIALS kontrol edin.")
+            raise Exception(f"Firestore baglantisi yok. Sebep: {firebase_setup_error}")
 
         job_id = str(uuid.uuid4())
         ext = os.path.splitext(file.filename)[1].lower() if file.filename else ".mp4"
