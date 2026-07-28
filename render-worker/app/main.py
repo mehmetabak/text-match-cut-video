@@ -240,10 +240,14 @@ def process_queue():
 def health_check():
     return {"status": "ok", "message": "Render Worker API is running (Firestore Queue Active)"}
 
+from fastapi import Form
+import shutil
+
 @app.post("/upload")
-async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
-    """Frontend buraya video yükler, dönen job_id'yi Firestore'a yazar"""
-    job_id = uuid.uuid4().hex
+async def upload_video(file: UploadFile = File(...), job_id: str = Form(None)):
+    """Frontend buraya video yükler, dönen job_id'yi veya kendi oluşturduğunu kullanır"""
+    if not job_id:
+        job_id = uuid.uuid4().hex
     
     ext = os.path.splitext(file.filename)[1].lower() if file.filename else ".mp4"
     if ext not in [".mp4", ".mov", ".avi", ".jpg", ".jpeg", ".png", ".webp"]:
@@ -251,20 +255,14 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
         
     input_path = os.path.join(TEMP_DIR, f"{job_id}_input{ext}")
     
+    # O(1) Memory Optimizasyonu: Büyük dosyalarda RAM patlamasını önlemek için shutil kullanılır
     with open(input_path, "wb") as buffer:
-        while True:
-            chunk = await file.read(1024 * 1024)
-            if not chunk:
-                break
-            buffer.write(chunk)
+        shutil.copyfileobj(file.file, buffer)
             
     size_mb = os.path.getsize(input_path) / (1024 * 1024)
     if size_mb > MAX_INPUT_MB:
         os.remove(input_path)
         raise HTTPException(status_code=400, detail=f"File too large. Max {MAX_INPUT_MB}MB.")
-        
-    # Arka planda kuyruğu tetikle
-    background_tasks.add_task(process_queue)
         
     return {"job_id": job_id, "status": "uploaded"}
 
