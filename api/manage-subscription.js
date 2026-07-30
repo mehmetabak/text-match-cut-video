@@ -80,6 +80,11 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Error creating Polar customer session:', error);
-    return res.status(500).json({ message: 'Internal Server Error', error: error.message || error.toString() });
+    return res.status(500).json({ 
+      message: 'PolarCatchBlock', 
+      error: error.message, 
+      stack: error.stack, 
+      polarDetails: error.body || error.response || 'No extra details' 
+    });
   }
 }
