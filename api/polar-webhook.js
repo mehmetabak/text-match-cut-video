@@ -110,10 +110,21 @@ export default async function handler(req, res) {
         } else {
           // Subscription logic based on status
           const activeStatuses = ['active', 'trialing'];
+          const isCanceled = data.status === 'canceled';
+          const now = new Date();
+          let periodEnd = null;
+          
+          if (data.current_period_end || data.currentPeriodEnd) {
+             periodEnd = new Date(data.current_period_end || data.currentPeriodEnd);
+          }
+
           if (activeStatuses.includes(data.status) && event.type !== 'subscription.revoked') {
             isPro = true;
+          } else if (isCanceled && periodEnd && periodEnd > now && event.type !== 'subscription.revoked') {
+            // User canceled but still has remaining paid time
+            isPro = true;
           } else {
-            // Status is canceled, past_due, unpaid, incomplete_expired, or event is revoked
+            // Status is past_due, unpaid, incomplete_expired, revoked, or canceled+expired
             isPro = false;
           }
         }

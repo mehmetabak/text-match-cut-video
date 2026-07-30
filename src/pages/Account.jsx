@@ -31,6 +31,50 @@ const Account = () => {
     }
   }, [user, loading, navigate]);
 
+  const [isVerifyingCheckout, setIsVerifyingCheckout] = useState(false);
+  const [checkoutVerified, setCheckoutVerified] = useState(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const payment = urlParams.get('payment');
+    const checkoutId = urlParams.get('checkout_id');
+
+    if (payment === 'success' && checkoutId && user && !checkoutVerified && !isVerifyingCheckout) {
+      const verifyCheckout = async () => {
+        try {
+          setIsVerifyingCheckout(true);
+          const token = await auth.currentUser.getIdToken(true);
+          const response = await fetch('/api/verify-checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ checkoutId })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.isPro) {
+              // Update local state immediately for fast UX
+              useAuthStore.setState({ user: { ...user, isPro: true } });
+              setCheckoutVerified(true);
+              
+              // Clean up URL
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+          }
+        } catch (error) {
+          console.error("Error verifying checkout immediately:", error);
+        } finally {
+          setIsVerifyingCheckout(false);
+        }
+      };
+      
+      verifyCheckout();
+    }
+  }, [user, checkoutVerified, isVerifyingCheckout]);
+
   if (loading || !user) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[50vh]">

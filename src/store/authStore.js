@@ -65,6 +65,9 @@ export const useAuthStore = create((set, get) => ({
 
       set({ user: userData, loading: false });
       get().subscribeToProjects(authUser.uid);
+      
+      // JIT Subscription Sync (Arka planda sessizce Polar'ı kontrol et)
+      get().syncSubscriptionJIT();
     } catch (error) {
       console.error("Kullanıcı verisi alınırken/yazılırken hata (Büyük ihtimalle Firestore kurulu değil veya Kuralları kapalı):", error);
       alert("Giriş başarılı oldu ancak veritabanına ulaşılamadı. Lütfen Firebase Console'dan 'Firestore Database' oluşturduğunuzdan ve Kurallar (Rules) kısmından okuma/yazma izni verdiğinizden emin olun.\n\nHata Detayı: " + error.message);
@@ -112,6 +115,32 @@ export const useAuthStore = create((set, get) => ({
     });
 
     set({ projectsUnsubscribe: unsubscribe });
+  },
+
+  // Polar'dan canlı abonelik kontrolü yapan JIT (Just-In-Time) Sync
+  syncSubscriptionJIT: async () => {
+    const { user } = get();
+    if (!user) return;
+    try {
+      const token = await auth.currentUser.getIdToken(true);
+      const response = await fetch('/api/sync-subscription', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Sadece durum değişmişse yerel durumu güncelle (Firestore zaten backend'de güncellenir)
+        if (data.isPro !== undefined && data.isPro !== user.isPro) {
+          set({ user: { ...user, isPro: data.isPro } });
+          console.log("[JIT Sync] Subscription status updated to:", data.isPro);
+        }
+      }
+    } catch (error) {
+      console.error("JIT subscription sync failed:", error);
+    }
   },
 
   // Araç içinden Auto-save veya manuel kaydetme için kullanılacak
