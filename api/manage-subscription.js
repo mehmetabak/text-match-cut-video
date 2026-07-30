@@ -79,12 +79,16 @@ export default async function handler(req, res) {
     return res.status(200).json({ url: session.customerPortalUrl });
 
   } catch (error) {
+    let errorStr = 'Unknown error';
+    try {
+      errorStr = JSON.stringify(error, Object.getOwnPropertyNames(error));
+    } catch(e) {
+      errorStr = String(error);
+    }
     console.error('Error creating Polar customer session:', error);
     return res.status(500).json({ 
-      message: 'PolarCatchBlock', 
-      error: error.message, 
-      stack: error.stack, 
-      polarDetails: error.body || error.response || 'No extra details' 
+      message: 'PolarCatchBlock: ' + errorStr, 
+      error: errorStr
     });
   }
 }
