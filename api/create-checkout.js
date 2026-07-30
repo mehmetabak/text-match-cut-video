@@ -76,9 +76,13 @@ export default async function handler(req, res) {
       products: [polarProductId],
       successUrl: successUrl,
       // CRITICAL: Bind the user's UID securely in the session metadata
+      // Pass it to both checkout metadata AND customer metadata so it propagates to subscriptions
       metadata: {
         firebaseUid: firebaseUid,
       },
+      customerMetadata: {
+        firebaseUid: firebaseUid,
+      }
     };
 
     // If user already has a Polar customer ID, use it so Polar links them perfectly.

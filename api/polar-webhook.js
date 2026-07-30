@@ -1,6 +1,7 @@
 import { Webhooks } from '@polar-sh/sdk';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import { buffer } from 'micro';
 
 // Disable default body parser for this route so we can verify the raw signature perfectly
@@ -77,9 +78,26 @@ export default async function handler(req, res) {
     if (subscriptionEvents.includes(event.type) || event.type === 'order.created') {
       const data = event.data;
       
-      // Look for the firebaseUid we attached to the checkout link metadata securely
-      const firebaseUid = data.metadata?.firebaseUid;
+      // Extract firebaseUid safely across different metadata fields in Polar
+      let firebaseUid = data.metadata?.firebaseUid || data.customer_metadata?.firebaseUid || data.customer?.metadata?.firebaseUid;
       
+      // FALLBACK: If we still don't have the UID (e.g. older checkout session without customer metadata), 
+      // let's try to match the user by email using Firebase Auth.
+      if (!firebaseUid) {
+        const customerEmail = data.customer?.email || data.customer_email;
+        if (customerEmail) {
+          try {
+            const userRecord = await getAuth().getUserByEmail(customerEmail);
+            if (userRecord && userRecord.uid) {
+              firebaseUid = userRecord.uid;
+              console.log(`[Webhook] Recovered missing UID via email lookup: ${firebaseUid} for ${customerEmail}`);
+            }
+          } catch (e) {
+            console.error(`[Webhook] Could not find Firebase user by email: ${customerEmail}`);
+          }
+        }
+      }
+
       console.log(`[Webhook] Event Received: ${event.type} for UID: ${firebaseUid}`);
 
       if (firebaseUid) {
