@@ -71,10 +71,14 @@ export default async function handler(req, res) {
     // 4. Find Customer if not locally linked
     if (!customerId && userEmail) {
       try {
-        // We can search customers by email or just rely on them not being pro
-        // Actually Polar API doesn't allow easy email search directly in some SDK versions, 
-        // so we'll gracefully handle it.
-        // If they don't have polarCustomerId, we assume Free, unless verify-checkout sets it.
+        const customers = await polar.customers.list({ email: userEmail, limit: 1 });
+        if (customers.items && customers.items.length > 0) {
+          customerId = customers.items[0].id;
+          await userRef.update({ polarCustomerId: customerId });
+        } else if (customers.result && customers.result.items && customers.result.items.length > 0) {
+          customerId = customers.result.items[0].id;
+          await userRef.update({ polarCustomerId: customerId });
+        }
       } catch (e) {
         console.error("Polar customer lookup failed", e);
       }

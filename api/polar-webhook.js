@@ -135,6 +135,7 @@ export default async function handler(req, res) {
         
         await userRef.set({
           isPro: isPro,
+          subscriptionPlan: isPro ? 'pro' : 'free',
           polarSubscriptionId: data.id,
           polarCustomerId: data.customer_id,
           polarStatus: data.status || 'unknown',

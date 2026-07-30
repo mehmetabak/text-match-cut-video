@@ -98,6 +98,7 @@ export default async function handler(req, res) {
       
       const updateData = {
         isPro: true,
+        subscriptionPlan: 'pro',
         updatedAt: FieldValue.serverTimestamp()
       };
       
