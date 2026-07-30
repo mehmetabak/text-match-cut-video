@@ -117,7 +117,7 @@ const Account = () => {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        throw new Error(data.message || 'Portal linki alınamadı.');
+        throw new Error(data.error || data.message || 'Portal linki alınamadı.');
       }
     } catch (error) {
       console.error('Portal error:', error);

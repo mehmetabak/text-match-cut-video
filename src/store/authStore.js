@@ -50,6 +50,8 @@ export const useAuthStore = create((set, get) => ({
         photoURL: authUser.photoURL,
         subscriptionPlan: 'free',
         adRewardPoints: 0,
+        adRewardsToday: 0,
+        lastAdRewardDate: '',
         lastLoginAt: serverTimestamp(),
       };
 

@@ -113,7 +113,27 @@ export default async function handler(req, res) {
       }
     }
 
-    const subscriptions = subscriptionsResponse?.items || subscriptionsResponse?.data || [];
+    let subscriptions = [];
+    if (subscriptionsResponse) {
+      if (subscriptionsResponse.result && subscriptionsResponse.result.items) {
+        subscriptions = subscriptionsResponse.result.items;
+      } else if (subscriptionsResponse.items) {
+        subscriptions = subscriptionsResponse.items;
+      } else if (subscriptionsResponse.data) {
+        subscriptions = subscriptionsResponse.data;
+      } else if (typeof subscriptionsResponse[Symbol.asyncIterator] === 'function') {
+        try {
+          for await (const page of subscriptionsResponse) {
+            if (page.items) subscriptions = subscriptions.concat(page.items);
+            else if (page.result?.items) subscriptions = subscriptions.concat(page.result.items);
+            break; // Just need the first page for active subscription check
+          }
+        } catch (e) {
+          console.error("Async iteration failed", e);
+        }
+      }
+    }
+
     let isPro = false;
     const now = new Date();
 
