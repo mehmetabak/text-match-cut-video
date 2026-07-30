@@ -57,7 +57,7 @@ export default async function handler(req, res) {
     });
 
     // 3. Fetch User from Firestore to get polarCustomerId
-    const { getFirestore } = await import('firebase-admin/firestore');
+    const { getFirestore, FieldValue } = await import('firebase-admin/firestore');
     const db = getFirestore();
     const userDoc = await db.collection('users').doc(firebaseUid).get();
     let existingCustomerId = null;
@@ -93,7 +93,23 @@ export default async function handler(req, res) {
       checkoutConfig.customerEmail = customerEmail;
     }
 
-    const checkout = await polar.checkouts.create(checkoutConfig);
+    let checkout;
+    try {
+      checkout = await polar.checkouts.create(checkoutConfig);
+    } catch (error) {
+      const errorStr = JSON.stringify(error, Object.getOwnPropertyNames(error));
+      if (errorStr.includes("Customer does not exist")) {
+        console.warn("Polar customer was deleted in dashboard. Clearing from Firebase and retrying...");
+        await db.collection('users').doc(firebaseUid).update({
+          polarCustomerId: FieldValue.delete()
+        });
+        delete checkoutConfig.customerId;
+        checkoutConfig.customerEmail = customerEmail;
+        checkout = await polar.checkouts.create(checkoutConfig);
+      } else {
+        throw error;
+      }
+    }
 
     // 5. Return Checkout URL to Frontend
     return res.status(200).json({ url: checkout.url });
