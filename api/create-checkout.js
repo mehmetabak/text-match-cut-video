@@ -99,7 +99,13 @@ export default async function handler(req, res) {
     return res.status(200).json({ url: checkout.url });
 
   } catch (error) {
-    console.error('Error creating Polar checkout session:', error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    let errorStr = 'Unknown error';
+    try {
+      errorStr = JSON.stringify(error, Object.getOwnPropertyNames(error));
+    } catch(e) {
+      errorStr = String(error);
+    }
+    console.error('Error creating Polar checkout session:', errorStr);
+    return res.status(500).json({ message: 'Internal Server Error', error: errorStr });
   }
 }
