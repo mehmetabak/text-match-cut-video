@@ -16,7 +16,7 @@ Bu plan, mevcut çalışan yapıyı bozmadan güvenlik, stabilite, hız optimiza
 Mevcut `subprocess.run` ve `worker_lock` yapısına dokunmadan, sadece kuyruk döngüsünü sağlamlaştırıyoruz.
 
 #### [MODIFY] [main.py](file:///c:/Users/Mehmet/Desktop/Pr0jeler/WEB/video-web/text-match-cut-video/render-worker/app/main.py)
-- **Tam İzole `try/except`:** `process_queue()` içindeki `while True` döngüsünde her job'ı ayrı `try...except Exception` bloğuna alacağız. Tek bir bozuk job tüm kuyruğu durduramayacak.
+- Tek bir jobun bozulması diğer işlerin çalışmasını etkilemeyecek bir sonrakine geçecek kullanıcıya da hata mesajı gidecek.
 - **Akıllı `/tmp` Temizliği:** İşlem **başarılı** → `input_path` anında silinecek. İşlem **başarısız** → dosya silinmeyecek (debugging için). Mevcut `cleanup_orphans` fonksiyonu 2 saat sonra bu hatalı dosyaları otomatik temizleyecek.
 - **`job_id` Sanitizasyonu:** `glob.glob` öncesi `job_id`'nin sadece hex karakterler (UUID formatı) içerdiği regex ile doğrulanacak. Path traversal / joker karakter saldırılarını önleyecek.
 - **Auto-Retry:** `run_isolated_job` başarısız dönerse ve `retry_count < 2` ise, job tekrar `pending` yapılacak.
@@ -111,7 +111,6 @@ Mevcut `subprocess.run` yapısını bozmadan, tamamen frontend tarafında çalı
 
 | Değişiklik | Dosya(lar) | Backend Değişir mi? |
 |---|---|---|
-| İzole try/except, sanitize | `main.py` | ✅ Evet (sadece hata yönetimi) |
 | Akıllı /tmp temizliği | `main.py` | ✅ Evet (sadece cleanup mantığı) |
 | Auto-retry (max 2) | `main.py` | ✅ Evet (retry_count ekleniyor) |
 | FFMPEG native downscale | `vhs_tape.py`, `ken_burns.py` | ✅ Evet (VideoFileClip parametresi) |

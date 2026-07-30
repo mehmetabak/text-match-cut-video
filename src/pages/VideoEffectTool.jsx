@@ -13,9 +13,17 @@ export default function VideoEffectTool() {
   const [status, setStatus] = useState('idle'); // idle, uploading, processing, completed, error
   const [errorMsg, setErrorMsg] = useState('');
   const [resultUrl, setResultUrl] = useState('');
+  const [progress, setProgress] = useState(0);
   const fileInputRef = useRef(null);
+  const progressInterval = useRef(null);
   
-  // Desteklenen tipler
+  // Settings States
+  const [formatPreset, setFormatPreset] = useState('16:9');
+  const [hdOutput, setHdOutput] = useState(false);
+  const [zoomRate, setZoomRate] = useState(0.04);
+  const [zoomDirection, setZoomDirection] = useState('in');
+  const [panStyle, setPanStyle] = useState('center');
+  
   const validTypes = ['ken-burns', 'vhs-tape'];
   
   useEffect(() => {
@@ -23,6 +31,31 @@ export default function VideoEffectTool() {
       navigate('/tools');
     }
   }, [type, navigate]);
+
+  // Handle simulated progress bar
+  useEffect(() => {
+    if (status === 'processing') {
+      setProgress(1);
+      progressInterval.current = setInterval(() => {
+        setProgress(prev => {
+          // Slow down as it approaches 85%
+          if (prev >= 85) return 85;
+          const increment = (85 - prev) * 0.05 + 0.1;
+          return Math.min(85, prev + increment);
+        });
+      }, 500);
+    } else if (status === 'completed') {
+      setProgress(100);
+      if (progressInterval.current) clearInterval(progressInterval.current);
+    } else if (status === 'error' || status === 'idle' || status === 'uploading') {
+      setProgress(0);
+      if (progressInterval.current) clearInterval(progressInterval.current);
+    }
+
+    return () => {
+      if (progressInterval.current) clearInterval(progressInterval.current);
+    };
+  }, [status]);
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -50,10 +83,8 @@ export default function VideoEffectTool() {
       const formData = new FormData();
       formData.append('file', file);
       
-      // Çevresel değişkenlerden backend URL'ini al
       const apiUrl = import.meta.env.VITE_RENDER_API_URL || 'https://matchcut-api-1e38.onrender.com';
       
-      // 1. Videoyu doğrudan Backend'e (Render'a) yükle
       const uploadRes = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
         body: formData
@@ -66,26 +97,32 @@ export default function VideoEffectTool() {
       const uploadData = await uploadRes.json();
       const jobId = uploadData.job_id;
       
-      // 2. Firestore'da job_id ile bir görev oluştur
       setStatus('processing');
       const jobRef = doc(db, 'render_jobs', jobId);
+      
+      const params = {
+        format_preset: formatPreset,
+        hd_output: hdOutput
+      };
+      
+      if (type === 'ken-burns') {
+        params.zoom_rate = parseFloat(zoomRate);
+        params.zoom_direction = zoomDirection;
+        params.pan_style = panStyle;
+      }
+
       await setDoc(jobRef, {
         uid: auth.currentUser.uid,
         tool_type: type,
         status: 'pending',
         created_at: serverTimestamp(),
-        params: {}
+        params: params
       });
       
-      // 3. Backend kuyruğu artık upload işlemiyle otomatik tetikleniyor.
-      // (Eski /jobs/ping isteği kaldırıldı)
-      
-      // 4. Durumu Firestore üzerinden dinle
       const unsubscribe = onSnapshot(jobRef, (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.status === 'completed') {
-             // Backend bize `/download/jobId` formatında bir relative path dönüyor
              setResultUrl(`${apiUrl}${data.result_url}`);
              setStatus('completed');
              unsubscribe();
@@ -107,99 +144,234 @@ export default function VideoEffectTool() {
   const effectTitle = type ? type.replace('-', ' ').toUpperCase() : '';
 
   return (
-    <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-12 relative z-10 min-h-[calc(100vh-80px)] text-white">
-      <h1 className="text-4xl font-black mb-2 uppercase">{effectTitle} Effect</h1>
-      <p className="text-zinc-400 mb-8">
-        Upload a video or image (max 50MB) to apply the {effectTitle} effect. Powered by Render Backend.
+    <div className="flex-1 w-full max-w-5xl mx-auto px-4 py-8 md:py-12 relative z-10 text-white" style={{ minHeight: '100dvh' }}>
+      <h1 className="text-3xl md:text-4xl font-black mb-2 uppercase tracking-tight">{effectTitle} Effect</h1>
+      <p className="text-zinc-400 mb-8 max-w-2xl">
+        Upload a video or image (max 50MB) to apply the {effectTitle} effect.
       </p>
       
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 flex flex-col items-center justify-center min-h-[400px]">
-        {status === 'idle' || status === 'error' ? (
-          <div className="flex flex-col items-center w-full max-w-md">
-            
-            {/* Sürükle Bırak / Tıkla Alanı */}
-            <div 
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full h-48 border-2 border-dashed border-zinc-700 hover:border-zinc-500 bg-zinc-800/50 hover:bg-zinc-800 transition flex flex-col items-center justify-center rounded-xl cursor-pointer mb-6"
-            >
-               <svg className="w-12 h-12 text-zinc-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-               </svg>
-               <span className="text-zinc-400 font-medium">Click to select a video/image</span>
-               <span className="text-zinc-500 text-sm mt-1">Max 50MB</span>
-            </div>
-            
-            <input 
-              type="file" 
-              accept="video/mp4,video/quicktime,image/jpeg,image/png" 
-              className="hidden" 
-              ref={fileInputRef} 
-              onChange={handleFileChange} 
-            />
-            
-            {file && (
-               <div className="w-full bg-zinc-800 border border-zinc-700 p-4 rounded-lg flex items-center justify-between mb-6">
-                 <div className="truncate text-zinc-300 font-medium">{file.name}</div>
-                 <div className="text-zinc-500 text-sm">{(file.size / 1024 / 1024).toFixed(1)} MB</div>
-               </div>
-            )}
-            
-            {file && (
-               <button 
-                 onClick={startProcessing}
-                 className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)] font-bold text-lg transition"
-               >
-                 Start Processing
-               </button>
-            )}
-            
-            {status === 'error' && (
-              <div className="mt-6 w-full bg-red-900/30 border border-red-500/50 p-4 rounded-lg text-red-400 text-sm font-medium">
-                {errorMsg}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* Left Column: Uploader & Progress */}
+        <div className="lg:col-span-7 bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center min-h-[400px] shadow-2xl relative overflow-hidden">
+          
+          {/* Glass Gradient Decor */}
+          <div className="absolute -top-32 -right-32 w-64 h-64 bg-blue-500/20 blur-3xl rounded-full pointer-events-none"></div>
+          
+          {status === 'idle' || status === 'error' ? (
+            <div className="flex flex-col items-center w-full relative z-10">
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-56 border-2 border-dashed border-zinc-700/80 hover:border-blue-500/50 bg-zinc-800/30 hover:bg-zinc-800/60 backdrop-blur-sm transition-all duration-300 flex flex-col items-center justify-center rounded-2xl cursor-pointer mb-6 group"
+              >
+                 <svg className="w-12 h-12 text-zinc-500 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                 </svg>
+                 <span className="text-zinc-300 font-medium">Click to select a video/image</span>
+                 <span className="text-zinc-500 text-sm mt-2 font-mono">Max 50MB</span>
               </div>
-            )}
-          </div>
-          
-        ) : status === 'uploading' ? (
-          <div className="flex flex-col items-center animate-pulse">
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-            <p className="text-blue-400 font-bold text-xl">Uploading to Render...</p>
-            <p className="text-zinc-500 text-sm mt-2">Sending your file directly to the backend</p>
-          </div>
-          
-        ) : status === 'processing' ? (
-          <div className="flex flex-col items-center">
-             <div className="w-16 h-16 border-4 border-[#F5B301] border-t-transparent rounded-full animate-spin mb-6"></div>
-             <p className="text-[#F5B301] font-bold text-xl">Applying Effect...</p>
-             <p className="text-zinc-400 text-sm mt-2">Running isolated job runner on Render. Please wait.</p>
-          </div>
-          
-        ) : status === 'completed' ? (
-          <div className="flex flex-col items-center w-full">
-            <h2 className="text-2xl font-bold text-green-400 mb-6">Effect Applied Successfully!</h2>
-            
-            <div className="relative w-full max-w-2xl bg-black rounded-lg overflow-hidden border border-zinc-700 mb-6">
-               <video src={resultUrl} controls autoPlay loop className="w-full h-auto max-h-[500px]" />
+              
+              <input 
+                type="file" 
+                accept="video/mp4,video/quicktime,image/jpeg,image/png" 
+                className="hidden" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+              />
+              
+              {file && (
+                 <div className="w-full bg-zinc-800/80 backdrop-blur-md border border-zinc-700/80 p-4 rounded-xl flex items-center justify-between mb-6 shadow-lg">
+                   <div className="truncate text-zinc-200 font-medium mr-4">{file.name}</div>
+                   <div className="text-zinc-500 text-sm font-mono whitespace-nowrap">{(file.size / 1024 / 1024).toFixed(1)} MB</div>
+                 </div>
+              )}
+              
+              {file && (
+                 <button 
+                   onClick={startProcessing}
+                   className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl shadow-[0_0_30px_rgba(37,99,235,0.25)] hover:shadow-[0_0_40px_rgba(37,99,235,0.4)] font-bold text-lg transition-all duration-300 scale-100 active:scale-95"
+                 >
+                   Start Processing
+                 </button>
+              )}
+              
+              {status === 'error' && (
+                <div className="mt-6 w-full bg-red-900/20 backdrop-blur-sm border border-red-500/30 p-4 rounded-xl text-red-400 text-sm font-medium shadow-lg">
+                  {errorMsg}
+                </div>
+              )}
             </div>
             
-            <div className="flex gap-4">
-               <a 
-                 href={resultUrl} 
-                 download 
-                 target="_blank" rel="noreferrer"
-                 className="px-8 py-3 bg-green-600 hover:bg-green-500 font-bold rounded-lg transition"
-               >
-                 Download Video
-               </a>
-               <button 
-                 onClick={() => { setStatus('idle'); setFile(null); setResultUrl(''); }}
-                 className="px-8 py-3 bg-zinc-800 hover:bg-zinc-700 font-bold rounded-lg border border-zinc-700 transition"
-               >
-                 Create Another
-               </button>
+          ) : status === 'uploading' || status === 'processing' ? (
+            <div className="flex flex-col items-center w-full max-w-md relative z-10">
+              <h2 className="text-2xl font-bold mb-8">
+                {status === 'uploading' ? 'Uploading...' : 'Applying Effect...'}
+              </h2>
+              
+              {/* Simulated Progress Bar */}
+              <div className="w-full h-4 bg-zinc-800 rounded-full overflow-hidden mb-4 relative shadow-inner">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-500 via-indigo-400 to-[#F5B301] transition-all duration-500 ease-out relative"
+                  style={{ width: `${progress}%` }}
+                >
+                  <div className="absolute top-0 right-0 bottom-0 left-0 bg-white/20 animate-pulse"></div>
+                </div>
+              </div>
+              
+              <div className="flex justify-between w-full text-sm font-mono text-zinc-400 mb-8">
+                <span>{Math.round(progress)}%</span>
+                <span>{status === 'processing' ? 'Processing on Render' : 'Sending file'}</span>
+              </div>
+            </div>
+            
+          ) : status === 'completed' ? (
+            <div className="flex flex-col items-center w-full relative z-10">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4 border border-green-500/50 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+                <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-6">Success!</h2>
+              
+              <div className="relative w-full max-w-md bg-black rounded-xl overflow-hidden border border-zinc-700/80 shadow-2xl mb-8 group">
+                 <video src={resultUrl} controls autoPlay loop className="w-full h-auto" />
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+                 <a 
+                   href={resultUrl} 
+                   download 
+                   target="_blank" rel="noreferrer"
+                   className="flex-1 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 font-bold rounded-xl transition-all duration-300 text-center shadow-lg"
+                 >
+                   Download Video
+                 </a>
+                 <button 
+                   onClick={() => { setStatus('idle'); setFile(null); setResultUrl(''); setProgress(0); }}
+                   className="flex-1 py-3 bg-zinc-800/80 hover:bg-zinc-700 backdrop-blur-md font-bold rounded-xl border border-zinc-700 transition-all duration-300 text-center"
+                 >
+                   Create Another
+                 </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {/* Right Column: Settings */}
+        <div className="lg:col-span-5 flex flex-col gap-4">
+          <div className="bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 shadow-xl">
+            <h3 className="text-xl font-bold mb-6 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Effect Settings
+            </h3>
+            
+            {/* Common Settings */}
+            <div className="space-y-6">
+              
+              {/* Output Format */}
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-2">Video Format</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['16:9', '9:16', '1:1'].map((fmt) => (
+                    <button
+                      key={fmt}
+                      onClick={() => setFormatPreset(fmt)}
+                      className={`py-2 rounded-lg text-sm font-medium transition-all ${
+                        formatPreset === fmt 
+                          ? 'bg-blue-600/20 text-blue-400 border border-blue-500/50' 
+                          : 'bg-zinc-800/50 text-zinc-400 border border-transparent hover:bg-zinc-800'
+                      }`}
+                    >
+                      {fmt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Ken Burns Specific Settings */}
+              {type === 'ken-burns' && (
+                <>
+                  <div className="space-y-4 pt-4 border-t border-zinc-800/80">
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2">Zoom Direction</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {['in', 'out'].map((dir) => (
+                          <button
+                            key={dir}
+                            onClick={() => setZoomDirection(dir)}
+                            className={`py-2 rounded-lg text-sm font-medium capitalize transition-all ${
+                              zoomDirection === dir 
+                                ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/50' 
+                                : 'bg-zinc-800/50 text-zinc-400 border border-transparent hover:bg-zinc-800'
+                            }`}
+                          >
+                            Zoom {dir}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2">Camera Pan</label>
+                      <select 
+                        value={panStyle}
+                        onChange={(e) => setPanStyle(e.target.value)}
+                        className="w-full bg-zinc-800/50 border border-zinc-700/80 rounded-xl px-4 py-3 text-sm text-zinc-200 outline-none focus:border-blue-500/50 transition-all appearance-none"
+                      >
+                        <option value="center">Center (No Pan)</option>
+                        <option value="left_to_right">Left to Right</option>
+                        <option value="right_to_left">Right to Left</option>
+                        <option value="top_to_bottom">Top to Bottom</option>
+                        <option value="bottom_to_top">Bottom to Top</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-400 mb-2 flex justify-between">
+                        <span>Zoom Speed</span>
+                        <span className="text-blue-400">{zoomRate}</span>
+                      </label>
+                      <input 
+                        type="range" 
+                        min="0.01" max="0.10" step="0.01" 
+                        value={zoomRate}
+                        onChange={(e) => setZoomRate(e.target.value)}
+                        className="w-full accent-blue-500"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Pro Toggle */}
+              <div className="pt-4 border-t border-zinc-800/80">
+                <label className="flex items-center justify-between cursor-pointer group">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-zinc-200 group-hover:text-white transition-colors flex items-center">
+                      1080p HD Output
+                      <span className="ml-2 text-xs py-0.5 px-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-white font-bold">PRO</span>
+                    </span>
+                    {hdOutput && <span className="text-xs text-amber-500/80 mt-1">⚠️ 1080p processing takes longer</span>}
+                  </div>
+                  <div className="relative">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only" 
+                      checked={hdOutput} 
+                      onChange={() => setHdOutput(!hdOutput)} 
+                    />
+                    <div className={`block w-12 h-7 rounded-full transition-colors duration-300 ${hdOutput ? 'bg-blue-600' : 'bg-zinc-700'}`}></div>
+                    <div className={`absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-300 ${hdOutput ? 'translate-x-5' : ''}`}></div>
+                  </div>
+                </label>
+              </div>
+
             </div>
           </div>
-        ) : null}
+        </div>
       </div>
     </div>
   );

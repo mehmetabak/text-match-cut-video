@@ -121,73 +121,102 @@ def process_queue():
         print("Worker lock acquired. Starting queue processor...")
         
         while True:
-            query = db.collection('render_jobs').where('status', '==', 'pending').limit(1)
-            docs = list(query.stream())
-                
-            if not docs:
-                print("Queue is empty. Worker going to sleep.")
-                break
-                
-            job_doc = docs[0]
-            job_id = job_doc.id
-            job_data = job_doc.to_dict()
-            tool_type = job_data.get('tool_type')
-            
-            print(f"[{job_id}] Pulled from queue. Starting processing...")
-            
-            if tool_type not in ALLOWED_TOOL_TYPES:
-                db.collection('render_jobs').document(job_id).update({
-                    'status': 'failed',
-                    'error_message': f'Unsupported tool_type: {tool_type}'
-                })
-                continue
-
-            matches = glob.glob(os.path.join(TEMP_DIR, f"{job_id}_input.*"))
-            
-            if not matches:
-                db.collection('render_jobs').document(job_id).update({
-                    'status': 'failed',
-                    'error_message': 'Uploaded file not found on server.'
-                })
-                continue
-                
-            input_path = matches[0]
-            output_path = os.path.join(TEMP_DIR, f"{job_id}_output.mp4")
-            
             try:
-                db.collection('render_jobs').document(job_id).update({
-                    'status': 'processing',
-                    'started_at': firestore.SERVER_TIMESTAMP
-                })
-            except Exception as e:
-                print(f"[{job_id}] Failed to update status to processing: {e}")
-                continue
+                query = db.collection('render_jobs').where('status', '==', 'pending').limit(1)
+                docs = list(query.stream())
+                    
+                if not docs:
+                    print("Queue is empty. Worker going to sleep.")
+                    break
+                    
+                job_doc = docs[0]
+                job_id = job_doc.id
+                job_data = job_doc.to_dict()
+                tool_type = job_data.get('tool_type')
+                retry_count = job_data.get('retry_count', 0)
                 
-            params = job_data.get('params', {})
-            
-            ok, err = run_isolated_job(job_id, tool_type, input_path, output_path, params)
-            
-            if ok and os.path.exists(output_path):
-                db.collection('render_jobs').document(job_id).update({
-                    'status': 'completed',
-                    'completed_at': firestore.SERVER_TIMESTAMP,
-                    'result_url': f"/download/{job_id}"
-                })
-                print(f"[{job_id}] Processing SUCCESSFUL.")
-            else:
-                db.collection('render_jobs').document(job_id).update({
-                    'status': 'failed',
-                    'error_message': err or "Bilinmeyen Hata",
-                    'completed_at': firestore.SERVER_TIMESTAMP
-                })
-                print(f"[{job_id}] Processing FAILED: {err}")
+                print(f"[{job_id}] Pulled from queue. Starting processing...")
+
+                # job_id sanitization without re (only alphanumeric and hyphens allowed, UUIDs are hex+hyphens)
+                clean_job_id = "".join(c for c in job_id if c.isalnum() or c == '-')
+                if clean_job_id != job_id or len(job_id) > 64:
+                    db.collection('render_jobs').document(job_id).update({
+                        'status': 'failed',
+                        'error_message': 'Invalid job ID format'
+                    })
+                    continue
                 
-            # Input file cleanup (Output file is kept until downloaded or garbage collected)
-            if os.path.exists(input_path):
+                if tool_type not in ALLOWED_TOOL_TYPES:
+                    db.collection('render_jobs').document(job_id).update({
+                        'status': 'failed',
+                        'error_message': f'Unsupported tool_type: {tool_type}'
+                    })
+                    continue
+
+                matches = glob.glob(os.path.join(TEMP_DIR, f"{job_id}_input.*"))
+                
+                if not matches:
+                    if retry_count < 2:
+                        db.collection('render_jobs').document(job_id).update({
+                            'status': 'pending',
+                            'retry_count': retry_count + 1
+                        })
+                        print(f"[{job_id}] File not found, retrying ({retry_count+1}/2)...")
+                    else:
+                        db.collection('render_jobs').document(job_id).update({
+                            'status': 'failed',
+                            'error_message': 'Uploaded file not found on server.'
+                        })
+                    continue
+                    
+                input_path = matches[0]
+                output_path = os.path.join(TEMP_DIR, f"{job_id}_output.mp4")
+                
                 try:
-                    os.remove(input_path)
-                except:
-                    pass
+                    db.collection('render_jobs').document(job_id).update({
+                        'status': 'processing',
+                        'started_at': firestore.SERVER_TIMESTAMP
+                    })
+                except Exception as e:
+                    print(f"[{job_id}] Failed to update status to processing: {e}")
+                    continue
+                    
+                params = job_data.get('params', {})
+                
+                ok, err = run_isolated_job(job_id, tool_type, input_path, output_path, params)
+                
+                if ok and os.path.exists(output_path):
+                    db.collection('render_jobs').document(job_id).update({
+                        'status': 'completed',
+                        'completed_at': firestore.SERVER_TIMESTAMP,
+                        'result_url': f"/download/{job_id}"
+                    })
+                    print(f"[{job_id}] Processing SUCCESSFUL.")
+                    
+                    # Smart Temp Cleaning: Delete input immediately on success
+                    if os.path.exists(input_path):
+                        try:
+                            os.remove(input_path)
+                        except:
+                            pass
+                else:
+                    if retry_count < 2:
+                        db.collection('render_jobs').document(job_id).update({
+                            'status': 'pending',
+                            'retry_count': retry_count + 1
+                        })
+                        print(f"[{job_id}] Processing FAILED: {err}. Retrying ({retry_count+1}/2)...")
+                    else:
+                        db.collection('render_jobs').document(job_id).update({
+                            'status': 'failed',
+                            'error_message': err or "Bilinmeyen Hata",
+                            'completed_at': firestore.SERVER_TIMESTAMP
+                        })
+                        print(f"[{job_id}] Processing FAILED permanently: {err}")
+                    # DO NOT delete input_path on failure for debugging. cleanup_orphans will catch it later.
+            except Exception as loop_err:
+                print(f"Unexpected error in queue loop: {loop_err}")
+                time.sleep(2) # Prevent rapid crash loops
 
     finally:
         worker_lock.release()
