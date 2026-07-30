@@ -162,6 +162,7 @@ export default async function handler(req, res) {
     if (userData.isPro !== isPro) {
       await userRef.update({ 
         isPro: isPro, 
+        subscriptionPlan: isPro ? 'pro' : 'free',
         updatedAt: FieldValue.serverTimestamp() 
       });
     }
