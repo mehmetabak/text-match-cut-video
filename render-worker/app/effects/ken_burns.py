@@ -21,21 +21,20 @@ def apply_ken_burns(input_path: str, output_path: str,
     else: # 16:9 default
         target_w, target_h = (1920, 1080) if hd_output else (1280, 720)
         
+    from .utils import safe_downscale
+    
     # Cap source resolution to avoid massive RAM spikes on 4K/8K input
     max_src_height = 1080 if hd_output else 720
+    
+    # Downscale safely using FFMPEG/Pillow to bypass MoviePy ANTIALIAS bugs
+    input_path = safe_downscale(input_path, is_img, max_src_height)
     
     if is_img:
         dur = duration if duration is not None else 8.0
         clip = ImageClip(input_path).set_duration(dur)
-        if clip.h > max_src_height:
-            clip = clip.resize(height=max_src_height)
     else:
         # Remove target_resolution to prevent accidental FFMPEG upscaling which causes OOM/timeouts
         clip = VideoFileClip(input_path)
-        
-        # Only downscale if the video is excessively large (4K etc)
-        if clip.h > max_src_height:
-            clip = clip.resize(height=max_src_height)
             
         if duration is not None and clip.duration is not None:
             clip = clip.subclip(0, min(duration, clip.duration))

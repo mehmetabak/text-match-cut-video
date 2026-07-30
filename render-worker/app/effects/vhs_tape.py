@@ -41,17 +41,16 @@ def _is_image(path: str) -> bool:
 def apply_vhs_tape(input_path: str, output_path: str,
                     duration: float = None, aberration_strength: float = 1.0, hd_output: bool = False, **kwargs):
     is_img = _is_image(input_path)
+    from .utils import safe_downscale
+    
     target_h = 1080 if hd_output else 720
+    input_path = safe_downscale(input_path, is_img, target_h)
     
     if is_img:
         dur = duration if duration is not None else 8.0
         clip = ImageClip(input_path).set_duration(dur)
-        if clip.h > target_h:
-            clip = clip.resize(height=target_h)
     else:
         clip = VideoFileClip(input_path)
-        if clip.h > target_h:
-            clip = clip.resize(height=target_h)
             
         if duration is not None and clip.duration is not None:
             clip = clip.subclip(0, min(duration, clip.duration))
