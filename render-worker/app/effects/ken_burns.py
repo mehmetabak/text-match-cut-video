@@ -9,7 +9,7 @@ def _is_image(path: str) -> bool:
 def apply_ken_burns(input_path: str, output_path: str,
                      duration: float = None, zoom_rate: float = 0.04,
                      format_preset: str = "16:9", hd_output: bool = False,
-                     zoom_direction: str = "in", pan_style: str = "center"):
+                     zoom_direction: str = "in", pan_style: str = "center", **kwargs):
                      
     is_img = _is_image(input_path)
     
@@ -22,18 +22,21 @@ def apply_ken_burns(input_path: str, output_path: str,
         target_w, target_h = (1920, 1080) if hd_output else (1280, 720)
         
     # Cap source resolution to avoid massive RAM spikes on 4K/8K input
-    max_src_res = 1920 if hd_output else 1280
+    max_src_height = 1080 if hd_output else 720
     
     if is_img:
         dur = duration if duration is not None else 8.0
         clip = ImageClip(input_path).set_duration(dur)
-        if clip.w > max_src_res or clip.h > max_src_res:
-            scale_factor = min(max_src_res / clip.w, max_src_res / clip.h)
-            clip = clip.resize(width=int(clip.w * scale_factor))
+        if clip.h > max_src_height:
+            clip = clip.resize(height=max_src_height)
     else:
-        # For video, FFMPEG Native Downscale saves memory
-        # We read it at a max bounded resolution
-        clip = VideoFileClip(input_path, target_resolution=(max_src_res, None))
+        # Remove target_resolution to prevent accidental FFMPEG upscaling which causes OOM/timeouts
+        clip = VideoFileClip(input_path)
+        
+        # Only downscale if the video is excessively large (4K etc)
+        if clip.h > max_src_height:
+            clip = clip.resize(height=max_src_height)
+            
         if duration is not None and clip.duration is not None:
             clip = clip.subclip(0, min(duration, clip.duration))
         dur = clip.duration

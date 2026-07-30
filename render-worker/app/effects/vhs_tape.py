@@ -39,7 +39,7 @@ def _is_image(path: str) -> bool:
     return os.path.splitext(path)[1].lower() in (".jpg", ".jpeg", ".png", ".webp")
 
 def apply_vhs_tape(input_path: str, output_path: str,
-                    duration: float = None, aberration_strength: float = 1.0, hd_output: bool = False):
+                    duration: float = None, aberration_strength: float = 1.0, hd_output: bool = False, **kwargs):
     is_img = _is_image(input_path)
     target_h = 1080 if hd_output else 720
     
@@ -49,8 +49,10 @@ def apply_vhs_tape(input_path: str, output_path: str,
         if clip.h > target_h:
             clip = clip.resize(height=target_h)
     else:
-        # FFMPEG Native Downscale saves memory and CPU during decode
-        clip = VideoFileClip(input_path, target_resolution=(target_h, None))
+        clip = VideoFileClip(input_path)
+        if clip.h > target_h:
+            clip = clip.resize(height=target_h)
+            
         if duration is not None and clip.duration is not None:
             clip = clip.subclip(0, min(duration, clip.duration))
             
