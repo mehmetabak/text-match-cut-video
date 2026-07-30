@@ -119,6 +119,9 @@ export default function VideoEffectTool() {
         params: params
       });
       
+      // Ping the worker explicitly to ensure it checks the queue
+      fetch(`${apiUrl}/jobs/ping`).catch(e => console.error('Ping failed:', e));
+      
       const unsubscribe = onSnapshot(jobRef, (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();

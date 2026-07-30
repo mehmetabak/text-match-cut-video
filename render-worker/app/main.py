@@ -133,7 +133,6 @@ def process_queue():
                 job_id = job_doc.id
                 job_data = job_doc.to_dict()
                 tool_type = job_data.get('tool_type')
-                retry_count = job_data.get('retry_count', 0)
                 
                 print(f"[{job_id}] Pulled from queue. Starting processing...")
 
@@ -156,17 +155,11 @@ def process_queue():
                 matches = glob.glob(os.path.join(TEMP_DIR, f"{job_id}_input.*"))
                 
                 if not matches:
-                    if retry_count < 2:
-                        db.collection('render_jobs').document(job_id).update({
-                            'status': 'pending',
-                            'retry_count': retry_count + 1
-                        })
-                        print(f"[{job_id}] File not found, retrying ({retry_count+1}/2)...")
-                    else:
-                        db.collection('render_jobs').document(job_id).update({
-                            'status': 'failed',
-                            'error_message': 'Uploaded file not found on server.'
-                        })
+                    db.collection('render_jobs').document(job_id).update({
+                        'status': 'failed',
+                        'error_message': 'Uploaded file not found on server.'
+                    })
+                    print(f"[{job_id}] Processing FAILED permanently: Uploaded file not found on server.")
                     continue
                     
                 input_path = matches[0]
@@ -200,19 +193,12 @@ def process_queue():
                         except:
                             pass
                 else:
-                    if retry_count < 2:
-                        db.collection('render_jobs').document(job_id).update({
-                            'status': 'pending',
-                            'retry_count': retry_count + 1
-                        })
-                        print(f"[{job_id}] Processing FAILED: {err}. Retrying ({retry_count+1}/2)...")
-                    else:
-                        db.collection('render_jobs').document(job_id).update({
-                            'status': 'failed',
-                            'error_message': err or "Bilinmeyen Hata",
-                            'completed_at': firestore.SERVER_TIMESTAMP
-                        })
-                        print(f"[{job_id}] Processing FAILED permanently: {err}")
+                    db.collection('render_jobs').document(job_id).update({
+                        'status': 'failed',
+                        'error_message': err or "Bilinmeyen Hata",
+                        'completed_at': firestore.SERVER_TIMESTAMP
+                    })
+                    print(f"[{job_id}] Processing FAILED permanently: {err}")
                     # DO NOT delete input_path on failure for debugging. cleanup_orphans will catch it later.
             except Exception as loop_err:
                 print(f"Unexpected error in queue loop: {loop_err}")
@@ -228,7 +214,7 @@ def health_check():
     return {"status": "ok", "message": "Render Worker API is running (Firestore Queue Active)"}
 
 @app.post("/upload")
-async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+async def upload_video(file: UploadFile = File(...)):
     """Frontend buraya video yükler, dönen job_id'yi Firestore'a yazar"""
     job_id = uuid.uuid4().hex
     
@@ -250,9 +236,6 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
         os.remove(input_path)
         raise HTTPException(status_code=400, detail=f"File too large. Max {MAX_INPUT_MB}MB.")
         
-    # Arka planda kuyruğu tetikle
-    background_tasks.add_task(process_queue)
-        
     return {"job_id": job_id, "status": "uploaded"}
 
 @app.get("/download/{job_id}")
@@ -263,6 +246,12 @@ def download_video(job_id: str):
         raise HTTPException(status_code=404, detail="File not found or already deleted/downloaded.")
         
     return FileResponse(output_path, media_type="video/mp4", filename=f"{job_id}_processed.mp4")
+
+@app.get("/jobs/ping")
+def ping_queue_public(background_tasks: BackgroundTasks):
+    """Frontend Firestore'a yazdıktan sonra işlemi anında başlatmak için"""
+    background_tasks.add_task(process_queue)
+    return {"status": "accepted", "message": "Queue check triggered."}
 
 @app.post("/jobs/ping")
 def ping_queue(background_tasks: BackgroundTasks, api_key: str = Depends(get_api_key)):
