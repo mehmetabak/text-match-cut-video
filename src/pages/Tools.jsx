@@ -772,7 +772,7 @@ const Tools = () => {
   }, []);
 
   return (
-    <div className="flex-1 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-12 flex flex-col relative z-10 min-h-[calc(100vh-80px)]">
+    <div className="flex-1 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-12 pt-8 sm:pt-12 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-16 flex flex-col relative z-10 min-h-[calc(100vh-80px)]">
 
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800/10 to-transparent rounded-full pointer-events-none z-0"></div>
 
