@@ -65,10 +65,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
             data-modal="true"
           >
             {/* Glow Effect */}
-            <div className="absolute -inset-1 bg-gradient-to-br from-[#F5B301]/20 to-[#FF9D00]/10 rounded-[2rem] blur-xl opacity-50 pointer-events-none"></div>
+            <div className="absolute -inset-1 bg-gradient-to-br from-[#F5B301]/20 to-[#FF9D00]/10 rounded-[2rem] blur-md sm:blur-xl opacity-50 pointer-events-none"></div>
             
             {/* Modal Box */}
-            <div className="bg-zinc-950/80 backdrop-blur-3xl border border-zinc-800/60 rounded-[1.5rem] shadow-2xl overflow-hidden relative">
+            <div className="bg-zinc-950/95 sm:bg-zinc-950/80 sm:backdrop-blur-3xl border border-zinc-800/60 rounded-[1.5rem] shadow-2xl overflow-hidden relative">
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-zinc-800/50">
                 <h2 className="text-xl font-bold text-white tracking-tight">{t('settingsTitle', lang)}</h2>

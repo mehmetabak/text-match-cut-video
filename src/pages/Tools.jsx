@@ -789,17 +789,59 @@ const Tools = () => {
         </h1>
       </motion.div>
 
-      <motion.div
-        ref={gridRef}
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8"
-      >
-        {TOOLS.map((tool) => (
-          <ToolCard key={tool.id} tool={tool} lang={lang} onNavigate={navigate} user={user} />
-        ))}
-      </motion.div>
+      <div ref={gridRef}>
+        {/* Available Tools */}
+        <div className="mb-12">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center gap-3 mb-6"
+          >
+            <div className="w-2 h-8 bg-gradient-to-b from-[#F5B301] to-[#FF9D00] rounded-full shadow-[0_0_10px_rgba(245,179,1,0.5)]"></div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              {lang === 'tr' ? 'Kullanılabilir Araçlar' : 'Available Tools'}
+            </h2>
+          </motion.div>
+          
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8"
+          >
+            {TOOLS.filter(tool => !tool.isSoon).map((tool) => (
+              <ToolCard key={tool.id} tool={tool} lang={lang} onNavigate={navigate} user={user} />
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Coming Soon Tools */}
+        <div className="mt-16 sm:mt-24">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+            className="flex items-center gap-3 mb-6 opacity-70"
+          >
+            <div className="w-2 h-8 bg-zinc-700 rounded-full"></div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-400 tracking-tight">
+              {lang === 'tr' ? 'Yakında Gelecekler' : 'Coming Soon'}
+            </h2>
+          </motion.div>
+          
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 opacity-70 hover:opacity-100 transition-opacity duration-500"
+          >
+            {TOOLS.filter(tool => tool.isSoon).map((tool) => (
+              <ToolCard key={tool.id} tool={tool} lang={lang} onNavigate={navigate} user={user} />
+            ))}
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
 };
