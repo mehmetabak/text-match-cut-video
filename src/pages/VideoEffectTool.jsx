@@ -147,27 +147,33 @@ export default function VideoEffectTool() {
   const effectTitle = type ? type.replace('-', ' ').toUpperCase() : '';
 
   return (
-    <div className="flex-1 w-full max-w-5xl mx-auto px-4 py-8 md:py-12 relative z-10 text-white" style={{ minHeight: '100dvh' }}>
-      <h1 className="text-3xl md:text-4xl font-black mb-2 uppercase tracking-tight">{effectTitle} Effect</h1>
-      <p className="text-zinc-400 mb-8 max-w-2xl">
-        Upload a video or image (max 50MB) to apply the {effectTitle} effect.
-      </p>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div className="w-full flex-grow flex flex-col h-full">
+      <div className="flex-grow flex flex-col p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full relative z-10 text-white h-full min-h-0">
+        <header className="mb-6 flex-shrink-0 flex flex-col items-start">
+          <h1 className="text-3xl md:text-4xl font-black mb-2 uppercase tracking-tight">
+            {effectTitle} <span className="text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]">Effect</span>
+          </h1>
+          <p className="text-zinc-400 max-w-2xl text-sm md:text-base">
+            Upload a video or image (max 50MB) to apply the {effectTitle} effect.
+          </p>
+        </header>
         
-        {/* Left Column: Uploader & Progress */}
-        <div className="lg:col-span-7 bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center min-h-[400px] shadow-2xl relative overflow-hidden">
+        <main className="flex-1 flex flex-col min-h-0">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 flex-1 min-h-0">
+            
+            {/* Left Column: Uploader & Progress */}
+            <div className="lg:col-span-7 bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center h-auto lg:h-full lg:overflow-y-auto overflow-x-hidden custom-scrollbar shadow-2xl relative min-h-[400px]">
           
           {/* Glass Gradient Decor */}
-          <div className="absolute -top-32 -right-32 w-64 h-64 bg-blue-500/20 blur-3xl rounded-full pointer-events-none"></div>
+          <div className="absolute -top-32 -right-32 w-64 h-64 bg-[#F5B301]/20 blur-3xl rounded-full pointer-events-none"></div>
           
           {status === 'idle' || status === 'error' ? (
             <div className="flex flex-col items-center w-full relative z-10">
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-56 border-2 border-dashed border-zinc-700/80 hover:border-blue-500/50 bg-zinc-800/30 hover:bg-zinc-800/60 backdrop-blur-sm transition-all duration-300 flex flex-col items-center justify-center rounded-2xl cursor-pointer mb-6 group"
+                className="w-full h-56 border-2 border-dashed border-zinc-700/80 hover:border-[#F5B301]/50 bg-zinc-800/30 hover:bg-zinc-800/60 backdrop-blur-sm transition-all duration-300 flex flex-col items-center justify-center rounded-2xl cursor-pointer mb-6 group"
               >
-                 <svg className="w-12 h-12 text-zinc-500 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <svg className="w-12 h-12 text-zinc-500 group-hover:text-[#F5B301] group-hover:scale-110 transition-all duration-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                  </svg>
                  <span className="text-zinc-300 font-medium">Click to select a video/image</span>
@@ -192,7 +198,7 @@ export default function VideoEffectTool() {
               {file && (
                  <button 
                    onClick={startProcessing}
-                   className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl shadow-[0_0_30px_rgba(37,99,235,0.25)] hover:shadow-[0_0_40px_rgba(37,99,235,0.4)] font-bold text-lg transition-all duration-300 scale-100 active:scale-95"
+                   className="w-full py-4 bg-gradient-to-r from-[#F5B301] to-[#FF9D00] hover:from-yellow-400 hover:to-yellow-500 rounded-xl shadow-[0_0_30px_rgba(245,179,1,0.25)] hover:shadow-[0_0_40px_rgba(245,179,1,0.4)] font-bold text-black text-lg transition-all duration-300 scale-100 active:scale-95"
                  >
                    Start Processing
                  </button>
@@ -214,7 +220,7 @@ export default function VideoEffectTool() {
               {/* Simulated Progress Bar */}
               <div className="w-full h-4 bg-zinc-800 rounded-full overflow-hidden mb-4 relative shadow-inner">
                 <div 
-                  className="h-full bg-gradient-to-r from-blue-500 via-indigo-400 to-[#F5B301] transition-all duration-500 ease-out relative"
+                  className="h-full bg-gradient-to-r from-[#F5B301] via-yellow-400 to-orange-500 transition-all duration-500 ease-out relative"
                   style={{ width: `${progress}%` }}
                 >
                   <div className="absolute top-0 right-0 bottom-0 left-0 bg-white/20 animate-pulse"></div>
@@ -261,8 +267,7 @@ export default function VideoEffectTool() {
         </div>
 
         {/* Right Column: Settings */}
-        <div className="lg:col-span-5 flex flex-col gap-4">
-          <div className="bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 shadow-xl">
+        <div className="lg:col-span-5 bg-zinc-900/50 backdrop-blur-xl border border-zinc-800 rounded-3xl p-6 md:p-8 flex flex-col h-auto lg:h-full lg:overflow-y-auto overflow-x-hidden custom-scrollbar shadow-2xl min-h-[400px]">
             <h3 className="text-xl font-bold mb-6 flex items-center">
               <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -366,7 +371,7 @@ export default function VideoEffectTool() {
                       checked={hdOutput} 
                       onChange={() => setHdOutput(!hdOutput)} 
                     />
-                    <div className={`block w-12 h-7 rounded-full transition-colors duration-300 ${hdOutput ? 'bg-blue-600' : 'bg-zinc-700'}`}></div>
+                    <div className={`block w-12 h-7 rounded-full transition-colors duration-300 ${hdOutput ? 'bg-[#F5B301]' : 'bg-zinc-700'}`}></div>
                     <div className={`absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-300 ${hdOutput ? 'translate-x-5' : ''}`}></div>
                   </div>
                 </label>
@@ -374,7 +379,8 @@ export default function VideoEffectTool() {
 
             </div>
           </div>
-        </div>
+          </div>
+        </main>
       </div>
     </div>
   );

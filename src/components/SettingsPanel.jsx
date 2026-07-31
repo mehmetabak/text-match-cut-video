@@ -88,7 +88,7 @@ const SettingsPanel = ({ onGenerate }) => {
       </div>
 
       <button onClick={onGenerate} disabled={settings.isGenerating}
-        className="w-full bg-green-600 text-white font-bold py-3 rounded-md hover:bg-green-700 transition-all disabled:bg-gray-500 disabled:cursor-not-allowed mt-4 flex-shrink-0">
+        className="w-full bg-[#F5B301] text-black font-bold py-3 rounded-md hover:bg-yellow-400 transition-all disabled:bg-gray-500 disabled:text-zinc-300 disabled:cursor-not-allowed mt-4 flex-shrink-0">
         {settings.isGenerating ? t('generatingButton', lang) : t('generateButton', lang)}
       </button>
     </div>
