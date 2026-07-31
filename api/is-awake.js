@@ -12,8 +12,8 @@ export default async function handler(req, res) {
       const data = await response.json();
       return res.status(200).json({ 
           status: 'success', 
-          message: 'Render sunucusu başarıyla uyandırıldı (Vercel üzerinden)',
-          render_response: data 
+          message: 'Sistem durumu başarıyla kontrol edildi',
+          system_status: data 
       });
     } else {
       return res.status(response.status).json({ 
