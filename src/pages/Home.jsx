@@ -184,7 +184,7 @@ const Home = () => {
       icon: <Layers className="w-6 h-6 text-accent-gold" />,
       color: 'from-accent-gold to-orange-500',
       border: 'border-border-color hover:border-accent-gold',
-      link: '/tools',
+      link: '/match-cut',
       badge: t('badgeAvailable', lang)
     },
     {
