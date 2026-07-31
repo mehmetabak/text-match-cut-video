@@ -51,7 +51,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/70 backdrop-blur-md"
+            className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md"
             onClick={handleBackdropClick}
           ></motion.div>
           
@@ -112,7 +112,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 <div className="space-y-4">
                   <label className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">{t('settingsTheme', lang)}</label>
                   <div className="grid grid-cols-1">
-                     <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4 flex items-center justify-between opacity-60 cursor-not-allowed">
+                     <div className="bg-zinc-900/50 border border-zinc-800/50 rounded-xl p-4 flex items-center justify-between opacity-60 cursor-not-allowed">
                        <span className="text-zinc-400 text-sm font-medium">{t('settingsThemeInfo', lang)}</span>
                        <div className="w-12 h-6 bg-zinc-800 rounded-full relative border border-zinc-700">
                          <div className="absolute left-1 top-1 w-4 h-4 bg-zinc-600 rounded-full"></div>
@@ -123,7 +123,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
               </div>
 
               {/* Footer */}
-              <div className="p-6 border-t border-zinc-800/50 bg-zinc-900/30 flex justify-end">
+              <div className="p-6 border-t border-zinc-800/50 flex justify-end">
                 <motion.button 
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}

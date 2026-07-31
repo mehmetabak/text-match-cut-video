@@ -149,7 +149,7 @@ const Home = () => {
   const handleStartProject = (e) => {
     if (!user) {
       e.preventDefault();
-      openAuthModal({ type: 'NAVIGATE', payload: '/match-cut' });
+      openAuthModal({ type: 'NAVIGATE', payload: '/tools' });
     }
   };
 
@@ -184,7 +184,7 @@ const Home = () => {
       icon: <Layers className="w-6 h-6 text-accent-gold" />,
       color: 'from-accent-gold to-orange-500',
       border: 'border-border-color hover:border-accent-gold',
-      link: '/match-cut',
+      link: '/tools',
       badge: t('badgeAvailable', lang)
     },
     {
@@ -248,7 +248,7 @@ const Home = () => {
 
         <motion.div initial="hidden" animate="visible" variants={revealVar} className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto">
           <Link
-            to="/match-cut"
+            to="/tools"
             onClick={handleStartProject}
             className="group relative w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-accent-gold to-[#FF9D00] text-bg-base font-bold text-lg rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,179,1,0.4)] flex items-center justify-center gap-3 overflow-hidden"
           >
@@ -370,7 +370,7 @@ const Home = () => {
               ))}
             </ul>
             <Link
-              to="/match-cut"
+              to="/tools"
               onClick={handleStartProject}
               className="w-full py-3 rounded-lg border border-border-color text-center font-bold hover:bg-surface-raised transition-colors"
             >

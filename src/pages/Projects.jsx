@@ -50,7 +50,7 @@ const Projects = () => {
             <Video size={48} className="text-zinc-600 mb-4" />
             <h3 className="text-xl font-bold text-white mb-2">{t('noProjectsTitle', lang) || "Henüz projeniz yok"}</h3>
             <p className="text-text-muted mb-6">{t('noProjectsDesc', lang) || "Yeni bir video oluşturarak hemen başlayın."}</p>
-            <button onClick={() => navigate('/match-cut')} className="px-6 py-3 bg-accent-gold text-black font-bold rounded-full hover:bg-yellow-400 transition-colors cursor-pointer">
+            <button onClick={() => navigate('/tools')} className="px-6 py-3 bg-accent-gold text-black font-bold rounded-full hover:bg-yellow-400 transition-colors cursor-pointer">
               {t('goToTools', lang) || "Araçlara Git"}
             </button>
           </div>

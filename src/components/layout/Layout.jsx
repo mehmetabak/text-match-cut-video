@@ -18,11 +18,11 @@ const Layout = () => {
   const [activeHash, setActiveHash] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const lang = useSettingsStore((state) => state.lang);
   const isHeaderCollapsed = useSettingsStore((state) => state.isHeaderCollapsed);
   const setSetting = useSettingsStore((state) => state.setSetting);
-  
+
   const user = useAuthStore((state) => state.user);
   const loading = useAuthStore((state) => state.loading);
   const logout = useAuthStore((state) => state.logout);
@@ -30,12 +30,12 @@ const Layout = () => {
   const isRewardModalOpen = useAuthStore((state) => state.isRewardModalOpen);
   const setRewardModalOpen = useAuthStore((state) => state.setRewardModalOpen);
   const earnRewardPoints = useAuthStore((state) => state.earnRewardPoints);
-  
+
   const scrollRef = useRef(null);
   const profileDropdownRef = useRef(null);
   const pointsDropdownRef = useRef(null);
 
-  const isToolPage = location.pathname === '/match-cut';
+  const isToolPage = (['/match-cut', '/effects/ken-burns', '/effects/vhs-tape'].includes(location.pathname));
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -53,7 +53,7 @@ const Layout = () => {
   useEffect(() => {
     // Sadece araç içindeyken (match-cut) üst barın gizlenme/daralma (collapse) özelliği aktif olabilir.
     // Ana sayfa, Profil veya Araçlar menüsüne geçildiğinde üst bar KESİNLİKLE görünür (açık) olmalıdır.
-    if (location.pathname === '/match-cut') {
+    if ((['/match-cut', '/effects/ken-burns', '/effects/vhs-tape'].includes(location.pathname))) {
       setSetting('isHeaderCollapsed', true);
     } else {
       setSetting('isHeaderCollapsed', false);
@@ -76,13 +76,13 @@ const Layout = () => {
 
       // Güvenilir genel scroll pozisyonu (window veya document üzerinden)
       let scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-      
+
       // Eğer spesifik bir element scroll ediliyorsa ve sayfanın büyük bir kısmını kaplıyorsa
       if (e.target && e.target.scrollTop !== undefined) {
         if (
-          e.target === document || 
-          e.target === document.documentElement || 
-          e.target === document.body || 
+          e.target === document ||
+          e.target === document.documentElement ||
+          e.target === document.body ||
           e.target === scrollRef.current ||
           (e.target.clientHeight && e.target.clientHeight >= window.innerHeight * 0.7) // Sayfanın %70'inden büyük olan scroll container'ları ana sayfa scroller'ı kabul et
         ) {
@@ -141,7 +141,7 @@ const Layout = () => {
       } else {
         scrolledElement.scrollTo({ top: 0, behavior: 'smooth' });
       }
-      
+
       setTimeout(() => {
         if (scrolledElement === window) {
           window.scrollTo(0, 0);
@@ -170,7 +170,7 @@ const Layout = () => {
   return (
     <div className={`h-[100dvh] w-full bg-zinc-950 text-white font-sans flex flex-col relative overflow-hidden selection:bg-yellow-500/30 ${lang === 'ar' ? 'dir-rtl' : ''}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-zinc-950 to-zinc-950"></div>
-      
+
       <AnimatePresence>
         {isHeaderCollapsed && (
           <motion.button
@@ -193,11 +193,10 @@ const Layout = () => {
         transition={{ duration: 0.4, ease: 'easeInOut' }}
         className="fixed top-0 left-0 right-0 z-40 flex justify-center pt-[env(safe-area-inset-top)] pointer-events-none"
       >
-        <div className={`pointer-events-auto flex items-center justify-between transition-all duration-500 w-full ${
-          isScrolled 
-            ? 'max-w-[92vw] sm:max-w-[850px] mt-3 h-14 px-4 sm:px-6 bg-zinc-950/90 backdrop-blur-md border border-zinc-800/80 shadow-xl rounded-full' 
-            : 'max-w-full sm:max-w-[1600px] mt-0 h-16 sm:h-20 px-4 sm:px-8 lg:px-12 bg-transparent border-transparent rounded-none'
-        }`}>
+        <div className={`pointer-events-auto flex items-center justify-between transition-all duration-500 w-full ${isScrolled
+          ? 'max-w-[92vw] sm:max-w-[850px] mt-3 h-14 px-4 sm:px-6 bg-zinc-950/90 backdrop-blur-md border border-zinc-800/80 shadow-xl rounded-full'
+          : 'max-w-full sm:max-w-[1600px] mt-0 h-16 sm:h-20 px-4 sm:px-8 lg:px-12 bg-transparent border-transparent rounded-none'
+          }`}>
           <div className="flex items-center">
             <Link to="/" onClick={(e) => handleLinkClick(e, '/')} className="flex items-center space-x-2 group">
               <img src="/logo.png" alt="AnimationMaker Logo" className="h-7 sm:h-8 w-auto object-contain group-hover:scale-105 transition-transform" />
@@ -209,28 +208,26 @@ const Layout = () => {
 
           <div className="flex items-center space-x-2 sm:space-x-3">
             {/* Tools Link */}
-            <Link 
-              to="/tools" 
+            <Link
+              to="/tools"
               title={t('toolsMenu', lang)}
-              className={`flex items-center justify-center gap-1.5 w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full font-bold text-sm transition-all ${
-                location.pathname === '/tools' 
-                  ? 'bg-zinc-800 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' 
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
-              }`}
+              className={`flex items-center justify-center gap-1.5 w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full font-bold text-sm transition-all ${location.pathname === '/tools'
+                ? 'bg-zinc-800 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                }`}
             >
               <LayoutGrid size={16} className="shrink-0" />
               <span className="hidden sm:inline-block">{t('toolsMenu', lang) || 'Tools'}</span>
             </Link>
-            
+
             {/* Pricing Link */}
-            <Link 
-              to="/pricing" 
+            <Link
+              to="/pricing"
               title={t('pricingTitle', lang) || 'Pricing'}
-              className={`flex items-center justify-center gap-1.5 w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full font-bold text-sm transition-all ${
-                location.pathname === '/pricing' 
-                  ? 'bg-zinc-800 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]' 
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
-              }`}
+              className={`flex items-center justify-center gap-1.5 w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 rounded-full font-bold text-sm transition-all ${location.pathname === '/pricing'
+                ? 'bg-zinc-800 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                }`}
             >
               <Star size={16} className="shrink-0 text-purple-400" />
               <span className="hidden sm:inline-block text-purple-400">{t('pricingPro', lang) || 'Pro'}</span>
@@ -239,7 +236,7 @@ const Layout = () => {
             {/* Points Indicator Button (always visible) */}
             {!loading && (
               <div className="relative" ref={pointsDropdownRef}>
-                <button 
+                <button
                   onClick={() => user ? setIsPointsDropdownOpen(!isPointsDropdownOpen) : openAuthModal({ type: 'SIGN_IN' })}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F5B301]/10 hover:bg-[#F5B301]/20 border border-[#F5B301]/20 rounded-full text-[#F5B301] font-bold text-sm transition-all shadow-[0_0_10px_rgba(245,179,1,0.1)] group"
                   title={t('earnRewardsTitle', lang)}
@@ -247,7 +244,7 @@ const Layout = () => {
                   <Coins size={14} className="group-hover:rotate-12 transition-transform" />
                   {user ? (user.adRewardPoints || 0) : 0}
                 </button>
-                
+
                 <AnimatePresence>
                   {isPointsDropdownOpen && user && (
                     <motion.div
@@ -266,15 +263,15 @@ const Layout = () => {
                           <span className="font-extrabold text-[#F5B301] text-xl leading-none">{user.adRewardPoints || 0}</span>
                         </div>
                       </div>
-                      
+
                       <div className="px-3 pt-2 mt-2 border-t border-zinc-800/50">
-                        <button 
+                        <button
                           onClick={() => { setIsPointsDropdownOpen(false); navigate('/account'); }}
                           className="w-full relative group overflow-hidden bg-zinc-900 hover:bg-zinc-800 rounded-xl px-4 py-3 flex items-center justify-between transition-all duration-300 border border-zinc-800 hover:border-zinc-700 cursor-pointer"
                         >
                           <div className="absolute inset-0 bg-gradient-to-r from-[#F5B301]/0 via-[#F5B301]/5 to-[#F5B301]/0 group-hover:translate-x-full transition-transform duration-1000 -skew-x-12"></div>
                           <span className="flex items-center gap-2 text-sm font-bold text-zinc-200 group-hover:text-white transition-colors relative z-10">
-                            <Star size={16} className="text-[#F5B301] group-hover:scale-110 transition-transform" /> 
+                            <Star size={16} className="text-[#F5B301] group-hover:scale-110 transition-transform" />
                             {t('earnMorePoints', lang) || 'Puan Kazan'}
                           </span>
                           <div className="bg-[#F5B301]/10 text-[#F5B301] px-2 py-0.5 rounded-full text-xs font-bold relative z-10 group-hover:bg-[#F5B301]/20 transition-colors">
@@ -306,7 +303,7 @@ const Layout = () => {
                     )}
                     <span className="text-sm font-medium hidden md:block max-w-[100px] truncate">{user.displayName || user.email?.split('@')[0]}</span>
                   </button>
-                  
+
                   <AnimatePresence>
                     {isProfileOpen && (
                       <motion.div
@@ -319,7 +316,7 @@ const Layout = () => {
                           <p className="text-sm font-bold text-white truncate">{user.displayName}</p>
                           <p className="text-xs text-text-muted truncate">{user.email}</p>
                         </div>
-                        
+
                         <div className="px-4 py-2 flex items-center gap-2 text-accent-gold border-b border-zinc-800/50 mb-2">
                           <Star size={16} />
                           <span className="text-sm font-bold">{user.adRewardPoints || 0} {t('rewardPoints', lang) || 'Points'}</span>
@@ -343,7 +340,7 @@ const Layout = () => {
               <>
                 {!isToolPage ? (
                   <button
-                    onClick={() => openAuthModal({ type: 'NAVIGATE', payload: '/match-cut' })}
+                    onClick={() => openAuthModal({ type: 'NAVIGATE', payload: '/tools' })}
                     className="px-4 py-1.5 sm:px-5 sm:py-2 bg-[#F5B301] hover:bg-yellow-400 text-black font-bold rounded-full text-xs sm:text-sm shadow-[0_0_15px_rgba(245,179,1,0.2)] hover:shadow-[0_0_25px_rgba(245,179,1,0.6)] transition-all duration-300 transform hover:scale-105 active:scale-95 whitespace-nowrap cursor-pointer"
                   >
                     {t('tryNowButton', lang)}
@@ -386,7 +383,7 @@ const Layout = () => {
         </div>
       </motion.header>
 
-      <motion.div 
+      <motion.div
         ref={scrollRef}
         onScroll={handleScroll}
         initial={false}
@@ -395,7 +392,7 @@ const Layout = () => {
         className="flex-1 flex flex-col relative z-10 overflow-x-hidden overflow-y-auto"
       >
         <div id="top-anchor" className="absolute top-0 left-0 w-full h-px opacity-0 pointer-events-none -mt-[4rem]"></div>
-        
+
         <Outlet />
       </motion.div>
 
@@ -413,9 +410,9 @@ const Layout = () => {
           </motion.button>
         )}
       </AnimatePresence>
-      <RewardAdModal 
-        isOpen={isRewardModalOpen} 
-        onClose={() => setRewardModalOpen(false)} 
+      <RewardAdModal
+        isOpen={isRewardModalOpen}
+        onClose={() => setRewardModalOpen(false)}
         onReward={(points) => earnRewardPoints(points)}
       />
       <AuthModal />
