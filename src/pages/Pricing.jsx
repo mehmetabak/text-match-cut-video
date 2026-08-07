@@ -178,9 +178,15 @@ const Pricing = () => {
               <p className="text-zinc-400 text-sm h-10">{t.pricingProDesc}</p>
             </div>
             
-            <div className="mb-8 flex items-baseline">
-              <span className="text-5xl font-bold">$9</span>
-              <span className="text-zinc-500 ml-2">/{t.pricingMonth}</span>
+            <div className="mb-8 flex flex-col">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl text-zinc-500 line-through font-medium">{t.pricingOldPrice || '$9.99'}</span>
+                <span className="bg-red-500/20 text-red-400 text-xs font-bold px-2 py-0.5 rounded-full">{t.pricingLimitedTime || 'Limited time offer'}</span>
+              </div>
+              <div className="flex items-baseline">
+                <span className="text-5xl font-bold text-purple-400">{t.pricingProPrice || '$3.99'}</span>
+                <span className="text-zinc-500 ml-2">/{t.pricingMonth}</span>
+              </div>
             </div>
 
             <ul className="space-y-4 mb-8 flex-grow">

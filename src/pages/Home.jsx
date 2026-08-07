@@ -388,7 +388,16 @@ const Home = () => {
             </div>
             <h3 className="text-2xl font-display font-bold mb-2 text-accent-gold">{t('pricingPro', lang)}</h3>
             <p className="text-text-muted font-body mb-6 h-12">{t('pricingProDesc', lang)}</p>
-            <div className="text-4xl font-bold mb-8">{t('pricingProPrice', lang)}<span className="text-lg text-text-muted font-normal">{t('pricingMonth', lang)}</span></div>
+            <div className="mb-8 flex flex-col">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl text-text-muted line-through font-medium">{t('pricingOldPrice', lang) || '$9.99'}</span>
+                <span className="bg-red-500/20 text-red-500 text-xs font-bold px-2 py-0.5 rounded-full">{t('pricingLimitedTime', lang) || 'Limited time offer'}</span>
+              </div>
+              <div className="flex items-baseline">
+                <span className="text-5xl font-bold text-accent-gold">{t('pricingProPrice', lang) || '$3.99'}</span>
+                <span className="text-lg text-text-muted ml-2 font-normal">{t('pricingMonth', lang)}</span>
+              </div>
+            </div>
             <ul className="space-y-4 mb-8 flex-grow">
               {['featPro1', 'featPro2', 'featPro3'].map((f, i) => (
                 <li key={i} className="flex items-center gap-3 text-text-primary">

@@ -59,7 +59,12 @@ export default function VideoEffectTool() {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      if (type === 'ken-burns' && !selectedFile.type.startsWith('image/')) {
+        setErrorMsg('Ken Burns efekti için sadece resim dosyası seçebilirsiniz.');
+        return;
+      }
+      setFile(selectedFile);
       setStatus('idle');
       setErrorMsg('');
       setResultUrl('');
@@ -154,7 +159,7 @@ export default function VideoEffectTool() {
             {effectTitle} <span className="text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]">Effect</span>
           </h1>
           <p className="text-zinc-400 max-w-2xl text-sm md:text-base">
-            Upload a video or image (max 50MB) to apply the {effectTitle} effect.
+            Upload {type === 'ken-burns' ? 'an image' : 'a video or image'} (max 50MB) to apply the {effectTitle} effect.
           </p>
         </header>
         
@@ -176,13 +181,13 @@ export default function VideoEffectTool() {
                  <svg className="w-12 h-12 text-zinc-500 group-hover:text-[#F5B301] group-hover:scale-110 transition-all duration-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                  </svg>
-                 <span className="text-zinc-300 font-medium">Click to select a video/image</span>
+                 <span className="text-zinc-300 font-medium">Click to select {type === 'ken-burns' ? 'an image' : 'a video/image'}</span>
                  <span className="text-zinc-500 text-sm mt-2 font-mono">Max 50MB</span>
               </div>
               
               <input 
                 type="file" 
-                accept="video/mp4,video/quicktime,image/jpeg,image/png" 
+                accept={type === 'ken-burns' ? "image/jpeg,image/png,image/webp" : "video/mp4,video/quicktime,image/jpeg,image/png"} 
                 className="hidden" 
                 ref={fileInputRef} 
                 onChange={handleFileChange} 
