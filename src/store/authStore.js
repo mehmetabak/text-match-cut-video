@@ -79,7 +79,9 @@ export const useAuthStore = create((set, get) => ({
 
   loginWithGoogle: async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      // COOP/CSP uyumluluğu ve popup engelleyicileri aşmak için Redirect kullanıyoruz
+      const { signInWithRedirect } = await import('firebase/auth');
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
       console.error("Google Giriş Hatası:", error);
       throw error; 
