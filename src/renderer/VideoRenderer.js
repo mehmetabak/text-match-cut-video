@@ -137,8 +137,9 @@ export class VideoRenderer {
                 for (let f = 0; f < framesPerCut; f++) {
                     const p = f / framesPerCut;
                     this.drawScene({ lineIndex: lineIdx, lineText: line, metrics, progress: p });
-                    const format = this.settings.highQuality ? 'image/png' : 'image/jpeg';
-                    const quality = this.settings.highQuality ? undefined : 0.9;
+                    // PNG sıkıştırması tarayıcıda çok yavaştır, bu yüzden yüksek kalitede bile %100 kalite JPEG kullanmak hızı 2x artırır.
+                    const format = 'image/jpeg';
+                    const quality = this.settings.highQuality ? 1.0 : 0.7;
                     const blob = await new Promise(res => this.canvas.toBlob(res, format, quality));
                     const arrayBuffer = await blob.arrayBuffer();
                     frameList.push(new Uint8Array(arrayBuffer));
