@@ -53,6 +53,32 @@ export default async function handler(req, res) {
     }
 
     const userData = userDoc.data();
+    
+    // Rate Limiting / Debounce: Saniyede birden fazla istek atmayı engelle (Minimum 30 sn)
+    // 1 defalığa mahsus yeniden deneme izni
+    const nowTimestamp = Date.now();
+    const lastSyncAt = userData.lastSyncAt ? userData.lastSyncAt.toMillis() : 0;
+    const syncRetryCount = userData.syncRetryCount || 0;
+    
+    if (nowTimestamp - lastSyncAt < 30000) {
+      if (syncRetryCount < 1) {
+        // 1 defaya mahsus izin ver (retry)
+        await userRef.update({ 
+          lastSyncAt: FieldValue.serverTimestamp(),
+          syncRetryCount: syncRetryCount + 1
+        });
+      } else {
+        // Zaten 1 kez denedi ve hala 30 saniye dolmadı
+        return res.status(200).json({ success: true, isPro: userData.isPro, note: "Rate limited" });
+      }
+    } else {
+      // 30 saniye geçtiyse limiti ve retry hakkını sıfırla
+      await userRef.update({ 
+        lastSyncAt: FieldValue.serverTimestamp(),
+        syncRetryCount: 0
+      });
+    }
+
     let customerId = userData.polarCustomerId;
 
     // 3. Setup Polar SDK

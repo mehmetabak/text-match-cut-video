@@ -71,6 +71,14 @@ export default async function handler(req, res) {
       let adsToday = userData.adRewardsToday || 0;
       let lastDate = userData.lastAdRewardDate || '';
       let currentPoints = userData.adRewardPoints || 0;
+      let lastRewardTimestamp = userData.lastRewardAt ? userData.lastRewardAt.toMillis() : 0;
+      
+      const now = Date.now();
+      
+      // Debounce check: Minimum 10 seconds between requests
+      if (now - lastRewardTimestamp < 10000) {
+        return { success: false, message: "Çok hızlı istek atıyorsunuz. Lütfen biraz bekleyin.", error: true };
+      }
       
       // Reset limit if it's a new day
       if (lastDate !== today) {
@@ -90,6 +98,7 @@ export default async function handler(req, res) {
         adRewardPoints: newPoints,
         adRewardsToday: adsToday,
         lastAdRewardDate: lastDate,
+        lastRewardAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
       
