@@ -60,9 +60,15 @@ export const useAuthStore = create((set, get) => ({
         userData.createdAt = serverTimestamp();
         await setDoc(userRef, userData);
       } else {
-        // Mevcut kullanıcı, login timestamp'i güncelle
-        await setDoc(userRef, { lastLoginAt: serverTimestamp() }, { merge: true });
-        userData = { ...userData, ...userSnap.data() };
+        // Mevcut kullanıcı, login timestamp'i ve profil fotoğrafını/ismini güncelle
+        const updates = { 
+          lastLoginAt: serverTimestamp(),
+          displayName: authUser.displayName || null,
+          photoURL: authUser.photoURL || null
+        };
+        await setDoc(userRef, updates, { merge: true });
+        // Veritabanındaki eski veriyi, güncel Google verisiyle birleştir
+        userData = { ...userData, ...userSnap.data(), ...updates };
       }
 
       set({ user: userData, loading: false });
