@@ -68,18 +68,30 @@ export const useAuthStore = create((set, get) => ({
       set({ user: userData, loading: false });
       get().subscribeToProjects(authUser.uid);
       
-      // JIT Subscription Sync (Arka planda sessizce Polar'ı kontrol et)
+      // JIT Subscription Sync (İlk açılışta kontrol)
       get().syncSubscriptionJIT();
+
+      // Arka planda her 5 dakikada bir aboneliği kontrol et (Interval)
+      if (get().subscriptionInterval) clearInterval(get().subscriptionInterval);
+      const interval = setInterval(() => {
+        if (get().user) {
+          get().syncSubscriptionJIT();
+        }
+      }, 5 * 60 * 1000); // 5 dakika
+      set({ subscriptionInterval: interval });
+
     } catch (error) {
-      console.error("Kullanıcı verisi alınırken/yazılırken hata (Büyük ihtimalle Firestore kurulu değil veya Kuralları kapalı):", error);
-      alert("Giriş başarılı oldu ancak veritabanına ulaşılamadı. Lütfen Firebase Console'dan 'Firestore Database' oluşturduğunuzdan ve Kurallar (Rules) kısmından okuma/yazma izni verdiğinizden emin olun.\n\nHata Detayı: " + error.message);
+      console.error("Kullanıcı verisi alınırken/yazılırken hata:", error);
+      alert("Giriş başarılı oldu ancak veritabanına ulaşılamadı. Lütfen internet bağlantınızı kontrol edin veya sayfayı yenileyin.");
       set({ user: null, loading: false });
     }
   },
 
   loginWithGoogle: async () => {
     try {
+      console.log("Google ile giriş başlatılıyor...");
       await signInWithPopup(auth, googleProvider);
+      console.log("Giriş başarılı!");
     } catch (error) {
       console.error("Google Giriş Hatası:", error);
       throw error; 
@@ -88,12 +100,15 @@ export const useAuthStore = create((set, get) => ({
 
   logout: async () => {
     try {
-      const { projectsUnsubscribe } = get();
+      const { projectsUnsubscribe, subscriptionInterval } = get();
       if (projectsUnsubscribe) {
         projectsUnsubscribe();
       }
+      if (subscriptionInterval) {
+        clearInterval(subscriptionInterval);
+      }
       await signOut(auth);
-      set({ user: null, projects: [], projectsUnsubscribe: null });
+      set({ user: null, projects: [], projectsUnsubscribe: null, subscriptionInterval: null });
     } catch (error) {
       console.error("Çıkış Hatası:", error);
     }
@@ -134,7 +149,7 @@ export const useAuthStore = create((set, get) => ({
       });
       if (response.ok) {
         const data = await response.json();
-        // Sadece durum değişmişse yerel durumu güncelle (Firestore zaten backend'de güncellenir)
+        // Sadece durum değişmişse yerel durumu güncelle
         if (data.isPro !== undefined && data.isPro !== user.isPro) {
           set({ user: { ...user, isPro: data.isPro } });
           console.log("[JIT Sync] Subscription status updated to:", data.isPro);
@@ -148,7 +163,7 @@ export const useAuthStore = create((set, get) => ({
   // Araç içinden Auto-save veya manuel kaydetme için kullanılacak
   saveProject: async (toolId, settings, existingProjectId = null) => {
     const { user } = get();
-    if (!user) return null; // Giriş yapmamışsa kaydetme
+    if (!user) return null;
 
     try {
       const projectsRef = collection(db, 'users', user.uid, 'projects');
@@ -159,12 +174,10 @@ export const useAuthStore = create((set, get) => ({
       };
 
       if (existingProjectId) {
-        // Mevcut projeyi güncelle
         const docRef = doc(db, 'users', user.uid, 'projects', existingProjectId);
         await setDoc(docRef, projectData, { merge: true });
         return existingProjectId;
       } else {
-        // Yeni proje oluştur
         projectData.createdAt = serverTimestamp();
         const newDoc = await addDoc(projectsRef, projectData);
         return newDoc.id;
@@ -183,10 +196,8 @@ export const useAuthStore = create((set, get) => ({
     if (!user) return { success: false, message: "Giriş yapmanız gerekiyor." };
     
     try {
-      // 1. Get Firebase Auth Token securely
       const token = await auth.currentUser.getIdToken(true);
       
-      // 2. Call our secure backend to handle the reward logic
       const response = await fetch('/api/earn-reward', {
         method: 'POST',
         headers: {
@@ -202,7 +213,6 @@ export const useAuthStore = create((set, get) => ({
         return { success: false, message: data.message || "Günlük limitinize ulaştınız veya bir hata oluştu." };
       }
       
-      // 3. Update local state immediately with verified backend data
       set({ 
         user: { 
           ...user, 
@@ -233,7 +243,6 @@ export const useAuthStore = create((set, get) => ({
   }
 }));
 
-// Uygulama başlarken auth state'i dinle
 onAuthStateChanged(auth, (user) => {
   useAuthStore.getState().initUser(user);
 });
