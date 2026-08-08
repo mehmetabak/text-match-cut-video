@@ -230,14 +230,23 @@ const Home = () => {
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebApplication",
-            name: "AnimationMaker",
-            applicationCategory: "MultimediaApplication",
-            operatingSystem: "Web",
-            offers: { "@type": "Offer", price: "0", priceCurrency: "TRY" }
-          })}
+          {JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "AnimationMaker",
+              applicationCategory: "MultimediaApplication",
+              operatingSystem: "Web",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "TRY" }
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "AnimationMaker",
+              url: "https://animationmaker.m0s.space",
+              logo: "https://animationmaker.m0s.space/logo.png"
+            }
+          ])}
         </script>
       </Helmet>
 
