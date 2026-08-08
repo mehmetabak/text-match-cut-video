@@ -8,11 +8,12 @@ export async function loadFfmpeg() {
     if (ffmpeg) return ffmpeg;
 
     ffmpeg = new FFmpeg();
-    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+    const baseURL = 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm';
 
     await ffmpeg.load({
         coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
         wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
     });
 
     return ffmpeg;
@@ -43,7 +44,7 @@ export async function createVideoFromFrames(frames, audioBlob, fps, highQuality 
         '-i', 'audio.wav',
         '-c:v', 'libx264',
         '-preset', preset,
-        '-threads', '2',
+        '-threads', String(navigator.hardwareConcurrency || 2),
         '-c:a', 'aac',
         '-pix_fmt', 'yuv420p',
         '-shortest',

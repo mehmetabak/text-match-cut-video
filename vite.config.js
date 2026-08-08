@@ -27,4 +27,16 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
   },
+  server: {
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Embedder-Policy": "credentialless",
+    },
+    proxy: {
+      '/__/auth': {
+        target: 'https://animation-maker-9e47a.firebaseapp.com',
+        changeOrigin: true,
+      }
+    }
+  }
 })

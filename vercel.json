@@ -1,8 +1,21 @@
 {
   "rewrites": [
     {
-      "source": "/((?!api/).*)",
+      "source": "/__/auth/:match*",
+      "destination": "https://animation-maker-9e47a.firebaseapp.com/__/auth/:match*"
+    },
+    {
+      "source": "/((?!api/|__/auth/).*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "credentialless" }
+      ]
     }
   ]
 }

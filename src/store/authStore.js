@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { 
-  signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signOut, 
   onAuthStateChanged 
 } from 'firebase/auth';
@@ -95,11 +96,10 @@ export const useAuthStore = create((set, get) => ({
 
   loginWithGoogle: async () => {
     try {
-      console.log("Google ile giriş başlatılıyor...");
-      await signInWithPopup(auth, googleProvider);
-      console.log("Giriş başarılı!");
+      console.log("Google ile giriş başlatılıyor (Redirect)...");
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
-      console.error("Google Giriş Hatası:", error);
+      console.error("Google Giriş Yönlendirme Hatası:", error);
       throw error; 
     }
   },
@@ -251,4 +251,9 @@ export const useAuthStore = create((set, get) => ({
 
 onAuthStateChanged(auth, (user) => {
   useAuthStore.getState().initUser(user);
+});
+
+// Redirect sonrası oluşan hataları (örneğin kullanıcı iptali veya 3. parti çerez bloklanması) yakala
+getRedirectResult(auth).catch((error) => {
+  console.error("Yönlendirme (Redirect) sonrası giriş hatası:", error);
 });

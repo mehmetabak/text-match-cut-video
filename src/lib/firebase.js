@@ -7,7 +7,7 @@ import { getFirestore } from "firebase/firestore";
 // Firebase'de "Authentication" bölümünden "Google" sağlayıcısını ve "Firestore Database"i aktifleştirmeyi unutmayın!
 const firebaseConfig = {
   apiKey: "AIzaSyBl3XgIDNcEdMrpoUR8m32BGJcse2MP7pw",
-  authDomain: "animation-maker-9e47a.firebaseapp.com",
+  authDomain: window.location.host, // Reverse proxy için güncellendi
   projectId: "animation-maker-9e47a",
   storageBucket: "animation-maker-9e47a.firebasestorage.app",
   messagingSenderId: "173113075897",
