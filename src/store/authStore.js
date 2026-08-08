@@ -2,8 +2,7 @@ import { create } from 'zustand';
 import { 
   signInWithPopup, 
   signOut, 
-  onAuthStateChanged,
-  getRedirectResult
+  onAuthStateChanged 
 } from 'firebase/auth';
 import { 
   doc, 
@@ -80,9 +79,7 @@ export const useAuthStore = create((set, get) => ({
 
   loginWithGoogle: async () => {
     try {
-      // COOP/CSP uyumluluğu ve popup engelleyicileri aşmak için Redirect kullanıyoruz
-      const { signInWithRedirect } = await import('firebase/auth');
-      await signInWithRedirect(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider);
     } catch (error) {
       console.error("Google Giriş Hatası:", error);
       throw error; 
@@ -237,16 +234,6 @@ export const useAuthStore = create((set, get) => ({
 }));
 
 // Uygulama başlarken auth state'i dinle
-getRedirectResult(auth)
-  .then((result) => {
-    if (result?.user) {
-      console.log("Redirect login successful");
-    }
-  })
-  .catch((error) => {
-    console.error("Redirect login error:", error);
-  });
-
 onAuthStateChanged(auth, (user) => {
   useAuthStore.getState().initUser(user);
 });
