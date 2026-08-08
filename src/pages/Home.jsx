@@ -6,6 +6,7 @@ import { useSettingsStore } from '../store/settingsStore';
 import { useAuthStore } from '../store/authStore';
 import { t } from '../lib/i18n';
 import CookieModal from '../components/modals/CookieModal';
+import { Helmet } from 'react-helmet-async';
 
 // A component that simulates a cinematic "match cut" effect for the hero word
 const HeroCutWord = ({ word }) => {
@@ -219,6 +220,26 @@ const Home = () => {
 
   return (
     <div className={`w-full flex-grow flex flex-col items-center bg-bg-base text-text-primary overflow-x-hidden ${isRtl ? 'dir-rtl text-right' : 'text-left'}`}>
+      <Helmet>
+        <title>{lang === 'tr' ? 'AnimationMaker | Ücretsiz Online Video Efektleri' : 'AnimationMaker | Free Online Video Effects'}</title>
+        <meta name="description" content={lang === 'tr' ? 'Metin ve görsellerinizle saniyeler içinde dinamik animasyonlar ve sinematik efektler oluşturun.' : 'Create dynamic typography animations and cinematic effects in seconds.'} />
+        <link rel="canonical" href="https://animationmaker.m0s.space" />
+        <meta property="og:title" content="AnimationMaker | Free Online Video Effects" />
+        <meta property="og:description" content="Create dynamic typography animations and cinematic effects in seconds." />
+        <meta property="og:url" content="https://animationmaker.m0s.space" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            name: "AnimationMaker",
+            applicationCategory: "MultimediaApplication",
+            operatingSystem: "Web",
+            offers: { "@type": "Offer", price: "0", priceCurrency: "TRY" }
+          })}
+        </script>
+      </Helmet>
 
       {/* Subtle Noise Texture Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.015] mix-blend-overlay z-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>

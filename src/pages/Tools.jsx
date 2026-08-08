@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { t } from '../lib/i18n';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAuthStore } from '../store/authStore';
+import { Helmet } from 'react-helmet-async';
 
 // Component dışına taşındı: artık her render'da yeniden oluşturulmuyor
 const containerVariants = {

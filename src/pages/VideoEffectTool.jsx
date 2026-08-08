@@ -4,6 +4,7 @@ import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { t } from '../lib/i18n';
 import { useSettingsStore } from '../store/settingsStore';
+import { Helmet } from 'react-helmet-async';
 
 export default function VideoEffectTool() {
   const { type } = useParams();
@@ -153,6 +154,36 @@ export default function VideoEffectTool() {
 
   return (
     <div className="w-full flex-grow flex flex-col h-full">
+      <Helmet>
+        <title>{`${effectTitle} Generator - Free Online Tool | AnimationMaker`}</title>
+        <meta name="description" content={`Apply cinematic ${effectTitle} effect to your images or videos online for free. No registration required.`} />
+        <link rel="canonical" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <meta property="og:title" content={`${effectTitle} Generator | AnimationMaker`} />
+        <meta property="og:description" content={`Apply cinematic ${effectTitle} effect to your images or videos online for free.`} />
+        <meta property="og:url" content={`https://animationmaker.m0s.space/effects/${type}`} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            name: `${effectTitle} Generator`,
+            applicationCategory: "MultimediaApplication",
+            operatingSystem: "Web",
+            offers: { "@type": "Offer", price: "0", priceCurrency: "TRY" }
+          })}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Araçlar", item: "https://animationmaker.m0s.space/tools" },
+              { "@type": "ListItem", position: 2, name: effectTitle, item: `https://animationmaker.m0s.space/effects/${type}` }
+            ]
+          })}
+        </script>
+      </Helmet>
       <div className="flex-grow flex flex-col p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full relative z-10 text-white h-full min-h-0">
         <header className="mb-6 flex-shrink-0 flex flex-col items-start">
           <h1 className="text-3xl md:text-4xl font-black mb-2 uppercase tracking-tight">

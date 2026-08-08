@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://animationmaker.m0s.space/sitemap.xml

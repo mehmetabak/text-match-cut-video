@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import MatchCutTool from './pages/MatchCutTool';
@@ -15,7 +15,7 @@ import NoConnection from './components/layout/NoConnection';
 
 function App() {
   return (
-    <BrowserRouter>
+    <>
       <NoConnection />
       <Routes>
         <Route path="/" element={<Layout />}>
@@ -33,7 +33,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
 
