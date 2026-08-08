@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { 
   signInWithPopup, 
   signOut, 
-  onAuthStateChanged 
+  onAuthStateChanged,
+  getRedirectResult
 } from 'firebase/auth';
 import { 
   doc, 
@@ -236,6 +237,16 @@ export const useAuthStore = create((set, get) => ({
 }));
 
 // Uygulama başlarken auth state'i dinle
+getRedirectResult(auth)
+  .then((result) => {
+    if (result?.user) {
+      console.log("Redirect login successful");
+    }
+  })
+  .catch((error) => {
+    console.error("Redirect login error:", error);
+  });
+
 onAuthStateChanged(auth, (user) => {
   useAuthStore.getState().initUser(user);
 });
