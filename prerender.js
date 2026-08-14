@@ -14,7 +14,12 @@ async function build() {
     '/tools',
     '/pricing',
     '/effects/ken-burns',
-    '/effects/vhs-tape'
+    '/effects/vhs-tape',
+    '/effects/glitch-master',
+    '/effects/typewriter',
+    '/effects/scanline',
+    '/effects/ascii',
+    '/effects/echo'
   ]
 
   for (const url of routesToPrerender) {

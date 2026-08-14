@@ -273,12 +273,36 @@ const TOOLS = [
     )
   },
   {
+    id: 'glitch-master',
+    titleKey: 'tool_glitch_title',
+    descKey: 'tool_glitch_desc',
+    path: '/effects/glitch-master',
+    isPro: true,
+    isSoon: false,
+    bgClass: 'from-fuchsia-900 via-purple-950 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex items-center justify-center opacity-50 overflow-hidden">
+        {isHovered ? (
+          <motion.div
+            animate={{ x: [-8, 8, -4, 4, 0], filter: ['hue-rotate(0deg)', 'hue-rotate(90deg)', 'hue-rotate(0deg)'] }}
+            transition={{ duration: 0.3, repeat: Infinity }}
+            className="text-white text-3xl font-black tracking-widest uppercase italic"
+          >
+            GLITCH
+          </motion.div>
+        ) : (
+          <div className="text-white/60 text-3xl font-black tracking-widest uppercase italic">GLITCH</div>
+        )}
+      </div>
+    )
+  },
+  {
     id: 'scanline',
     titleKey: 'tool_scanline_title',
     descKey: 'tool_scanline_desc',
-    path: '#',
+    path: '/effects/scanline',
     isPro: true,
-    isSoon: true,
+    isSoon: false,
     bgClass: 'from-emerald-900 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 overflow-hidden opacity-40">
@@ -297,9 +321,9 @@ const TOOLS = [
     id: 'typewriter',
     titleKey: 'tool_typewriter_title',
     descKey: 'tool_typewriter_desc',
-    path: '#',
+    path: '/effects/typewriter',
     isPro: true,
-    isSoon: true,
+    isSoon: false,
     bgClass: 'from-zinc-700 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 flex items-center justify-center opacity-40">
@@ -406,9 +430,9 @@ const TOOLS = [
     id: 'echo',
     titleKey: 'tool_echo_title',
     descKey: 'tool_echo_desc',
-    path: '#',
+    path: '/effects/echo',
     isPro: true,
-    isSoon: true,
+    isSoon: false,
     bgClass: 'from-indigo-900 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 flex items-center justify-center opacity-40">
@@ -458,9 +482,9 @@ const TOOLS = [
     id: 'ascii',
     titleKey: 'tool_ascii_title',
     descKey: 'tool_ascii_desc',
-    path: '#',
+    path: '/effects/ascii',
     isPro: true,
-    isSoon: true,
+    isSoon: false,
     bgClass: 'from-green-900 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 flex items-center justify-center opacity-40 font-mono text-green-400 text-[10px] overflow-hidden leading-none break-all p-4">

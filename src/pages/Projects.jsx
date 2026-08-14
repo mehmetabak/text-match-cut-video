@@ -69,7 +69,11 @@ const Projects = () => {
                     projectName: proj.settings?.projectName || '',
                     ...proj.settings
                   }));
-                  navigate('/match-cut?draft=' + proj.id);
+                  if (proj.toolId && proj.toolId !== 'match-cut' && proj.toolId !== 'text-match-cut') {
+                    navigate(`/effects/${proj.toolId}?draft=${proj.id}`);
+                  } else {
+                    navigate('/match-cut?draft=' + proj.id);
+                  }
                 }}
                 className="group bg-surface border border-border-color hover:border-accent-gold/50 rounded-2xl p-6 cursor-pointer transition-all hover:shadow-[0_0_20px_rgba(245,179,1,0.1)] flex flex-col"
               >
@@ -108,9 +112,11 @@ const Projects = () => {
                 </div>
                 
                 <div className="mt-auto pt-4 border-t border-border-color flex justify-between items-center text-sm">
-                  <span className="text-zinc-400 font-mono text-xs">{proj.toolId === 'match-cut' ? 'Match Cut' : proj.toolId}</span>
+                  <span className="text-zinc-400 font-mono text-xs px-2 py-0.5 bg-zinc-800 rounded border border-zinc-700 uppercase">
+                    {proj.toolId === 'match-cut' || !proj.toolId ? 'Match Cut' : proj.toolId.replace('-', ' ')}
+                  </span>
                   <div className="flex items-center gap-1 text-accent-gold font-bold opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0">
-                    Devam Et <ArrowRight size={16} />
+                    {lang === 'tr' ? 'Düzenle' : 'Open'} <ArrowRight size={16} />
                   </div>
                 </div>
               </motion.div>

@@ -21,7 +21,10 @@ export async function loadFfmpeg() {
 export async function createVideoFromFrames(frames, audioBlob, fps, highQuality = false, onProgress) {
     const ffmpeg = await loadFfmpeg();
 
-    await ffmpeg.writeFile('audio.wav', new Uint8Array(await audioBlob.arrayBuffer()));
+    const hasAudio = !!audioBlob;
+    if (hasAudio) {
+        await ffmpeg.writeFile('audio.wav', new Uint8Array(await audioBlob.arrayBuffer()));
+    }
 
     const ext = highQuality ? 'png' : 'jpg';
 
@@ -39,25 +42,40 @@ export async function createVideoFromFrames(frames, audioBlob, fps, highQuality 
     const preset = highQuality ? 'fast' : 'ultrafast';
     const crf = highQuality ? '23' : '28';
 
-    await ffmpeg.exec([
+    const args = [
         '-framerate', `${fps}`,
-        '-i', `frame%04d.${ext}`,
-        '-i', 'audio.wav',
+        '-i', `frame%04d.${ext}`
+    ];
+
+    if (hasAudio) {
+        args.push('-i', 'audio.wav');
+    }
+
+    args.push(
         '-c:v', 'libx264',
         '-preset', preset,
         '-tune', 'zerolatency',
-        '-crf', crf,
-        '-c:a', 'aac',
+        '-crf', crf
+    );
+
+    if (hasAudio) {
+        args.push('-c:a', 'aac', '-shortest');
+    }
+
+    args.push(
         '-pix_fmt', 'yuv420p',
-        '-shortest',
-        'output.mp4',
-    ]);
+        'output.mp4'
+    );
+
+    await ffmpeg.exec(args);
 
     const data = await ffmpeg.readFile('output.mp4');
 
-    // Bellek (RAM) Temizliği - Tarayıcı çökmesini engeller ve peş peşe işlemleri hızlandırır
+    // Bellek (RAM) Temizliği
     ffmpeg.off('progress', onFfmpegProgress);
-    await ffmpeg.deleteFile('audio.wav');
+    if (hasAudio) {
+        await ffmpeg.deleteFile('audio.wav');
+    }
     await ffmpeg.deleteFile('output.mp4');
     for (let i = 0; i < frames.length; i++) {
         const name = `frame${String(i).padStart(4, '0')}.${ext}`;
