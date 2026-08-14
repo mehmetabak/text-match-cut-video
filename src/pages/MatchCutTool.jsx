@@ -2,7 +2,7 @@ import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAuthStore } from '../store/authStore';
-import { generateRandomText } from '../lib/textUtils';
+import { generateMatchCutData } from '../lib/textUtils';
 import { VideoRenderer } from '../renderer/VideoRenderer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Edit2, Check } from 'lucide-react';
@@ -30,6 +30,8 @@ function MatchCutTool() {
   const blurIntensity = useSettingsStore(state => state.blurIntensity);
   const darkTheme = useSettingsStore(state => state.darkTheme);
   const highQuality = useSettingsStore(state => state.highQuality);
+  const renderMode = useSettingsStore(state => state.renderMode);
+  const vignetteEffect = useSettingsStore(state => state.vignetteEffect);
   
   const user = useAuthStore(state => state.user);
   const saveProject = useAuthStore(state => state.saveProject);
@@ -64,6 +66,8 @@ function MatchCutTool() {
       setSetting('blurIntensity', 'Medium');
       setSetting('fontFamily', "'Times New Roman', Times, serif");
       setSetting('highQuality', false);
+      setSetting('renderMode', 'classic');
+      setSetting('vignetteEffect', true);
       return;
     }
 
@@ -112,7 +116,9 @@ function MatchCutTool() {
       setSaveStatus('Saving...');
       const projectSettings = { 
         phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps,
-        format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality
+        format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality,
+        renderMode: renderMode || 'newspaper',
+        vignetteEffect: vignetteEffect ?? true
       };
       
       // Varsayılan ayarlardan sapma olup olmadığını kontrol et
@@ -123,6 +129,7 @@ function MatchCutTool() {
         videoLength === 'Medium' && 
         darkTheme === true && 
         textHighlight === true && 
+        (renderMode === 'newspaper' || !renderMode) &&
         blurIntensity === 'Medium';
 
       // Boş proje kaydetmeyi engelle (İsim yok, proje ID yok ve her şey varsayılan)
@@ -162,7 +169,7 @@ function MatchCutTool() {
     }, 1500); // 1.5 saniye bekle (Debounce)
 
     return () => clearTimeout(timeoutId);
-  }, [phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps, format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, user, projectId, projectName, saveProject]);
+  }, [phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps, format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, renderMode, vignetteEffect, user, projectId, projectName, saveProject]);
 
   const handleGenerate = useCallback(async () => {
     if (!phrase.trim()) {
@@ -172,8 +179,10 @@ function MatchCutTool() {
 
     setGenerationState({ isGenerating: true, videoUrl: null, progress: 0 });
 
-    const textData = generateRandomText(phrase);
-    const renderer = new VideoRenderer(canvasRef.current, useSettingsStore.getState(), textData, (p) => setSetting('progress', p));
+    const currentSettings = useSettingsStore.getState();
+    const mode = currentSettings.renderMode || 'newspaper';
+    const textData = generateMatchCutData(phrase, mode);
+    const renderer = new VideoRenderer(canvasRef.current, currentSettings, textData, (p) => setSetting('progress', p));
     
     try {
         const url = await renderer.generateVideo();

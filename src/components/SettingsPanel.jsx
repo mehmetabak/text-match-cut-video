@@ -68,8 +68,18 @@ const SettingsPanel = ({ onGenerate }) => {
           <input type="range" name="speed" min="0.5" max="2.5" step="0.25" value={settings.speed} onChange={handleInputChange}
             className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
         </div>
+        <SegmentedControl
+          label={t('renderModeLabel', lang)}
+          options={[
+            { value: 'newspaper', label: t('modeNewspaper', lang) },
+            { value: 'classic', label: t('modeClassic', lang) },
+          ]}
+          value={settings.renderMode || 'newspaper'}
+          onChange={(v) => setSetting('renderMode', v)}
+        />
         <Switch label={t('darkThemeLabel', lang)} checked={settings.darkTheme} onChange={(e) => setSetting('darkTheme', e.target.checked)} />
         <Switch label={t('highlightLabel', lang)} checked={settings.textHighlight} onChange={(e) => setSetting('textHighlight', e.target.checked)} />
+        <Switch label={t('vignetteEffectLabel', lang)} checked={settings.vignetteEffect ?? true} onChange={(e) => setSetting('vignetteEffect', e.target.checked)} />
         <Switch label={t('highQualityLabel', lang)} checked={settings.highQuality} onChange={(e) => setSetting('highQuality', e.target.checked)} />
       </div>
 
