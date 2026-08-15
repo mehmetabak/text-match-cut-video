@@ -849,6 +849,25 @@ export default function VideoEffectTool() {
                           {s >= 60 ? `${s / 60}m` : `${s}s`}
                         </button>
                       ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (fileDuration && !isNaN(fileDuration)) {
+                            const fullSec = Math.min(300, Math.max(3, Math.round(fileDuration)));
+                            setDuration(fullSec);
+                          } else {
+                            setDuration(300);
+                          }
+                        }}
+                        className={`px-2.5 py-0.5 rounded text-xs font-mono font-bold transition-colors ${
+                          duration === (fileDuration ? Math.min(300, Math.max(3, Math.round(fileDuration))) : 300)
+                            ? 'bg-accent text-white'
+                            : 'bg-zinc-800 text-yellow-400 hover:bg-zinc-700'
+                        }`}
+                        title={fileDuration ? (lang === 'tr' ? `Tam Video Süresi (${Math.round(fileDuration)}s)` : `Full Video Duration (${Math.round(fileDuration)}s)`) : 'Max 5m (300s)'}
+                      >
+                        MAX
+                      </button>
                     </div>
                   </div>
 
