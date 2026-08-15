@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/authStore';
 import { strings } from '../lib/i18n';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
+import { Helmet } from 'react-helmet-async';
 
 const Pricing = () => {
   const { lang } = useSettingsStore();
@@ -97,6 +98,45 @@ const Pricing = () => {
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-black text-white py-20 px-4">
+      <Helmet>
+        <title>{lang === 'tr' ? 'Fiyatlandırma & Pro Planları | AnimationMaker' : 'Pricing & Pro Subscription Plans | AnimationMaker'}</title>
+        <meta name="description" content={lang === 'tr' ? 'AnimationMaker Pro planları ile 1080p Full HD dışa aktarım, öncelikli render sunucuları ve tüm video efekt araçlarına sınırsız erişim elde edin.' : 'Upgrade to AnimationMaker Pro for Full HD 1080p exports, priority fast rendering servers, and unlimited access to all video creation tools.'} />
+        <meta name="keywords" content="video maker pricing, pro video creator subscription, affordable video tools, animationmaker pro" />
+        <link rel="canonical" href="https://animationmaker.m0s.space/pricing" />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta property="og:title" content="Pricing & Pro Subscription | AnimationMaker" />
+        <meta property="og:description" content="Simple, transparent pricing for creators and agencies." />
+        <meta property="og:url" content="https://animationmaker.m0s.space/pricing" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AnimationMaker" />
+        <meta property="og:image" content="https://animationmaker.m0s.space/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Pricing & Pro Subscription | AnimationMaker" />
+        <meta name="twitter:description" content="Simple, transparent pricing for creators and agencies." />
+        <meta name="twitter:image" content="https://animationmaker.m0s.space/logo.png" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": "AnimationMaker Pro",
+            "image": "https://animationmaker.m0s.space/logo.png",
+            "description": "Professional video effects and kinetic typography subscription plan with full HD export and unlimited pro tools.",
+            "brand": {
+              "@type": "Brand",
+              "name": "AnimationMaker"
+            },
+            "offers": {
+              "@type": "Offer",
+              "url": "https://animationmaker.m0s.space/pricing",
+              "priceCurrency": "USD",
+              "price": "3.99",
+              "priceValidUntil": "2027-12-31",
+              "availability": "https://schema.org/InStock"
+            }
+          })}
+        </script>
+      </Helmet>
       <div className="max-w-6xl mx-auto">
         <motion.div 
           className="text-center mb-16"

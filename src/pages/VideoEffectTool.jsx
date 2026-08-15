@@ -739,8 +739,43 @@ export default function VideoEffectTool() {
   return (
     <div className="w-full flex-grow flex flex-col h-full">
       <Helmet>
-        <title>{`${toolInfo.title1} ${toolInfo.title2} | AnimationMaker`}</title>
-        <meta name="description" content={toolInfo.desc} />
+        <title>{`${toolInfo.title1} ${toolInfo.title2} — Free Online Video Effect Maker | AnimationMaker`}</title>
+        <meta name="description" content={`${toolInfo.desc} Create professional ${toolInfo.title1} ${toolInfo.title2} video animations online in seconds directly in your browser.`} />
+        <meta name="keywords" content={`${toolInfo.title1} ${toolInfo.title2}, ${type} video effect, online video animator, free video effect maker, kinetic video effects, animationmaker`} />
+        <link rel="canonical" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta property="og:title" content={`${toolInfo.title1} ${toolInfo.title2} | AnimationMaker`} />
+        <meta property="og:description" content={toolInfo.desc} />
+        <meta property="og:url" content={`https://animationmaker.m0s.space/effects/${type}`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AnimationMaker" />
+        <meta property="og:image" content="https://animationmaker.m0s.space/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${toolInfo.title1} ${toolInfo.title2} | AnimationMaker`} />
+        <meta name="twitter:description" content={toolInfo.desc} />
+        <meta name="twitter:image" content="https://animationmaker.m0s.space/logo.png" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": `${toolInfo.title1} ${toolInfo.title2}`,
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "Web",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "description": toolInfo.desc,
+            "url": `https://animationmaker.m0s.space/effects/${type}`,
+            "publisher": {
+              "@type": "Organization",
+              "name": "AnimationMaker",
+              "url": "https://animationmaker.m0s.space"
+            }
+          })}
+        </script>
       </Helmet>
 
       <motion.div

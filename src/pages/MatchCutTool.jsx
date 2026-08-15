@@ -10,6 +10,7 @@ import SettingsPanel from '../components/SettingsPanel';
 import Preview from '../components/Preview';
 import AdPlaceholder from '../components/monetization/AdPlaceholder';
 import { t } from '../lib/i18n';
+import { Helmet } from 'react-helmet-async';
 
 function MatchCutTool() {
   const setSetting = useSettingsStore(state => state.setSetting);
@@ -196,6 +197,45 @@ function MatchCutTool() {
 
   return (
     <div className="w-full flex-grow flex flex-col h-full">
+      <Helmet>
+        <title>{lang === 'tr' ? 'Match Cut Video Oluşturucu — Çevrimiçi Tipografi Video Animasyonu | AnimationMaker' : 'Match Cut Video Maker — Online Typography Video Animation | AnimationMaker'}</title>
+        <meta name="description" content={lang === 'tr' ? 'Kelimelerinizle mükemmel senkronize olan dinamik Match Cut tipografi animasyonları ve video kesitleri oluşturun.' : 'Create dynamic match cut kinetic typography video animations synchronized with your chosen keywords in seconds.'} />
+        <meta name="keywords" content="match cut video maker, kinetic typography, sync text video generator, dynamic text video, online video editor, animationmaker" />
+        <link rel="canonical" href="https://animationmaker.m0s.space/match-cut" />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta property="og:title" content="Match Cut Video Maker | AnimationMaker" />
+        <meta property="og:description" content="Create dynamic match cut kinetic typography animations in seconds." />
+        <meta property="og:url" content="https://animationmaker.m0s.space/match-cut" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AnimationMaker" />
+        <meta property="og:image" content="https://animationmaker.m0s.space/logo.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Match Cut Video Maker | AnimationMaker" />
+        <meta name="twitter:description" content="Create dynamic match cut typography video animations in seconds." />
+        <meta name="twitter:image" content="https://animationmaker.m0s.space/logo.png" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Match Cut Video Maker",
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "Web",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "description": "Create dynamic match cut kinetic typography video animations synchronized with your chosen keywords.",
+            "url": "https://animationmaker.m0s.space/match-cut",
+            "publisher": {
+              "@type": "Organization",
+              "name": "AnimationMaker",
+              "url": "https://animationmaker.m0s.space"
+            }
+          })}
+        </script>
+      </Helmet>
       <canvas ref={canvasRef} className="hidden"></canvas>
       
       <motion.div 

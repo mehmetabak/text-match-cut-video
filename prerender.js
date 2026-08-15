@@ -13,13 +13,18 @@ async function build() {
     '/',
     '/tools',
     '/pricing',
+    '/match-cut',
     '/effects/ken-burns',
     '/effects/vhs-tape',
     '/effects/glitch-master',
     '/effects/typewriter',
     '/effects/scanline',
     '/effects/ascii',
-    '/effects/echo'
+    '/effects/echo',
+    '/terms',
+    '/privacy',
+    '/cookies',
+    '/refund'
   ]
 
   for (const url of routesToPrerender) {

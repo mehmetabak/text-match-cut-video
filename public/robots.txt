@@ -1,3 +1,18 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /account
+Disallow: /projects
+
+User-agent: Googlebot
+Allow: /
+Allow: /tools
+Allow: /match-cut
+Allow: /effects/
+Allow: /pricing
+
+User-agent: Googlebot-Image
+Allow: /
+Allow: /logo.png
+
 Sitemap: https://animationmaker.m0s.space/sitemap.xml

@@ -221,30 +221,70 @@ const Home = () => {
   return (
     <div className={`w-full flex-grow flex flex-col items-center bg-bg-base text-text-primary overflow-x-hidden ${isRtl ? 'dir-rtl text-right' : 'text-left'}`}>
       <Helmet>
-        <title>{lang === 'tr' ? 'AnimationMaker | Ücretsiz Online Video Efektleri' : 'AnimationMaker | Free Online Video Effects'}</title>
-        <meta name="description" content={lang === 'tr' ? 'Metin ve görsellerinizle saniyeler içinde dinamik animasyonlar ve sinematik efektler oluşturun.' : 'Create dynamic typography animations and cinematic effects in seconds.'} />
+        <title>{lang === 'tr' ? 'AnimationMaker — Ücretsiz Çevrimiçi Video Efektleri & Tipografi Animasyonu' : 'AnimationMaker — Free Online Video Effects & Kinetic Typography Maker'}</title>
+        <meta name="description" content={lang === 'tr' ? 'Metin ve görsellerinizle saniyeler içinde dinamik animasyonlar, Match Cut, Ken Burns ve retro VHS video efektleri oluşturun. Tarayıcı tabanlı ve ücretsiz.' : 'Create dynamic kinetic typography animations, match cuts, Ken Burns zooms, and vintage VHS video effects in seconds directly in your browser. 100% free and client-side.'} />
+        <meta name="keywords" content="video effect maker, online video editor, kinetic typography, match cut online, ken burns effect, vhs video generator, glitch effect video, typewriter animation, crt scanline, ascii video generator, animationmaker" />
         <link rel="canonical" href="https://animationmaker.m0s.space" />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta property="og:title" content="AnimationMaker | Free Online Video Effects" />
         <meta property="og:description" content="Create dynamic typography animations and cinematic effects in seconds." />
         <meta property="og:url" content="https://animationmaker.m0s.space" />
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AnimationMaker" />
+        <meta property="og:image" content="https://animationmaker.m0s.space/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="AnimationMaker | Free Online Video Effects" />
+        <meta name="twitter:description" content="Create dynamic typography animations and cinematic effects in seconds." />
+        <meta name="twitter:image" content="https://animationmaker.m0s.space/logo.png" />
         <script type="application/ld+json">
           {JSON.stringify([
             {
               "@context": "https://schema.org",
               "@type": "WebApplication",
-              name: "AnimationMaker",
-              applicationCategory: "MultimediaApplication",
-              operatingSystem: "Web",
-              offers: { "@type": "Offer", price: "0", priceCurrency: "TRY" }
+              "name": "AnimationMaker",
+              "url": "https://animationmaker.m0s.space",
+              "applicationCategory": "MultimediaApplication",
+              "operatingSystem": "Web",
+              "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+              "description": "Free browser-based online video effect maker and kinetic typography tool suite."
             },
             {
               "@context": "https://schema.org",
               "@type": "Organization",
-              name: "AnimationMaker",
-              url: "https://animationmaker.m0s.space",
-              logo: "https://animationmaker.m0s.space/logo.png"
+              "name": "AnimationMaker",
+              "url": "https://animationmaker.m0s.space",
+              "logo": "https://animationmaker.m0s.space/logo.png"
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "What is Match Cut video editing?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "A match cut is a creative editing technique where a phrase or word is revealed by quickly cutting between synchronized background scenes and textures."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "How fast is video rendering in AnimationMaker?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Videos are rendered directly inside your browser via client-side WebAssembly and Web Audio DSP in 15 to 30 seconds."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Can I use generated videos commercially?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, all videos created using AnimationMaker can be exported without watermarks and used for personal or commercial projects royalty-free."
+                  }
+                }
+              ]
             }
           ])}
         </script>
