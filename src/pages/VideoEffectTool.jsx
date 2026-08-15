@@ -643,19 +643,22 @@ export default function VideoEffectTool() {
     }
   };
 
-  // Cloud Processing Fallback (Firebase render_jobs Queue)
+  // Cloud Processing (Firebase render_jobs Queue -> Render Worker API)
   const startCloudProcessing = async () => {
     if (!file && type !== 'typewriter') {
       setErrorMsg(lang === 'tr' ? 'Lütfen bir resim veya video dosyası seçin.' : 'Please select an image or video file.');
       return;
     }
     if (!auth.currentUser) {
-      setErrorMsg(lang === 'tr' ? 'Lütfen giriş yapın.' : 'Please log in.');
+      setErrorMsg(lang === 'tr' ? 'Bulut render için lütfen giriş yapın.' : 'Please log in to use cloud render.');
       return;
     }
 
     try {
       setStatus('uploading');
+      setProgress(5);
+      setErrorMsg('');
+
       const formData = new FormData();
       if (file) formData.append('file', file);
 
@@ -673,6 +676,7 @@ export default function VideoEffectTool() {
       const jobId = uploadData.job_id;
 
       setStatus('processing');
+      setProgress(15);
       const jobRef = doc(db, 'render_jobs', jobId);
       const params = {
         format_preset: formatPreset,
@@ -686,32 +690,42 @@ export default function VideoEffectTool() {
         aberration_strength: aberrationStrength
       };
 
+      // Security Rules Match: uid == request.auth.uid and status == 'pending'
       await setDoc(jobRef, {
-        user_id: auth.currentUser.uid,
-        status: 'queued',
+        uid: auth.currentUser.uid,
+        status: 'pending',
         tool_type: type,
         params: params,
-        created_at: serverTimestamp(),
-        progress: 0
+        created_at: serverTimestamp()
       });
+
+      // Ping worker to immediately process queue without waiting
+      fetch(`${apiUrl}/jobs/ping`).catch(() => {});
 
       const unsubscribe = onSnapshot(jobRef, (docSnap) => {
         if (!docSnap.exists()) return;
         const data = docSnap.data();
 
-        if (data.progress !== undefined) {
-          setProgress(data.progress);
+        if (data.status === 'processing') {
+          setProgress((prev) => Math.max(prev, 40));
         }
 
         if (data.status === 'completed') {
-          setResultUrl(data.result_url);
+          const finalUrl = data.result_url?.startsWith('http')
+            ? data.result_url
+            : `${apiUrl}${data.result_url}`;
+          setResultUrl(finalUrl);
           setStatus('completed');
           unsubscribe();
         } else if (data.status === 'failed') {
-          setErrorMsg(data.error || 'Server render failed.');
+          setErrorMsg(data.error_message || data.error || 'Server render failed.');
           setStatus('error');
           unsubscribe();
         }
+      }, (err) => {
+        console.error("Snapshot error:", err);
+        setErrorMsg(err.message || 'Error tracking render job.');
+        setStatus('error');
       });
     } catch (err) {
       console.error("Cloud processing error:", err);
@@ -1175,9 +1189,10 @@ export default function VideoEffectTool() {
 
                 {/* Generate Action Button matching MatchCutTool */}
                 <button
+                  type="button"
                   onClick={!isServerTool ? startDeviceRender : startCloudProcessing}
                   disabled={status === 'processing' || status === 'uploading'}
-                  className="w-full mt-4 bg-accent-gold text-black font-bold p-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-lg shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full bg-[#F5B301] text-black font-extrabold py-3.5 px-4 rounded-lg hover:bg-yellow-400 hover:text-black transition-all shadow-lg shadow-yellow-500/20 disabled:bg-zinc-700 disabled:text-zinc-400 disabled:cursor-not-allowed mt-4 flex-shrink-0 flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base"
                 >
                   {status === 'processing' || status === 'uploading' ? (
                     <>
@@ -1186,7 +1201,7 @@ export default function VideoEffectTool() {
                     </>
                   ) : (
                     <>
-                      <Play size={18} fill="black" />
+                      <Play size={18} fill="currentColor" />
                       <span>{t('generateButton', lang) || 'Videoyu Oluştur'}</span>
                     </>
                   )}
