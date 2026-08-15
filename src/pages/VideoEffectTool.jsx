@@ -345,34 +345,42 @@ export default function VideoEffectTool() {
     }
   }, [location.search, projects, projectId]);
 
-  // 2. Debounced Auto-Save to Firestore (ONLY when actual settings changed)
+  // 2. Debounced Auto-Save to Firestore (1:1 with MatchCutTool)
   useEffect(() => {
-    if (!user || !hasInitialized.current) return;
-
-    const currentSnapshot = JSON.stringify(getCurrentSettings());
-
-    // Do NOT fire auto-save if settings have not changed from last save/load!
-    if (lastSavedSnapshotRef.current === currentSnapshot) {
-      return;
-    }
-
-    // Do NOT save if empty default project without custom name and no project ID
-    const isUntouchedDefault = !projectName.trim() && !projectId && duration === 5 && formatPreset === '16:9' && !hdOutput;
-    if (isUntouchedDefault) {
-      return;
-    }
+    if (!user) return; // Giriş yapmamışsa kaydetme
 
     const timeoutId = setTimeout(async () => {
-      setSaveStatus(lang === 'tr' ? 'Kaydediliyor...' : 'Saving...');
+      setSaveStatus('Saving...');
       const projectSettings = getCurrentSettings();
 
-      // Clean undefined keys for Firestore
+      // Varsayılan ayarlardan sapma olup olmadığını kontrol et
+      const isDefault = 
+        !projectName.trim() && 
+        !projectId && 
+        duration === 5 && 
+        formatPreset === '16:9' && 
+        !hdOutput &&
+        !fastRender;
+
+      // Boş proje kaydetmeyi engelle (İsim yok, proje ID yok ve her şey varsayılan)
+      if (isDefault) {
+        setSaveStatus('');
+        return;
+      }
+
+      // Firestore undefined değerleri kabul etmez, temizle
       Object.keys(projectSettings).forEach(key => {
         if (projectSettings[key] === undefined) {
           delete projectSettings[key];
         }
       });
 
+      // İsmi de ayarlara ekle ki Firestore'a gitsin
+      if (projectName.trim()) {
+        projectSettings.projectName = projectName.trim();
+      }
+
+      // Aynı isimde bir proje varsa, yeni oluşturmak yerine onun ID'sini kullan (üzerine yaz)
       let targetProjectId = projectId;
       if (!targetProjectId && projectSettings.projectName) {
         const existingDuplicate = projects?.find(p => p.toolId === type && p.settings?.projectName === projectSettings.projectName);
@@ -383,28 +391,27 @@ export default function VideoEffectTool() {
 
       try {
         const savedId = await saveProject(type, projectSettings, targetProjectId);
-        lastSavedSnapshotRef.current = currentSnapshot;
         if (savedId && savedId !== projectId) {
           setProjectId(savedId);
           navigate(`?draft=${savedId}`, { replace: true });
         }
-        setSaveStatus(lang === 'tr' ? 'Buluta Kaydedildi' : 'Saved to Cloud');
+        setSaveStatus('Saved to Cloud');
         setTimeout(() => setSaveStatus(''), 2000);
       } catch (err) {
         console.error("Auto-save error:", err);
         setSaveStatus('');
       }
-    }, 1500); // 1.5s debounce
+    }, 1500); // 1.5 saniye bekle (Debounce)
 
     return () => clearTimeout(timeoutId);
   }, [
-    user, projectName, formatPreset, hdOutput, duration, audioFxEnabled,
+    user, projectName, formatPreset, hdOutput, fastRender, duration, audioFxEnabled,
     zoomRate, zoomDirection, panStyle, aberrationStrength, trackingNoise,
     scanlineFlicker, vhsTimestamp, glitchIntensity, rgbShift, sliceRate,
     typewriterText, typingSpeed, cursorStyle, fontColor, scanlineDensity,
     phosphorGlow, asciiTheme, asciiResolution, echoCount, echoDecay,
     searchQuery, searchUrl, searchHeadline, searchSnippet, searchTheme,
-    lang, projectId, saveProject, type, projects, navigate
+    projectId, saveProject, type, projects, navigate
   ]);
 
   // Handle Media Upload
@@ -906,7 +913,7 @@ export default function VideoEffectTool() {
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
               className="flex items-center gap-2 text-xs font-mono bg-zinc-900/90 px-3 py-1.5 rounded-full text-zinc-300 border border-zinc-700 shadow-lg absolute top-4 right-4 sm:relative sm:top-0 sm:right-0"
             >
-              <span className={`w-2 h-2 rounded-full ${saveStatus.includes('...') || saveStatus === 'Saving...' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
+              <span className={`w-2 h-2 rounded-full ${saveStatus === 'Saving...' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
               {saveStatus}
             </motion.div>
           )}

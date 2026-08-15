@@ -499,7 +499,7 @@ export function drawGoogleSearchEffect(ctx, source, width, height, progress = 0,
         context.closePath();
     }
 
-    // Helper: Draw Google Logo Letters
+    // Helper: Draw Google Logo Letters (Sleek Product Sans / Google Sans weight)
     function drawGoogleLogo(context, x, y, size) {
         const letters = [
             { char: 'G', color: '#4285F4' },
@@ -510,13 +510,13 @@ export function drawGoogleSearchEffect(ctx, source, width, height, progress = 0,
             { char: 'e', color: '#EA4335' }
         ];
         context.save();
-        context.font = `700 ${size}px "Google Sans", "Outfit", "Inter", -apple-system, sans-serif`;
+        context.font = `500 ${size}px "Product Sans", "Google Sans", "Outfit", "Inter", -apple-system, sans-serif`;
         context.textBaseline = 'middle';
         let currentX = x;
         letters.forEach((l) => {
             context.fillStyle = l.color;
             context.fillText(l.char, currentX, y);
-            currentX += context.measureText(l.char).width + (size * 0.04);
+            currentX += context.measureText(l.char).width + (size * 0.025);
         });
         context.restore();
     }
@@ -525,66 +525,71 @@ export function drawGoogleSearchEffect(ctx, source, width, height, progress = 0,
     function drawMagnifier(context, cx, cy, size, color) {
         context.save();
         context.strokeStyle = color;
-        context.lineWidth = Math.max(2, size * 0.16);
+        context.lineWidth = Math.max(1.8, size * 0.14);
         context.lineCap = 'round';
-        const r = size * 0.36;
+        const r = size * 0.35;
         context.beginPath();
         context.arc(cx - (size * 0.1), cy - (size * 0.1), r, 0, Math.PI * 2);
         context.stroke();
         context.beginPath();
-        context.moveTo(cx + (size * 0.16), cy + (size * 0.16));
-        context.lineTo(cx + (size * 0.44), cy + (size * 0.44));
+        context.moveTo(cx + (size * 0.15), cy + (size * 0.15));
+        context.lineTo(cx + (size * 0.42), cy + (size * 0.42));
         context.stroke();
         context.restore();
     }
 
-    // Helper: Vector Microphone (Google Style)
+    // Helper: Vector Microphone (Modern Minimalist Google Style)
     function drawMic(context, cx, cy, size) {
         context.save();
         const scale = size / 20;
-        context.lineWidth = 2 * scale;
+        const baseColor = isDark ? '#9AA0A6' : '#5F6368';
+        context.lineWidth = 1.6 * scale;
         context.lineCap = 'round';
-        // Capsule (Red)
-        context.fillStyle = '#EA4335';
-        roundRect(context, cx - (4 * scale), cy - (9 * scale), 8 * scale, 12 * scale, 4 * scale);
+        context.lineJoin = 'round';
+
+        // Capsule (Google Blue accent)
+        context.fillStyle = '#4285F4';
+        roundRect(context, cx - (3.2 * scale), cy - (8 * scale), 6.4 * scale, 10.5 * scale, 3.2 * scale);
         context.fill();
-        // Stand arc (Blue)
-        context.strokeStyle = '#4285F4';
+
+        // Stand arc
+        context.strokeStyle = baseColor;
         context.beginPath();
-        context.arc(cx, cy - (2 * scale), 7 * scale, 0.1 * Math.PI, 0.9 * Math.PI);
+        context.arc(cx, cy - (1.5 * scale), 5.8 * scale, 0.15 * Math.PI, 0.85 * Math.PI);
         context.stroke();
-        // Stand base (Green)
-        context.strokeStyle = '#34A853';
+
+        // Stand base
         context.beginPath();
-        context.moveTo(cx, cy + (5 * scale));
-        context.lineTo(cx, cy + (8.5 * scale));
-        context.stroke();
-        context.beginPath();
-        context.moveTo(cx - (5 * scale), cy + (8.5 * scale));
-        context.lineTo(cx + (5 * scale), cy + (8.5 * scale));
+        context.moveTo(cx, cy + (4.3 * scale));
+        context.lineTo(cx, cy + (7.5 * scale));
         context.stroke();
         context.restore();
     }
 
-    // Helper: Vector Google Lens Camera
+    // Helper: Vector Google Lens Camera (Modern Clean Minimalist Style)
     function drawCameraLens(context, cx, cy, size) {
         context.save();
         const scale = size / 20;
-        context.lineWidth = 2.2 * scale;
+        const frameColor = isDark ? '#9AA0A6' : '#5F6368';
+        context.lineWidth = 1.6 * scale;
         context.lineCap = 'round';
-        // Body (Blue)
+        context.lineJoin = 'round';
+
+        // Camera frame / viewfinder
+        context.strokeStyle = frameColor;
+        roundRect(context, cx - (7.5 * scale), cy - (6 * scale), 15 * scale, 12.5 * scale, 3.5 * scale);
+        context.stroke();
+
+        // Center lens circle (Google Blue accent)
         context.strokeStyle = '#4285F4';
-        roundRect(context, cx - (9 * scale), cy - (7 * scale), 18 * scale, 15 * scale, 4.5 * scale);
-        context.stroke();
-        // Inner circle (Red)
-        context.strokeStyle = '#EA4335';
         context.beginPath();
-        context.arc(cx, cy + (0.5 * scale), 4 * scale, 0, Math.PI * 2);
+        context.arc(cx, cy + (0.3 * scale), 3.2 * scale, 0, Math.PI * 2);
         context.stroke();
-        // Dot (Yellow)
-        context.fillStyle = '#FBBC05';
+
+        // Sensor / flash dot (Google Red accent)
+        context.fillStyle = '#EA4335';
         context.beginPath();
-        context.arc(cx + (5 * scale), cy - (3 * scale), 1.5 * scale, 0, Math.PI * 2);
+        context.arc(cx + (4.2 * scale), cy - (2.8 * scale), 1.1 * scale, 0, Math.PI * 2);
         context.fill();
         context.restore();
     }
@@ -607,6 +612,22 @@ export function drawGoogleSearchEffect(ctx, source, width, height, progress = 0,
         context.fillStyle = isDarkMode ? '#E8EAED' : '#202124';
         context.font = `600 ${Math.round(11 * mScale)}px "Inter", sans-serif`;
         context.fillText(t('gsearchAiMode', lang), x + Math.round(26 * mScale), pillY + (pillH / 2));
+        context.restore();
+    }
+
+    // Helper: 9-dot Google Apps Grid Icon
+    function drawGoogleAppsGrid(context, cx, cy, size, color) {
+        context.save();
+        context.fillStyle = color;
+        const dotR = Math.max(1.4, size / 8);
+        const step = size / 2.2;
+        for (let r = -1; r <= 1; r++) {
+            for (let c = -1; c <= 1; c++) {
+                context.beginPath();
+                context.arc(cx + (c * step), cy + (r * step), dotR, 0, Math.PI * 2);
+                context.fill();
+            }
+        }
         context.restore();
     }
 
@@ -669,10 +690,49 @@ export function drawGoogleSearchEffect(ctx, source, width, height, progress = 0,
     // STAGE 1: Homepage Search (0% to 48%)
     // ==========================================
     if (progress < 0.48) {
-        const subProgress = progress / 0.42;
         const totalChars = query.length;
-        const typedCount = Math.min(totalChars, Math.floor(subProgress * (totalChars + 2)));
+        const typingEndP = 0.36; // Yazım 0.36'da %100 eksiksiz biter
+        const typingProgress = Math.min(1, progress / typingEndP);
+        const typedCount = Math.min(totalChars, Math.floor(typingProgress * totalChars));
         const currentTypedText = query.substring(0, typedCount);
+        const isTypingDone = typedCount >= totalChars;
+
+        // Stage 1 Top Navigation Bar (Header)
+        const topNavY = Math.floor(isVertical ? (20 * mScale) : (24 * mScale));
+        const avatarR = Math.floor(isVertical ? (14 * mScale) : (16 * mScale));
+        const avatarX = width - Math.floor(isVertical ? (22 * mScale) : (32 * mScale));
+
+        // User Avatar Circle (Right)
+        ctx.fillStyle = '#1A73E8';
+        ctx.beginPath();
+        ctx.arc(avatarX, topNavY, avatarR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = `700 ${Math.floor(isVertical ? 11 * mScale : 13 * mScale)}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('A', avatarX, topNavY);
+        ctx.textAlign = 'left';
+
+        // 9-dot Google Apps Grid Icon
+        const appsX = avatarX - Math.floor(isVertical ? (28 * mScale) : (38 * mScale));
+        drawGoogleAppsGrid(ctx, appsX, topNavY, Math.floor(14 * mScale), textMuted);
+
+        // Desktop Gmail & Images Links
+        if (!isVertical) {
+            ctx.font = `400 ${Math.floor(13 * mScale)}px "Google Sans", "Inter", sans-serif`;
+            ctx.fillStyle = textMain;
+            ctx.textBaseline = 'middle';
+            const imgText = t('gsearchNavImages', lang);
+            const imgW = ctx.measureText(imgText).width;
+            const imgX = appsX - imgW - Math.floor(20 * mScale);
+            ctx.fillText(imgText, imgX, topNavY);
+
+            const gmailText = t('gsearchNavGmail', lang);
+            const gmailW = ctx.measureText(gmailText).width;
+            const gmailX = imgX - gmailW - Math.floor(16 * mScale);
+            ctx.fillText(gmailText, gmailX, topNavY);
+        }
 
         // Mobile vs Desktop Logo and Bar Dimensions
         const logoSize = Math.floor(isVertical ? (32 * mScale) : (48 * mScale));
@@ -751,7 +811,7 @@ export function drawGoogleSearchEffect(ctx, source, width, height, progress = 0,
             ctx.fillText(currentTypedText, drawX, barY + (barH / 2));
 
             // Blinking Cursor
-            if (Math.floor(progress * 22) % 2 === 0 || subProgress >= 1) {
+            if (Math.floor(progress * 22) % 2 === 0 || isTypingDone) {
                 ctx.fillStyle = '#4285F4';
                 ctx.fillRect(drawX + fullW + Math.floor(2 * mScale), barY + (barH * 0.22), Math.floor(2.4 * mScale), barH * 0.56);
             }
@@ -778,17 +838,32 @@ export function drawGoogleSearchEffect(ctx, source, width, height, progress = 0,
 
             suggestions.forEach((sug, sIdx) => {
                 const sugY = dropY + Math.floor(6 * mScale) + (sIdx * dropRowH) + (dropRowH / 2);
-                drawClockIcon(ctx, barX + Math.floor(22 * mScale), sugY, Math.floor(16 * mScale), textMuted);
+                const isSelected = (sIdx === 0 && isTypingDone && progress >= 0.40);
+
+                if (isSelected) {
+                    ctx.fillStyle = isDark ? '#3C4043' : '#F1F3F4';
+                    roundRect(ctx, barX + 3, dropY + Math.floor(6 * mScale) + (sIdx * dropRowH), barW - 6, dropRowH, Math.floor(10 * mScale));
+                    ctx.fill();
+                }
+
+                drawClockIcon(ctx, barX + Math.floor(22 * mScale), sugY, Math.floor(16 * mScale), isSelected ? linkBlue : textMuted);
 
                 ctx.save();
                 ctx.beginPath();
-                ctx.rect(barX + Math.floor(46 * mScale), sugY - (dropRowH / 2), barW - Math.floor(58 * mScale), dropRowH);
+                ctx.rect(barX + Math.floor(46 * mScale), sugY - (dropRowH / 2), barW - Math.floor(80 * mScale), dropRowH);
                 ctx.clip();
-                ctx.fillStyle = textMain;
-                ctx.font = `500 ${Math.floor(15 * mScale)}px "Google Sans", "Inter", sans-serif`;
+                ctx.fillStyle = isSelected ? linkBlue : textMain;
+                ctx.font = `${isSelected ? '600' : '500'} ${Math.floor(15 * mScale)}px "Google Sans", "Inter", sans-serif`;
                 ctx.textBaseline = 'middle';
                 ctx.fillText(sug, barX + Math.floor(46 * mScale), sugY);
                 ctx.restore();
+
+                if (isSelected) {
+                    ctx.fillStyle = linkBlue;
+                    ctx.font = `600 ${Math.floor(13 * mScale)}px sans-serif`;
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('↵', barX + barW - Math.floor(28 * mScale), sugY);
+                }
 
                 if (sIdx < suggestions.length - 1) {
                     ctx.strokeStyle = dividerCol;
@@ -797,6 +872,36 @@ export function drawGoogleSearchEffect(ctx, source, width, height, progress = 0,
                     ctx.lineTo(barX + barW - Math.floor(16 * mScale), dropY + Math.floor(6 * mScale) + ((sIdx + 1) * dropRowH));
                     ctx.stroke();
                 }
+            });
+        } else if (!isVertical) {
+            // Desktop Action Buttons below Search Bar
+            const btnRowY = barY + barH + Math.floor(24 * mScale);
+            const btn1Text = t('gsearchBtnSearch', lang);
+            const btn2Text = t('gsearchBtnLucky', lang);
+            ctx.font = `500 ${Math.floor(13 * mScale)}px "Google Sans", "Inter", sans-serif`;
+
+            const b1W = ctx.measureText(btn1Text).width + Math.floor(28 * mScale);
+            const b2W = ctx.measureText(btn2Text).width + Math.floor(28 * mScale);
+            const totalBtnsW = b1W + b2W + Math.floor(14 * mScale);
+            const btn1X = (width - totalBtnsW) / 2;
+            const btn2X = btn1X + b1W + Math.floor(14 * mScale);
+            const btnH = Math.floor(34 * mScale);
+
+            [
+                { x: btn1X, w: b1W, label: btn1Text },
+                { x: btn2X, w: b2W, label: btn2Text }
+            ].forEach(btn => {
+                ctx.fillStyle = isDark ? '#303134' : '#F8F9FA';
+                roundRect(ctx, btn.x, btnRowY, btn.w, btnH, Math.floor(6 * mScale));
+                ctx.fill();
+                ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+                ctx.stroke();
+
+                ctx.fillStyle = textMain;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(btn.label, btn.x + (btn.w / 2), btnRowY + (btnH / 2));
+                ctx.textAlign = 'left';
             });
         } else if (isVertical) {
             // Mobile Shortcuts Grid Below (fills lower half naturally!)
@@ -846,6 +951,14 @@ export function drawGoogleSearchEffect(ctx, source, width, height, progress = 0,
         ctx.lineTo(width, topBarH);
         ctx.stroke();
 
+        // Animated Top Blue Loading Bar during transition (Fast instant burst: 48% to 51.5%)
+        if (progress >= 0.48 && progress < 0.515) {
+            const rawP = (progress - 0.48) / 0.03;
+            const loadP = Math.min(1, rawP * 1.25);
+            ctx.fillStyle = '#4285F4';
+            ctx.fillRect(0, 0, width * loadP, Math.floor(3.5 * mScale));
+        }
+
         // Google Logo Left
         const logoSize = Math.floor(20 * mScale);
         drawGoogleLogo(ctx, Math.floor(isVertical ? 14 * mScale : 28 * mScale), topBarH / 2, logoSize);
@@ -885,6 +998,11 @@ export function drawGoogleSearchEffect(ctx, source, width, height, progress = 0,
         ctx.textBaseline = 'middle';
         ctx.fillText('A', avatarX, avatarY);
         ctx.textAlign = 'left';
+
+        // Apps 9-dot grid icon (Desktop)
+        if (!isVertical) {
+            drawGoogleAppsGrid(ctx, avatarX - Math.floor(36 * mScale), avatarY, Math.floor(14 * mScale), textMuted);
+        }
 
         // FILTER TABS
         const tabY = topBarH + Math.floor(14 * mScale);
@@ -1266,10 +1384,26 @@ export function drawGoogleSearchEffect(ctx, source, width, height, progress = 0,
                     kpInnerY += Math.floor(16 * mScale);
                 }
 
+                const titleText = headline.length > 26 ? headline.substring(0, 24) + '...' : headline;
                 ctx.fillStyle = textMain;
                 ctx.font = `700 ${Math.floor(18 * mScale)}px "Google Sans", "Inter", sans-serif`;
                 ctx.textBaseline = 'top';
-                ctx.fillText(headline.length > 28 ? headline.substring(0, 26) + '...' : headline, kpX + Math.floor(16 * mScale), kpInnerY);
+                ctx.fillText(titleText, kpX + Math.floor(16 * mScale), kpInnerY);
+
+                const titleW = ctx.measureText(titleText).width;
+                const badgeX = kpX + Math.floor(22 * mScale) + titleW;
+                if (badgeX < kpX + kpW - Math.floor(18 * mScale)) {
+                    ctx.fillStyle = '#1A73E8';
+                    ctx.beginPath();
+                    ctx.arc(badgeX, kpInnerY + Math.floor(10 * mScale), Math.floor(7 * mScale), 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = `700 ${Math.floor(9 * mScale)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('✓', badgeX, kpInnerY + Math.floor(10 * mScale));
+                    ctx.textAlign = 'left';
+                }
 
                 ctx.fillStyle = textMuted;
                 ctx.font = `500 ${Math.floor(12 * mScale)}px "Inter", sans-serif`;
