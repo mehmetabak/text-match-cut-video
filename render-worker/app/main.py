@@ -23,7 +23,7 @@ import threading
 
 TEMP_DIR = tempfile.gettempdir()
 MAX_INPUT_MB = 100
-ALLOWED_TOOL_TYPES = {"ken-burns", "vhs-tape"}
+ALLOWED_TOOL_TYPES = {"ken-burns", "vhs-tape", "echo"}
 
 # --- Firebase Initialization ---
 def init_firebase():

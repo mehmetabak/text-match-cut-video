@@ -22,6 +22,9 @@ def main():
         elif tool_type == "vhs-tape":
             from app.effects.vhs_tape import apply_vhs_tape
             apply_vhs_tape(input_path, output_path, **params)
+        elif tool_type == "echo":
+            from app.effects.echo import apply_echo
+            apply_echo(input_path, output_path, **params)
         else:
             raise ValueError(f"Bilinmeyen tool_type: {tool_type}")
         print("OK")

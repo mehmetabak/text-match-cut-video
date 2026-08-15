@@ -1,4 +1,5 @@
 // src/renderer/effects.js
+
 export function applyCameraShake(ctx, intensity) {
     const dx = (Math.random() - 0.5) * intensity;
     const dy = (Math.random() - 0.5) * intensity;
@@ -22,7 +23,165 @@ export function drawVignette(ctx, width, height, intensity = 0.5) {
     ctx.restore();
 }
 
-// 1. GLITCH MASTER (RGB Split, Slice Displacement, Digital Noise)
+export function getSourceDimensions(source) {
+    if (!source) return { width: 1, height: 1 };
+    const width = source.naturalWidth || source.videoWidth || source.width || 1;
+    const height = source.naturalHeight || source.videoHeight || source.height || 1;
+    return { width, height };
+}
+
+/**
+ * Aspect-Ratio Preserving Cover Drawing with Scale & Pan
+ */
+export function drawImageCover(ctx, source, dx, dy, dWidth, dHeight, scale = 1, panX = 0, panY = 0) {
+    if (!source) return;
+    const { width: sW, height: sH } = getSourceDimensions(source);
+    const sAspect = sW / sH;
+    const dAspect = dWidth / dHeight;
+
+    let renderW, renderH;
+    if (sAspect > dAspect) {
+        // Source is wider than target
+        renderH = dHeight * scale;
+        renderW = renderH * sAspect;
+    } else {
+        // Source is taller than target
+        renderW = dWidth * scale;
+        renderH = renderW / sAspect;
+    }
+
+    const posX = dx + (dWidth - renderW) / 2 + (panX * (renderW - dWidth) * 0.5);
+    const posY = dy + (dHeight - renderH) / 2 + (panY * (renderH - dHeight) * 0.5);
+
+    ctx.drawImage(source, posX, posY, renderW, renderH);
+}
+
+// 1. KEN BURNS MOTION RENDERER
+export function drawKenBurnsFrame(ctx, source, width, height, progress = 0, options = {}) {
+    const zoomRate = options.zoomRate ?? 0.04; // 0.01 - 0.10
+    const zoomDirection = options.zoomDirection ?? 'in'; // 'in' | 'out'
+    const panStyle = options.panStyle ?? 'center'; // 'center', 'left_to_right', 'right_to_left', 'top_to_bottom', 'bottom_to_top'
+
+    ctx.save();
+    ctx.fillStyle = '#050508';
+    ctx.fillRect(0, 0, width, height);
+
+    if (!source) {
+        ctx.restore();
+        return;
+    }
+
+    // Smooth Cosine Easing
+    const easeProgress = 0.5 - (Math.cos(progress * Math.PI) / 2);
+
+    // Zoom Calculation
+    const maxZoom = 1 + (zoomRate * 4);
+    const scale = zoomDirection === 'in'
+        ? 1 + ((maxZoom - 1) * easeProgress)
+        : maxZoom - ((maxZoom - 1) * easeProgress);
+
+    // Pan Calculation
+    let panX = 0;
+    let panY = 0;
+
+    if (panStyle === 'left_to_right') {
+        panX = -1 + (2 * easeProgress);
+    } else if (panStyle === 'right_to_left') {
+        panX = 1 - (2 * easeProgress);
+    } else if (panStyle === 'top_to_bottom') {
+        panY = -1 + (2 * easeProgress);
+    } else if (panStyle === 'bottom_to_top') {
+        panY = 1 - (2 * easeProgress);
+    }
+
+    drawImageCover(ctx, source, 0, 0, width, height, scale, panX, panY);
+    drawVignette(ctx, width, height, 0.35);
+    ctx.restore();
+}
+
+// 2. RETRO VHS TAPE RENDERER
+export function drawVhsEffect(ctx, source, width, height, progress = 0, options = {}) {
+    const aberrationStrength = options.aberrationStrength ?? 1.2;
+    const trackingNoise = options.trackingNoise ?? 'medium'; // 'low' | 'medium' | 'high'
+    const scanlineFlicker = options.scanlineFlicker !== false;
+    const showTimestamp = options.vhsTimestamp !== false;
+
+    ctx.save();
+    ctx.fillStyle = '#050508';
+    ctx.fillRect(0, 0, width, height);
+
+    if (!source) {
+        ctx.restore();
+        return;
+    }
+
+    // Base Aspect-Cover Frame
+    drawImageCover(ctx, source, 0, 0, width, height, 1.02);
+
+    // 1. Chromatic Aberration RGB Shift
+    const shift = Math.floor(width * 0.004 * aberrationStrength);
+    if (shift > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = 0.45;
+
+        // Red Shift
+        drawImageCover(ctx, source, shift, 0, width, height, 1.02);
+        // Cyan / Blue Shift
+        drawImageCover(ctx, source, -shift, 0, width, height, 1.02);
+        ctx.restore();
+    }
+
+    // 2. Scanlines
+    ctx.save();
+    const flicker = scanlineFlicker ? (Math.sin(progress * 40) * 0.05) : 0;
+    ctx.fillStyle = `rgba(0, 0, 0, ${0.35 + flicker})`;
+    for (let y = 0; y < height; y += 3) {
+        ctx.fillRect(0, y, width, 1.2);
+    }
+    ctx.restore();
+
+    // 3. VHS Tracking Noise Band
+    const noiseLevels = { low: 2, medium: 4, high: 7 };
+    const noiseBands = noiseLevels[trackingNoise] || 4;
+    const trackY = ((progress * 1.5) % 1) * height;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.fillRect(0, trackY, width, 12);
+    for (let i = 0; i < noiseBands; i++) {
+        const ny = (trackY + (Math.random() - 0.5) * 40 + height) % height;
+        const nw = Math.random() * width;
+        ctx.fillRect(Math.random() * (width - nw), ny, nw, 2);
+    }
+    ctx.restore();
+
+    // 4. Retro VCR OSD Timestamp & Status
+    if (showTimestamp) {
+        ctx.save();
+        ctx.fillStyle = '#4ADE80'; // classic green VCR OSD or White
+        ctx.font = `700 ${Math.max(14, Math.floor(width / 36))}px 'Courier New', monospace`;
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = 4;
+
+        // Top Left
+        ctx.fillText("PLAY  \u25B6", 30, 40);
+        ctx.fillText("SP", 30, 65);
+
+        // Bottom Left Timecode
+        const seconds = Math.floor(progress * 10);
+        const secStr = String(seconds % 60).padStart(2, '0');
+        const minStr = String(Math.floor(seconds / 60)).padStart(2, '0');
+        ctx.fillText(`00:${minStr}:${secStr}`, 30, height - 35);
+        ctx.fillText("OCT. 14 1994", width - 170, height - 35);
+        ctx.restore();
+    }
+
+    drawVignette(ctx, width, height, 0.4);
+    ctx.restore();
+}
+
+// 3. GLITCH MASTER (RGB Split, Slice Displacement, Digital Noise)
 export function drawGlitchEffect(ctx, source, width, height, progress = 0, options = {}) {
     const intensity = options.intensity ?? 0.6; // 0.0 - 1.0
     const rgbShift = (options.rgbShift ?? 12) * intensity;
@@ -37,8 +196,8 @@ export function drawGlitchEffect(ctx, source, width, height, progress = 0, optio
         return;
     }
 
-    // Base Frame
-    ctx.drawImage(source, 0, 0, width, height);
+    // Base Aspect-Cover Frame
+    drawImageCover(ctx, source, 0, 0, width, height, 1.0);
 
     // Slices
     if (intensity > 0.1 && sliceCount > 0) {
@@ -51,7 +210,7 @@ export function drawGlitchEffect(ctx, source, width, height, progress = 0, optio
             ctx.beginPath();
             ctx.rect(0, sliceY, width, sliceH);
             ctx.clip();
-            ctx.drawImage(source, sliceDx, 0, width, height);
+            drawImageCover(ctx, source, sliceDx, 0, width, height, 1.0);
             ctx.restore();
         }
     }
@@ -62,13 +221,11 @@ export function drawGlitchEffect(ctx, source, width, height, progress = 0, optio
         ctx.globalCompositeOperation = 'screen';
         
         // Red Shift
-        ctx.globalAlpha = 0.5 * intensity;
-        ctx.fillStyle = 'rgba(255, 0, 50, 0.4)';
-        ctx.drawImage(source, rgbShift, 0, width, height);
+        ctx.globalAlpha = 0.45 * intensity;
+        drawImageCover(ctx, source, rgbShift, 0, width, height, 1.0);
 
         // Blue / Cyan Shift
-        ctx.fillStyle = 'rgba(0, 230, 255, 0.4)';
-        ctx.drawImage(source, -rgbShift, 0, width, height);
+        drawImageCover(ctx, source, -rgbShift, 0, width, height, 1.0);
         ctx.restore();
     }
 
@@ -81,7 +238,7 @@ export function drawGlitchEffect(ctx, source, width, height, progress = 0, optio
             const by = Math.random() * height;
             const bw = Math.random() * 120 + 20;
             const bh = Math.random() * 25 + 5;
-            ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.25)' : 'rgba(0,240,255,0.3)';
+            ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.2)' : 'rgba(245,179,1,0.25)';
             ctx.fillRect(bx, by, bw, bh);
         }
         ctx.restore();
@@ -91,7 +248,7 @@ export function drawGlitchEffect(ctx, source, width, height, progress = 0, optio
     ctx.restore();
 }
 
-// 2. KINETIC TYPEWRITER FRAME RENDERER
+// 4. KINETIC TYPEWRITER FRAME RENDERER
 export function drawTypewriterFrame(ctx, width, height, progress = 0, options = {}) {
     const text = options.text || "Every story begins with a single word.\nAnimationMaker creates the magic.";
     const fontColor = options.fontColor || '#FFFFFF';
@@ -100,7 +257,7 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
     const isDark = options.darkTheme !== false;
 
     ctx.save();
-    ctx.fillStyle = isDark ? '#0A0A0C' : '#F5F5F0';
+    ctx.fillStyle = isDark ? '#0F1015' : '#F5F5F0';
     ctx.fillRect(0, 0, width, height);
 
     // Subtle background grid
@@ -183,7 +340,7 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
     ctx.restore();
 }
 
-// 3. SCANLINE CRT MONITOR RENDERER
+// 5. SCANLINE CRT MONITOR RENDERER
 export function drawScanlineEffect(ctx, source, width, height, progress = 0, options = {}) {
     const density = options.density ?? 4; // Scanline spacing (px)
     const glow = options.glow ?? 0.6;
@@ -198,8 +355,8 @@ export function drawScanlineEffect(ctx, source, width, height, progress = 0, opt
         return;
     }
 
-    // Draw base source
-    ctx.drawImage(source, 0, 0, width, height);
+    // Draw base source with Aspect Cover
+    drawImageCover(ctx, source, 0, 0, width, height, 1.0);
 
     // Phosphor Glow / Tint
     if (glow > 0) {
@@ -228,11 +385,11 @@ export function drawScanlineEffect(ctx, source, width, height, progress = 0, opt
     ctx.fillRect(0, sweepY - 30, width, 60);
 
     // CRT Curved Screen Vignette
-    drawVignette(ctx, width, height, 0.7);
+    drawVignette(ctx, width, height, 0.6);
     ctx.restore();
 }
 
-// 4. ASCII MATRIX ART RENDERER
+// 6. ASCII MATRIX ART RENDERER
 export function drawAsciiEffect(ctx, source, width, height, progress = 0, options = {}) {
     const theme = options.theme || 'matrixGreen'; // 'matrixGreen' | 'cyberNeon' | 'retroAmber' | 'trueColor'
     const charResolution = options.resolution || 12; // cell size (px)
@@ -255,7 +412,9 @@ export function drawAsciiEffect(ctx, source, width, height, progress = 0, option
     offCanvas.width = sampleCols;
     offCanvas.height = sampleRows;
     const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
-    offCtx.drawImage(source, 0, 0, sampleCols, sampleRows);
+    
+    // Draw source scaled onto sample canvas with aspect cover
+    drawImageCover(offCtx, source, 0, 0, sampleCols, sampleRows, 1.0);
 
     const imgData = offCtx.getImageData(0, 0, sampleCols, sampleRows);
     const pixels = imgData.data;
@@ -295,4 +454,5 @@ export function drawAsciiEffect(ctx, source, width, height, progress = 0, option
 
     drawVignette(ctx, width, height, 0.5);
     ctx.restore();
-}
+}
+

@@ -18,6 +18,38 @@ export async function loadFfmpeg() {
     return ffmpeg;
 }
 
+export async function extractAudioFromVideo(videoFile) {
+    if (!videoFile) return null;
+    try {
+        const ffmpeg = await loadFfmpeg();
+        const inputName = 'temp_input_media.' + (videoFile.name?.split('.').pop() || 'mp4');
+        await ffmpeg.writeFile(inputName, new Uint8Array(await videoFile.arrayBuffer()));
+
+        // Extract audio stream to wav
+        const exitCode = await ffmpeg.exec([
+            '-i', inputName,
+            '-vn',
+            '-acodec', 'pcm_s16le',
+            '-ar', '44100',
+            '-ac', '2',
+            'extracted_audio.wav'
+        ]);
+
+        await ffmpeg.deleteFile(inputName);
+
+        if (exitCode === 0) {
+            const audioData = await ffmpeg.readFile('extracted_audio.wav');
+            await ffmpeg.deleteFile('extracted_audio.wav');
+            if (audioData && audioData.length > 100) {
+                return new Blob([audioData.buffer], { type: 'audio/wav' });
+            }
+        }
+    } catch (err) {
+        console.warn("Audio extraction skipped (file may not have audio stream):", err);
+    }
+    return null;
+}
+
 export async function createVideoFromFrames(frames, audioBlob, fps, highQuality = false, onProgress) {
     const ffmpeg = await loadFfmpeg();
 
@@ -84,3 +116,4 @@ export async function createVideoFromFrames(frames, audioBlob, fps, highQuality 
 
     return URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
 }
+
