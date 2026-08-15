@@ -8,17 +8,16 @@ import { useAuthStore } from '../store/authStore';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles,
-  Sliders,
   Upload,
   Play,
   RotateCcw,
   Download,
   Check,
   Edit2,
-  Radio,
   Volume2
 } from 'lucide-react';
+import Switch from '../components/Switch';
+import SegmentedControl from '../components/SegmentedControl';
 import { createVideoFromFrames, extractAudioFromVideo } from '../lib/ffmpeg';
 import { applyAudioEffect } from '../lib/audioUtils';
 import {
@@ -111,6 +110,7 @@ export default function VideoEffectTool() {
   const animFrameRef = useRef(null);
   const sourceMediaRef = useRef(null);
   const hasInitialized = useRef(false);
+  const lastSavedSnapshotRef = useRef(null);
 
   const validTypes = ['ken-burns', 'vhs-tape', 'glitch-master', 'typewriter', 'scanline', 'ascii', 'echo'];
 
@@ -121,21 +121,75 @@ export default function VideoEffectTool() {
     }
   }, [type, navigate]);
 
-  // Default Project Name
-  useEffect(() => {
-    if (!projectName) {
-      const defaultTitles = {
-        'glitch-master': 'Cyber Glitch Project',
-        'typewriter': 'Typewriter Story',
-        'scanline': 'Retro CRT Tape',
-        'ascii': 'Matrix Code Art',
-        'echo': 'Motion Echo Clip',
-        'ken-burns': 'Cinematic Photo Story',
-        'vhs-tape': '90s VHS Tape'
-      };
-      setProjectName(defaultTitles[type] || `${type} Project`);
+  // Tool Meta (Title & Description formatted like MatchCutTool)
+  const toolMetaMap = {
+    'ken-burns': {
+      title1: 'Ken Burns',
+      title2: 'Pro',
+      desc: lang === 'tr' ? 'Sabit fotoğraflarınıza sinematik yakınlaşma ve kamera kaydırma hareketleri verin.' : 'Automated cinematic pan and zoom effects for your static images.'
+    },
+    'vhs-tape': {
+      title1: 'VHS',
+      title2: lang === 'tr' ? 'Kaset' : 'Tape',
+      desc: lang === 'tr' ? '90’lar analog manyetik kaset gürültüsü, renk ayrışımı ve retro VCR damgası.' : 'Authentic 90s magnetic tape noise, chromatic aberration and VCR timestamp.'
+    },
+    'glitch-master': {
+      title1: 'Glitch',
+      title2: 'Master',
+      desc: lang === 'tr' ? 'Siberparazit, RGB kanal kayması ve dinamik dijital dilimlenme bozulmaları.' : 'Cybernetic RGB channel shifting, scanline distortion, and slice artifacts.'
+    },
+    'typewriter': {
+      title1: 'Typewriter',
+      title2: lang === 'tr' ? 'Daktilo' : 'Effect',
+      desc: lang === 'tr' ? 'Karakter karakter yazılan daktilo animasyonları ve şık tipografi.' : 'Terminal typewriter animation with customizable speed, fonts, and cursors.'
+    },
+    'scanline': {
+      title1: 'CRT',
+      title2: 'Scanline',
+      desc: lang === 'tr' ? 'Nostaljik tüplü ekran tarama çizgileri, fosfor parıltısı ve CRT kutu tonlaması.' : 'Vintage arcade CRT television scanlines, phosphor glow, and screen curvature.'
+    },
+    'ascii': {
+      title1: 'ASCII',
+      title2: 'Matrix',
+      desc: lang === 'tr' ? 'Görsel veya videolarınızı gerçek zamanlı Matrix kodlarına ve ASCII karakter sanatına dönüştürün.' : 'Real-time Matrix code rain and ASCII character density renderer.'
+    },
+    'echo': {
+      title1: 'Echo',
+      title2: 'Motion',
+      desc: lang === 'tr' ? 'Görsel ve videolara rüya gibi hareket yankıları ve çoklu hayalet izleri ekleyin.' : 'Multi-layered ghost trails and motion echo effects for images and videos.'
     }
-  }, [type, projectName]);
+  };
+
+  const toolInfo = toolMetaMap[type] || { title1: type, title2: 'Tool', desc: 'AnimationMaker Pro Video Effect' };
+
+  // Helper to build settings object
+  const getCurrentSettings = () => ({
+    projectName: projectName.trim(),
+    formatPreset,
+    hdOutput,
+    duration,
+    audioFxEnabled,
+    zoomRate,
+    zoomDirection,
+    panStyle,
+    aberrationStrength,
+    trackingNoise,
+    scanlineFlicker,
+    vhsTimestamp,
+    glitchIntensity,
+    rgbShift,
+    sliceRate,
+    typewriterText,
+    typingSpeed,
+    cursorStyle,
+    fontColor,
+    scanlineDensity,
+    phosphorGlow,
+    asciiTheme,
+    asciiResolution,
+    echoCount,
+    echoDecay
+  });
 
   // 1. Load Draft / Restore Project (from query param or localStorage or cloud projects)
   useEffect(() => {
@@ -145,6 +199,33 @@ export default function VideoEffectTool() {
     if (!draftId && (!hasInitialized.current || projectId)) {
       hasInitialized.current = true;
       setProjectId(null);
+      setProjectName('');
+      setFormatPreset('16:9');
+      setHdOutput(false);
+      setDuration(5);
+      setAudioFxEnabled(true);
+      setZoomRate(0.04);
+      setZoomDirection('in');
+      setPanStyle('center');
+      setAberrationStrength(1.2);
+      setTrackingNoise('medium');
+      setScanlineFlicker(true);
+      setVhsTimestamp(true);
+      setGlitchIntensity(0.6);
+      setRgbShift(14);
+      setSliceRate(8);
+      setTypingSpeed(18);
+      setCursorStyle('block');
+      setFontColor('#FFFFFF');
+      setScanlineDensity(4);
+      setPhosphorGlow(0.5);
+      setAsciiTheme('matrixGreen');
+      setAsciiResolution(12);
+      setEchoCount(5);
+      setEchoDecay(0.7);
+      
+      // Store baseline snapshot so auto-save doesn't fire immediately
+      lastSavedSnapshotRef.current = JSON.stringify(getCurrentSettings());
       return;
     }
 
@@ -160,6 +241,7 @@ export default function VideoEffectTool() {
             if (draftData.formatPreset) setFormatPreset(draftData.formatPreset);
             if (draftData.hdOutput !== undefined) setHdOutput(draftData.hdOutput);
             if (draftData.duration) setDuration(draftData.duration);
+            if (draftData.audioFxEnabled !== undefined) setAudioFxEnabled(draftData.audioFxEnabled);
             if (draftData.zoomRate) setZoomRate(draftData.zoomRate);
             if (draftData.zoomDirection) setZoomDirection(draftData.zoomDirection);
             if (draftData.panStyle) setPanStyle(draftData.panStyle);
@@ -173,6 +255,7 @@ export default function VideoEffectTool() {
             if (draftData.typewriterText) setTypewriterText(draftData.typewriterText);
             if (draftData.typingSpeed) setTypingSpeed(draftData.typingSpeed);
             if (draftData.cursorStyle) setCursorStyle(draftData.cursorStyle);
+            if (draftData.fontColor) setFontColor(draftData.fontColor);
             if (draftData.scanlineDensity) setScanlineDensity(draftData.scanlineDensity);
             if (draftData.phosphorGlow) setPhosphorGlow(draftData.phosphorGlow);
             if (draftData.asciiTheme) setAsciiTheme(draftData.asciiTheme);
@@ -180,6 +263,7 @@ export default function VideoEffectTool() {
             if (draftData.echoCount) setEchoCount(draftData.echoCount);
             if (draftData.echoDecay) setEchoDecay(draftData.echoDecay);
             localStorage.removeItem('draft_project');
+            lastSavedSnapshotRef.current = JSON.stringify(draftData);
             return;
           }
         } catch (e) {
@@ -196,6 +280,7 @@ export default function VideoEffectTool() {
           if (s.formatPreset) setFormatPreset(s.formatPreset);
           if (s.hdOutput !== undefined) setHdOutput(s.hdOutput);
           if (s.duration) setDuration(s.duration);
+          if (s.audioFxEnabled !== undefined) setAudioFxEnabled(s.audioFxEnabled);
           if (s.zoomRate) setZoomRate(s.zoomRate);
           if (s.zoomDirection) setZoomDirection(s.zoomDirection);
           if (s.panStyle) setPanStyle(s.panStyle);
@@ -209,49 +294,39 @@ export default function VideoEffectTool() {
           if (s.typewriterText) setTypewriterText(s.typewriterText);
           if (s.typingSpeed) setTypingSpeed(s.typingSpeed);
           if (s.cursorStyle) setCursorStyle(s.cursorStyle);
+          if (s.fontColor) setFontColor(s.fontColor);
           if (s.scanlineDensity) setScanlineDensity(s.scanlineDensity);
           if (s.phosphorGlow) setPhosphorGlow(s.phosphorGlow);
           if (s.asciiTheme) setAsciiTheme(s.asciiTheme);
           if (s.asciiResolution) setAsciiResolution(s.asciiResolution);
           if (s.echoCount) setEchoCount(s.echoCount);
           if (s.echoDecay) setEchoDecay(s.echoDecay);
+          lastSavedSnapshotRef.current = JSON.stringify(s);
         }
       }
     }
   }, [location.search, projects, projectId]);
 
-  // 2. Debounced Auto-Save to Firestore (1.5s debounce matching MatchCutTool)
+  // 2. Debounced Auto-Save to Firestore (ONLY when actual settings changed)
   useEffect(() => {
-    if (!user) return;
+    if (!user || !hasInitialized.current) return;
+
+    const currentSnapshot = JSON.stringify(getCurrentSettings());
+
+    // Do NOT fire auto-save if settings have not changed from last save/load!
+    if (lastSavedSnapshotRef.current === currentSnapshot) {
+      return;
+    }
+
+    // Do NOT save if empty default project without custom name and no project ID
+    const isUntouchedDefault = !projectName.trim() && !projectId && duration === 5 && formatPreset === '16:9' && !hdOutput;
+    if (isUntouchedDefault) {
+      return;
+    }
 
     const timeoutId = setTimeout(async () => {
       setSaveStatus(lang === 'tr' ? 'Kaydediliyor...' : 'Saving...');
-      const projectSettings = {
-        projectName: projectName.trim() || `${type} Project`,
-        formatPreset,
-        hdOutput,
-        duration,
-        zoomRate,
-        zoomDirection,
-        panStyle,
-        aberrationStrength,
-        trackingNoise,
-        scanlineFlicker,
-        vhsTimestamp,
-        glitchIntensity,
-        rgbShift,
-        sliceRate,
-        typewriterText,
-        typingSpeed,
-        cursorStyle,
-        fontColor,
-        scanlineDensity,
-        phosphorGlow,
-        asciiTheme,
-        asciiResolution,
-        echoCount,
-        echoDecay
-      };
+      const projectSettings = getCurrentSettings();
 
       // Clean undefined keys for Firestore
       Object.keys(projectSettings).forEach(key => {
@@ -262,7 +337,7 @@ export default function VideoEffectTool() {
 
       let targetProjectId = projectId;
       if (!targetProjectId && projectSettings.projectName) {
-        const existingDuplicate = projects.find(p => p.toolId === type && p.settings?.projectName === projectSettings.projectName);
+        const existingDuplicate = projects?.find(p => p.toolId === type && p.settings?.projectName === projectSettings.projectName);
         if (existingDuplicate) {
           targetProjectId = existingDuplicate.id;
         }
@@ -270,6 +345,7 @@ export default function VideoEffectTool() {
 
       try {
         const savedId = await saveProject(type, projectSettings, targetProjectId);
+        lastSavedSnapshotRef.current = currentSnapshot;
         if (savedId && savedId !== projectId) {
           setProjectId(savedId);
           navigate(`?draft=${savedId}`, { replace: true });
@@ -277,30 +353,28 @@ export default function VideoEffectTool() {
         setSaveStatus(lang === 'tr' ? 'Buluta Kaydedildi' : 'Saved to Cloud');
         setTimeout(() => setSaveStatus(''), 2000);
       } catch (err) {
-        console.error("Auto-save failed:", err);
+        console.error("Auto-save error:", err);
         setSaveStatus('');
       }
-    }, 1500);
+    }, 1500); // 1.5s debounce
 
     return () => clearTimeout(timeoutId);
   }, [
-    user, type, projectId, projectName, formatPreset, hdOutput, duration,
-    zoomRate, zoomDirection, panStyle, aberrationStrength, trackingNoise, scanlineFlicker, vhsTimestamp,
-    glitchIntensity, rgbShift, sliceRate, typewriterText, typingSpeed, cursorStyle, fontColor,
-    scanlineDensity, phosphorGlow, asciiTheme, asciiResolution, echoCount, echoDecay,
-    saveProject, projects, navigate, lang
+    user, projectName, formatPreset, hdOutput, duration, audioFxEnabled,
+    zoomRate, zoomDirection, panStyle, aberrationStrength, trackingNoise,
+    scanlineFlicker, vhsTimestamp, glitchIntensity, rgbShift, sliceRate,
+    typewriterText, typingSpeed, cursorStyle, fontColor, scanlineDensity,
+    phosphorGlow, asciiTheme, asciiResolution, echoCount, echoDecay,
+    lang, projectId, saveProject, type, projects, navigate
   ]);
 
-  // Handle File Upload & Duration Detection
+  // Handle Media Upload
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
       setFile(selectedFile);
       const url = URL.createObjectURL(selectedFile);
       setFileUrl(url);
-      setStatus('idle');
-      setErrorMsg('');
-      setResultUrl('');
 
       if (selectedFile.type.startsWith('image/')) {
         const img = new Image();
@@ -369,41 +443,41 @@ export default function VideoEffectTool() {
         const height = canvas.height;
         const elapsed = (time - startTime) / 1000;
         const loopDuration = Math.max(3, duration);
-        const progress = (elapsed % loopDuration) / loopDuration;
+        const progressVal = (elapsed % loopDuration) / loopDuration;
 
         if (type === 'typewriter') {
-          drawTypewriterFrame(ctx, width, height, progress, {
+          drawTypewriterFrame(ctx, width, height, progressVal, {
             text: typewriterText,
             fontColor,
             cursorStyle,
             darkTheme: true
           });
         } else if (type === 'ken-burns') {
-          drawKenBurnsFrame(ctx, sourceMediaRef.current, width, height, progress, {
+          drawKenBurnsFrame(ctx, sourceMediaRef.current, width, height, progressVal, {
             zoomRate,
             zoomDirection,
             panStyle
           });
         } else if (type === 'vhs-tape') {
-          drawVhsEffect(ctx, sourceMediaRef.current, width, height, progress, {
+          drawVhsEffect(ctx, sourceMediaRef.current, width, height, progressVal, {
             aberrationStrength,
             trackingNoise,
             scanlineFlicker,
             vhsTimestamp
           });
         } else if (type === 'glitch-master') {
-          drawGlitchEffect(ctx, sourceMediaRef.current, width, height, progress, {
+          drawGlitchEffect(ctx, sourceMediaRef.current, width, height, progressVal, {
             intensity: glitchIntensity,
             rgbShift,
             sliceRate
           });
         } else if (type === 'scanline') {
-          drawScanlineEffect(ctx, sourceMediaRef.current, width, height, progress, {
+          drawScanlineEffect(ctx, sourceMediaRef.current, width, height, progressVal, {
             density: scanlineDensity,
             glow: phosphorGlow
           });
         } else if (type === 'ascii') {
-          drawAsciiEffect(ctx, sourceMediaRef.current, width, height, progress, {
+          drawAsciiEffect(ctx, sourceMediaRef.current, width, height, progressVal, {
             theme: asciiTheme,
             resolution: asciiResolution
           });
@@ -412,7 +486,7 @@ export default function VideoEffectTool() {
           ctx.fillRect(0, 0, width, height);
           if (sourceMediaRef.current) {
             ctx.save();
-            const scale = 1 + (progress * 0.12);
+            const scale = 1 + (progressVal * 0.12);
             drawImageCover(ctx, sourceMediaRef.current, 0, 0, width, height, scale);
             drawVignette(ctx, width, height, 0.4);
             ctx.restore();
@@ -613,59 +687,62 @@ export default function VideoEffectTool() {
       };
 
       await setDoc(jobRef, {
-        uid: auth.currentUser.uid,
+        user_id: auth.currentUser.uid,
+        status: 'queued',
         tool_type: type,
-        status: 'pending',
+        params: params,
         created_at: serverTimestamp(),
-        params: params
+        progress: 0
       });
 
-      fetch(`${apiUrl}/jobs/ping`).catch(() => {});
-
       const unsubscribe = onSnapshot(jobRef, (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.status === 'completed') {
-            setResultUrl(`${apiUrl}${data.result_url}`);
-            setStatus('completed');
-            unsubscribe();
-          } else if (data.status === 'failed') {
-            setErrorMsg(data.error_message || 'Processing failed.');
-            setStatus('error');
-            unsubscribe();
-          }
+        if (!docSnap.exists()) return;
+        const data = docSnap.data();
+
+        if (data.progress !== undefined) {
+          setProgress(data.progress);
+        }
+
+        if (data.status === 'completed') {
+          setResultUrl(data.result_url);
+          setStatus('completed');
+          unsubscribe();
+        } else if (data.status === 'failed') {
+          setErrorMsg(data.error || 'Server render failed.');
+          setStatus('error');
+          unsubscribe();
         }
       });
     } catch (err) {
-      console.error(err);
-      setErrorMsg(err.message || 'Bir hata oluştu.');
+      console.error("Cloud processing error:", err);
+      setErrorMsg(err.message || 'Failed to submit cloud render job.');
       setStatus('error');
     }
   };
 
   const isServerTool = type === 'echo';
-  const effectTitle = type ? type.replace('-', ' ').toUpperCase() : '';
 
   return (
-    <div className="w-full flex-grow flex flex-col h-full bg-bg-base text-text-primary">
+    <div className="w-full flex-grow flex flex-col h-full">
       <Helmet>
-        <title>{`${effectTitle} - Video Effects Suite | AnimationMaker`}</title>
-        <meta name="description" content={`Create cinematic ${effectTitle} video animations directly in your browser with AnimationMaker.`} />
-        <link rel="canonical" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <title>{`${toolInfo.title1} ${toolInfo.title2} | AnimationMaker`}</title>
+        <meta name="description" content={toolInfo.desc} />
       </Helmet>
 
-      <div className="flex-grow flex flex-col p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto w-full relative z-10">
-        
-        {/* Header with Inline Editable Title & Cloud Sync (Identical to MatchCutTool) */}
-        <header className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-color pb-5">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="flex-grow flex flex-col p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full relative z-10 h-full min-h-0"
+      >
+        {/* Header matching MatchCutTool */}
+        <header className="mb-6 flex-shrink-0 flex justify-between items-start">
           <div>
             <AnimatePresence mode="wait">
               {isEditingName ? (
                 <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  className="flex items-center gap-2 mb-1"
+                  initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
+                  className="flex items-center gap-2 mb-2"
                 >
                   <input
                     ref={titleInputRef}
@@ -674,148 +751,517 @@ export default function VideoEffectTool() {
                     onChange={(e) => setProjectName(e.target.value)}
                     onBlur={() => setIsEditingName(false)}
                     onKeyDown={(e) => e.key === 'Enter' && setIsEditingName(false)}
-                    placeholder="Project Name..."
-                    className="bg-surface border border-border-color focus:border-accent-gold text-white text-xl sm:text-2xl font-bold px-3 py-1 rounded-xl outline-none w-full max-w-[320px]"
+                    placeholder={lang === 'tr' ? "Proje İsmi..." : "Project Name..."}
+                    className="bg-zinc-900 border border-zinc-700 focus:border-accent-gold text-white text-xl sm:text-2xl font-bold px-3 py-1 rounded-lg outline-none w-full max-w-[300px]"
                     autoFocus
                   />
-                  <button
-                    onClick={() => setIsEditingName(false)}
-                    className="p-2 bg-accent-gold text-black rounded-xl hover:bg-yellow-400 transition-colors"
-                  >
+                  <button onClick={() => setIsEditingName(false)} className="p-2 bg-accent-gold text-black rounded-lg hover:bg-yellow-400">
                     <Check size={18} />
                   </button>
                 </motion.div>
               ) : (
                 <motion.div
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  className="flex items-center gap-3 mb-1 group cursor-pointer w-fit"
+                  initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                  className="flex items-center gap-3 mb-2 group cursor-pointer w-fit"
                   onClick={() => setIsEditingName(true)}
                 >
-                  <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white flex items-center gap-2.5">
-                    {projectName || effectTitle}
-                    <span className="text-[11px] px-2 py-0.5 bg-accent-gold text-black font-black rounded-md tracking-wider">
-                      PRO
-                    </span>
-                  </h1>
+                  <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_0_10px_rgba(250,204,21,0.2)]">
+                    {projectName || (
+                      <span>{toolInfo.title1} <span className="text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]">{toolInfo.title2}</span></span>
+                    )}
+                  </h2>
                   {user && (
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-surface-light border border-border-color rounded-lg text-text-muted hover:text-white">
-                      <Edit2 size={14} />
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-zinc-800 rounded-lg text-zinc-400 hover:text-white">
+                      <Edit2 size={16} />
                     </div>
                   )}
                 </motion.div>
               )}
             </AnimatePresence>
-            <p className="text-text-muted text-xs sm:text-sm">
-              {t(`tool_${type.replace('-', '')}_desc`, lang) || `${effectTitle} effect studio for cinematic video creation`}
+            <p className="text-zinc-400 max-w-2xl text-sm md:text-base">
+              {toolInfo.desc}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            {saveStatus && (
-              <motion.span
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-xs text-text-secondary font-medium px-2.5 py-1 bg-surface-light border border-border-color rounded-lg"
-              >
-                {saveStatus}
-              </motion.span>
-            )}
-            <div className="text-xs font-mono text-text-muted flex items-center gap-1.5 px-3 py-1.5 bg-surface border border-border-color rounded-lg">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              {isServerTool ? 'Cloud Worker' : 'On-Device Engine'}
-            </div>
-          </div>
+          {saveStatus && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+              className="flex items-center gap-2 text-xs font-mono bg-zinc-900/90 px-3 py-1.5 rounded-full text-zinc-300 border border-zinc-700 shadow-lg absolute top-4 right-4 sm:relative sm:top-0 sm:right-0"
+            >
+              <span className={`w-2 h-2 rounded-full ${saveStatus.includes('...') || saveStatus === 'Saving...' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
+              {saveStatus}
+            </motion.div>
+          )}
         </header>
 
-        <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 min-h-0">
+        {/* Main Workspace (Left: Settings, Right: Preview) */}
+        <main className="flex flex-col lg:flex-row gap-6 lg:gap-6 flex-1 min-h-0 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
           
-          {/* Left Column: Modern Studio Preview Viewport */}
-          <div className="lg:col-span-7 bg-surface border border-border-color rounded-3xl p-6 flex flex-col items-center justify-between shadow-2xl relative min-h-[460px]">
-            
-            {/* Top Viewport Status Bar */}
-            <div className="w-full flex items-center justify-between text-xs text-text-muted mb-4 border-b border-border-color/60 pb-3">
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 bg-surface-light border border-border-color rounded font-mono font-bold text-text-secondary">
-                  {formatPreset}
-                </span>
-                <span>{hdOutput ? '1080p Full HD' : '720p HD'}</span>
-              </div>
-              <div className="flex items-center gap-1.5 font-mono text-emerald-400">
-                <Radio size={13} className="animate-pulse" />
-                <span>LIVE PREVIEW</span>
+          {/* LEFT COLUMN: Settings Panel (Matching SettingsPanel.jsx) */}
+          <div className="w-full lg:w-[320px] xl:w-[380px] flex-shrink-0 flex flex-col h-auto lg:h-full lg:overflow-hidden gap-4">
+            <div className="flex-1 lg:overflow-y-auto lg:pr-2 lg:custom-scrollbar">
+              <div className="bg-zinc-900/95 backdrop-blur-sm border border-zinc-700/50 p-4 md:p-6 rounded-lg h-full shadow-lg flex flex-col">
+                <h2 className="text-xl font-bold text-white flex-shrink-0">{t('customize', lang) || 'ÖZELLEŞTİR'}</h2>
+
+                <div className="flex-grow space-y-5 border-t border-zinc-700 mt-4 pt-4 overflow-y-auto pr-2 custom-scrollbar">
+                  
+                  {/* Video Duration (Max 5 Min) */}
+                  <div>
+                    <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                      <span>{lang === 'tr' ? 'Video Süresi (Max 5 Dk)' : 'Video Duration (Max 5 Min)'}</span>
+                      <span className="text-yellow-400 font-mono font-bold">{formatDuration(duration)}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="3"
+                      max="300"
+                      step="1"
+                      value={duration}
+                      onChange={(e) => setDuration(parseInt(e.target.value))}
+                      className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    />
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {[5, 15, 30, 60, 180, 300].map(s => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setDuration(s)}
+                          className={`px-2 py-0.5 rounded text-xs font-mono font-semibold transition-colors ${
+                            duration === s
+                              ? 'bg-accent text-white'
+                              : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700'
+                          }`}
+                        >
+                          {s >= 60 ? `${s / 60}m` : `${s}s`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 1. KEN BURNS CONTROLS */}
+                  {type === 'ken-burns' && (
+                    <>
+                      <SegmentedControl
+                        label={lang === 'tr' ? 'Yakınlaştırma Yönü' : 'Zoom Direction'}
+                        options={[
+                          { value: 'in', label: lang === 'tr' ? 'Yakınlaş' : 'Zoom In' },
+                          { value: 'out', label: lang === 'tr' ? 'Uzaklaş' : 'Zoom Out' }
+                        ]}
+                        value={zoomDirection}
+                        onChange={setZoomDirection}
+                      />
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {lang === 'tr' ? 'Kamera Kaydırma (Pan)' : 'Camera Pan Style'}
+                        </label>
+                        <select
+                          value={panStyle}
+                          onChange={(e) => setPanStyle(e.target.value)}
+                          className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm outline-none"
+                        >
+                          <option value="center">{lang === 'tr' ? 'Merkez (Sabit)' : 'Center (No Pan)'}</option>
+                          <option value="left_to_right">{lang === 'tr' ? 'Soldan Sağa' : 'Left to Right'}</option>
+                          <option value="right_to_left">{lang === 'tr' ? 'Sağdan Sola' : 'Right to Left'}</option>
+                          <option value="top_to_bottom">{lang === 'tr' ? 'Yukarıdan Aşağıya' : 'Top to Bottom'}</option>
+                          <option value="bottom_to_top">{lang === 'tr' ? 'Aşağıdan Yukarıya' : 'Bottom to Top'}</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                          <span>{lang === 'tr' ? 'Yakınlaştırma Hızı' : 'Zoom Rate'}</span>
+                          <span className="text-yellow-400 font-mono">{zoomRate}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.01"
+                          max="0.10"
+                          step="0.01"
+                          value={zoomRate}
+                          onChange={(e) => setZoomRate(parseFloat(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* 2. VHS TAPE CONTROLS */}
+                  {type === 'vhs-tape' && (
+                    <>
+                      <div>
+                        <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                          <span>{lang === 'tr' ? 'Renk Ayrışımı (Aberration)' : 'Chromatic Aberration'}</span>
+                          <span className="text-yellow-400 font-mono">{aberrationStrength}x</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.2"
+                          max="3.0"
+                          step="0.1"
+                          value={aberrationStrength}
+                          onChange={(e) => setAberrationStrength(parseFloat(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+
+                      <SegmentedControl
+                        label={lang === 'tr' ? 'Manyetik Kaset Gürültüsü' : 'Tracking Noise'}
+                        options={[
+                          { value: 'low', label: t('low', lang) || 'Az' },
+                          { value: 'medium', label: t('medium', lang) || 'Orta' },
+                          { value: 'high', label: t('high', lang) || 'Yüksek' }
+                        ]}
+                        value={trackingNoise}
+                        onChange={setTrackingNoise}
+                      />
+
+                      <Switch
+                        label={lang === 'tr' ? 'CRT Tarama Titremesi' : 'Scanline Flicker'}
+                        checked={scanlineFlicker}
+                        onChange={(e) => setScanlineFlicker(e.target.checked)}
+                      />
+
+                      <Switch
+                        label={lang === 'tr' ? 'VCR Tarih/Saat Damgası' : 'VCR Timestamp OSD'}
+                        checked={vhsTimestamp}
+                        onChange={(e) => setVhsTimestamp(e.target.checked)}
+                      />
+                    </>
+                  )}
+
+                  {/* 3. GLITCH MASTER CONTROLS */}
+                  {type === 'glitch-master' && (
+                    <>
+                      <div>
+                        <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                          <span>{lang === 'tr' ? 'Glitch Şiddeti' : 'Glitch Intensity'}</span>
+                          <span className="text-yellow-400 font-mono">{Math.round(glitchIntensity * 100)}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.1"
+                          max="1.0"
+                          step="0.05"
+                          value={glitchIntensity}
+                          onChange={(e) => setGlitchIntensity(parseFloat(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                          <span>RGB Shift Offset</span>
+                          <span className="text-yellow-400 font-mono">{rgbShift}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="2"
+                          max="40"
+                          step="1"
+                          value={rgbShift}
+                          onChange={(e) => setRgbShift(parseInt(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                          <span>{lang === 'tr' ? 'Dilimleme Sıklığı' : 'Slice Rate'}</span>
+                          <span className="text-yellow-400 font-mono">{sliceRate}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="1"
+                          max="20"
+                          step="1"
+                          value={sliceRate}
+                          onChange={(e) => setSliceRate(parseInt(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* 4. TYPEWRITER CONTROLS */}
+                  {type === 'typewriter' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {lang === 'tr' ? 'Metin İçeriği' : 'Story Content'}
+                        </label>
+                        <textarea
+                          rows="4"
+                          value={typewriterText}
+                          onChange={(e) => setTypewriterText(e.target.value)}
+                          className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm resize-none"
+                        />
+                      </div>
+
+                      <SegmentedControl
+                        label={lang === 'tr' ? 'İmleç Stili' : 'Cursor Style'}
+                        options={[
+                          { value: 'block', label: '█ Block' },
+                          { value: 'line', label: '| Line' },
+                          { value: 'underscore', label: '_ Under' }
+                        ]}
+                        value={cursorStyle}
+                        onChange={setCursorStyle}
+                      />
+
+                      <div>
+                        <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                          <span>{lang === 'tr' ? 'Yazım Hızı' : 'Typing Speed'}</span>
+                          <span className="text-yellow-400 font-mono">{typingSpeed} cps</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="5"
+                          max="40"
+                          step="1"
+                          value={typingSpeed}
+                          onChange={(e) => setTypingSpeed(parseInt(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* 5. SCANLINE CRT CONTROLS */}
+                  {type === 'scanline' && (
+                    <>
+                      <div>
+                        <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                          <span>{lang === 'tr' ? 'Çizgi Sıklığı' : 'Scanline Density'}</span>
+                          <span className="text-yellow-400 font-mono">{scanlineDensity}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="2"
+                          max="12"
+                          step="1"
+                          value={scanlineDensity}
+                          onChange={(e) => setScanlineDensity(parseInt(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                          <span>{lang === 'tr' ? 'Fosfor Parıltısı' : 'Phosphor Glow'}</span>
+                          <span className="text-yellow-400 font-mono">{Math.round(phosphorGlow * 100)}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.1"
+                          max="1.0"
+                          step="0.05"
+                          value={phosphorGlow}
+                          onChange={(e) => setPhosphorGlow(parseFloat(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* 6. ASCII MATRIX CONTROLS */}
+                  {type === 'ascii' && (
+                    <>
+                      <SegmentedControl
+                        label={lang === 'tr' ? 'Renk Teması' : 'Color Palette'}
+                        options={[
+                          { value: 'matrixGreen', label: 'Matrix' },
+                          { value: 'cyberNeon', label: 'Cyber' },
+                          { value: 'retroAmber', label: 'Amber' },
+                          { value: 'trueColor', label: 'Real' }
+                        ]}
+                        value={asciiTheme}
+                        onChange={setAsciiTheme}
+                      />
+
+                      <div>
+                        <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                          <span>{lang === 'tr' ? 'Karakter Çözünürlüğü' : 'Character Grid Size'}</span>
+                          <span className="text-yellow-400 font-mono">{asciiResolution}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="6"
+                          max="20"
+                          step="1"
+                          value={asciiResolution}
+                          onChange={(e) => setAsciiResolution(parseInt(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* 7. ECHO MOTION CONTROLS */}
+                  {type === 'echo' && (
+                    <>
+                      <div>
+                        <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                          <span>{lang === 'tr' ? 'Yankı Katman Sayısı' : 'Echo Ghost Layers'}</span>
+                          <span className="text-yellow-400 font-mono">{echoCount}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="2"
+                          max="10"
+                          step="1"
+                          value={echoCount}
+                          onChange={(e) => setEchoCount(parseInt(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
+                          <span>{lang === 'tr' ? 'İz Sönümleme Oranı' : 'Motion Trail Decay'}</span>
+                          <span className="text-yellow-400 font-mono">{Math.round(echoDecay * 100)}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.3"
+                          max="0.95"
+                          step="0.05"
+                          value={echoDecay}
+                          onChange={(e) => setEchoDecay(parseFloat(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Thematic Audio FX Switch (VHS, Scanline, Glitch) */}
+                  {['vhs-tape', 'scanline', 'glitch-master'].includes(type) && (
+                    <Switch
+                      label={lang === 'tr' ? 'Tematik Ses Efekti (DSP)' : 'Thematic Audio FX (DSP)'}
+                      checked={audioFxEnabled}
+                      onChange={(e) => setAudioFxEnabled(e.target.checked)}
+                    />
+                  )}
+
+                  {/* 1080p High Quality Switch */}
+                  <Switch
+                    label={t('highQualityLabel', lang) || 'Yüksek Kalite (1080p)'}
+                    checked={hdOutput}
+                    onChange={(e) => setHdOutput(e.target.checked)}
+                  />
+
+                </div>
+
+                {/* Video Format (Aspect Ratio) matching MatchCutTool */}
+                <div className="border-t border-zinc-700 pt-4 flex-shrink-0">
+                  <label className="block text-sm font-medium text-gray-400 mb-2">{t('formatLabel', lang) || 'Video Formatı'}</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['16:9', '9:16', '1:1'].map((fmt) => (
+                      <button
+                        key={fmt}
+                        type="button"
+                        onClick={() => setFormatPreset(fmt)}
+                        className={`p-2 rounded-md font-semibold transition-colors ${
+                          formatPreset === fmt
+                            ? 'bg-accent text-white ring-2 ring-offset-2 ring-offset-zinc-900 ring-accent'
+                            : 'bg-zinc-700 hover:bg-zinc-600'
+                        }`}
+                      >
+                        {fmt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Generate Action Button matching MatchCutTool */}
+                <button
+                  onClick={!isServerTool ? startDeviceRender : startCloudProcessing}
+                  disabled={status === 'processing' || status === 'uploading'}
+                  className="w-full mt-4 bg-accent-gold text-black font-bold p-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-lg shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {status === 'processing' || status === 'uploading' ? (
+                    <>
+                      <RotateCcw className="animate-spin" size={18} />
+                      <span>{t('generatingButton', lang) || 'Oluşturuluyor...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play size={18} fill="black" />
+                      <span>{t('generateButton', lang) || 'Videoyu Oluştur'}</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
+          </div>
 
-            {status === 'completed' && resultUrl ? (
-              <div className="flex flex-col items-center w-full my-auto">
-                <div className="relative w-full max-w-md bg-black rounded-2xl overflow-hidden border border-border-color shadow-2xl mb-6">
-                  <video src={resultUrl} controls autoPlay loop className="w-full h-auto" />
+          {/* RIGHT COLUMN: Video Preview Area (Matching Preview.jsx) */}
+          <div className="flex-1 flex flex-col h-auto lg:h-full min-h-[400px] lg:min-h-0">
+            <div className="w-full h-full bg-zinc-900/50 backdrop-blur-sm border-2 border-dashed border-zinc-700 rounded-xl flex flex-col items-center justify-center p-4 transition-all duration-300 relative overflow-hidden">
+              
+              {/* Generating / Processing State */}
+              {(status === 'processing' || status === 'uploading') && (
+                <div className="w-full max-w-md text-center">
+                  <h3 className="text-xl font-semibold text-white mb-4">
+                    {status === 'uploading' ? (lang === 'tr' ? 'Buluta Yükleniyor...' : 'Uploading...') : (t('generatingTitle', lang) || 'Video Oluşturuluyor...')}
+                  </h3>
+                  <div className="w-full bg-zinc-800 rounded-full h-2.5">
+                    <div
+                      className="bg-gradient-to-r from-zinc-400 to-zinc-600 h-2.5 rounded-full transition-all duration-150"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-gray-400 mt-2 font-mono">{Math.round(progress)}%</p>
                 </div>
-                <div className="flex gap-3 w-full max-w-md">
-                  <a
-                    href={resultUrl}
-                    download={`${projectName || type}.mp4`}
-                    className="flex-1 py-3.5 bg-accent-gold hover:bg-yellow-400 text-black font-bold rounded-xl text-center shadow-lg transition-all flex items-center justify-center gap-2"
-                  >
-                    <Download size={18} />
-                    {t('downloadButton', lang) || 'Download Video'}
-                  </a>
-                  <button
-                    onClick={() => { setStatus('idle'); setResultUrl(''); setProgress(0); }}
-                    className="px-4 py-3.5 bg-surface-light hover:bg-zinc-800 text-text-primary font-bold rounded-xl border border-border-color transition-colors flex items-center gap-1.5"
-                  >
-                    <RotateCcw size={16} />
-                    {t('reset', lang) || 'Reset'}
-                  </button>
-                </div>
-              </div>
-            ) : status === 'processing' || status === 'uploading' ? (
-              <div className="flex flex-col items-center w-full max-w-md my-auto">
-                <div className="w-12 h-12 rounded-2xl bg-surface-light border border-border-color flex items-center justify-center text-accent-gold mb-4 animate-pulse">
-                  <Sparkles size={24} />
-                </div>
-                <h2 className="text-xl font-bold text-white mb-6">
-                  {status === 'uploading' ? 'Uploading Media...' : 'Rendering Video...'}
-                </h2>
-                <div className="w-full h-3 bg-surface-light rounded-full overflow-hidden mb-3 relative border border-border-color">
-                  <div
-                    className="h-full bg-accent-gold transition-all duration-300 rounded-full"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <div className="flex justify-between w-full text-xs font-mono text-text-muted">
-                  <span>{progress}%</span>
-                  <span>{isServerTool ? 'Server Queue' : 'Browser FFmpeg WASM'}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center w-full my-auto">
-                
-                {/* Canvas Viewport Frame with Aspect-Ratio Containment */}
-                <div
-                  className={`w-full max-w-md bg-black rounded-2xl overflow-hidden border border-border-color shadow-2xl relative mb-5 flex items-center justify-center ${
-                    formatPreset === '9:16' ? 'aspect-[9/16] max-h-[380px]' : formatPreset === '1:1' ? 'aspect-square max-h-[340px]' : 'aspect-video'
-                  }`}
-                >
-                  <canvas
-                    ref={canvasRef}
-                    width={formatPreset === '9:16' ? 360 : 640}
-                    height={formatPreset === '9:16' ? 640 : (formatPreset === '1:1' ? 640 : 360)}
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </div>
+              )}
 
-                {/* Media Uploader Button (if not purely text tool) */}
-                {type !== 'typewriter' && (
-                  <div className="w-full max-w-md mb-4">
-                    <div className="flex items-center gap-2">
+              {/* Completed Video State */}
+              {status === 'completed' && resultUrl && (
+                <div className="w-full h-full flex flex-col items-center justify-center space-y-4">
+                  <div className={`w-full h-[calc(100%-60px)] flex items-center justify-center ${formatPreset === '9:16' ? 'max-w-xs' : ''}`}>
+                    <video controls autoPlay loop src={resultUrl} className="max-w-full max-h-full object-contain rounded-md shadow-2xl" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={resultUrl}
+                      download={`${type}_${Date.now()}.mp4`}
+                      className="flex-shrink-0 bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition-all flex items-center gap-2"
+                    >
+                      <Download size={16} />
+                      {t('downloadButton', lang) || 'İndir (MP4)'}
+                    </a>
+                    <button
+                      onClick={() => { setResultUrl(''); setStatus('idle'); }}
+                      className="py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-lg transition-colors text-sm"
+                    >
+                      {lang === 'tr' ? 'Yeniden Düzenle' : 'Edit Again'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Idle / Live Canvas Preview State */}
+              {status !== 'completed' && status !== 'processing' && status !== 'uploading' && (
+                <div className="w-full h-full flex flex-col items-center justify-center">
+                  <div className={`w-full flex-1 flex items-center justify-center min-h-0 ${
+                    formatPreset === '9:16' ? 'max-w-xs' : (formatPreset === '1:1' ? 'max-w-md' : 'w-full')
+                  }`}>
+                    <canvas
+                      ref={canvasRef}
+                      width={formatPreset === '9:16' ? 360 : 640}
+                      height={formatPreset === '9:16' ? 640 : (formatPreset === '1:1' ? 640 : 360)}
+                      className="max-h-full max-w-full object-contain rounded-md shadow-2xl"
+                    />
+                  </div>
+
+                  {/* Media Uploader Controls (docked at preview bottom) */}
+                  {type !== 'typewriter' && (
+                    <div className="w-full max-w-md mt-4 flex flex-col items-center gap-1.5 flex-shrink-0">
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex-1 py-2.5 px-4 bg-surface-light hover:bg-zinc-800 border border-border-color rounded-xl text-xs font-semibold transition-colors text-text-secondary flex items-center justify-center gap-2 truncate"
+                        className="w-full py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 rounded-md text-sm font-semibold transition-colors text-zinc-200 flex items-center justify-center gap-2 truncate shadow"
                       >
-                        <Upload size={14} />
+                        <Upload size={16} />
                         {file ? file.name : (lang === 'tr' ? 'Medyayı Değiştir (Görsel/Video)' : 'Upload Media (Photo/Video)')}
                       </button>
                       <input
@@ -825,528 +1271,35 @@ export default function VideoEffectTool() {
                         accept={type === 'ken-burns' ? "image/jpeg,image/png,image/webp" : "video/mp4,video/quicktime,image/jpeg,image/png,image/webp"}
                         className="hidden"
                       />
-                    </div>
-                    {file && file.type.startsWith('video/') && (
-                      <div className="flex items-center justify-between text-[11px] font-mono text-emerald-400 mt-2 px-1">
-                        <span className="flex items-center gap-1.5">
-                          <Volume2 size={13} />
-                          {lang === 'tr' ? 'Orijinal Ses Dahil Edilecek' : 'Original Audio Included'}
-                        </span>
-                        {fileDuration && (
-                          <span className="text-text-muted">
-                            {lang === 'tr' ? 'Video:' : 'Source:'} {formatDuration(Math.round(fileDuration))}
+                      {file && file.type.startsWith('video/') && (
+                        <div className="flex items-center justify-between w-full text-xs font-mono text-emerald-400 px-1 mt-0.5">
+                          <span className="flex items-center gap-1.5">
+                            <Volume2 size={13} />
+                            {lang === 'tr' ? 'Orijinal Ses Korunuyor' : 'Original Audio Included'}
                           </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
+                          {fileDuration && (
+                            <span className="text-zinc-400">
+                              {lang === 'tr' ? 'Video:' : 'Source:'} {formatDuration(Math.round(fileDuration))}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-                {/* Action CTA */}
-                <div className="w-full max-w-md">
-                  {!isServerTool ? (
-                    <button
-                      onClick={startDeviceRender}
-                      className="w-full py-3.5 bg-accent-gold hover:bg-yellow-400 rounded-xl font-bold text-black text-sm shadow-[0_0_25px_rgba(245,179,1,0.25)] transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
-                    >
-                      <Play size={16} fill="black" />
-                      {lang === 'tr' ? 'Videoyu Cihazda Oluştur' : 'Render Video on Device'}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={startCloudProcessing}
-                      className="w-full py-3.5 bg-accent-gold hover:bg-yellow-400 rounded-xl font-bold text-black text-sm shadow-[0_0_25px_rgba(245,179,1,0.25)] transition-all flex items-center justify-center gap-2 active:scale-[0.99]"
-                    >
-                      <Play size={16} fill="black" />
-                      {lang === 'tr' ? 'Bulutta Oluştur (1080p)' : 'Render in Cloud (1080p)'}
-                    </button>
+                  {errorMsg && (
+                    <div className="mt-3 w-full max-w-md bg-red-950/40 border border-red-500/40 p-2.5 rounded-lg text-red-400 text-xs font-medium text-center">
+                      {errorMsg}
+                    </div>
                   )}
                 </div>
-
-                {errorMsg && (
-                  <div className="mt-4 w-full max-w-md bg-red-950/30 border border-red-500/30 p-3 rounded-xl text-red-400 text-xs font-medium">
-                    {errorMsg}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Right Column: Settings Panel */}
-          <div className="lg:col-span-5 bg-surface border border-border-color rounded-3xl p-6 flex flex-col shadow-2xl overflow-y-auto custom-scrollbar">
-            <h3 className="text-base font-bold mb-5 flex items-center gap-2 text-text-primary">
-              <Sliders size={18} className="text-accent-gold" />
-              {t('settingsTitle', lang) || 'Effect Controls'}
-            </h3>
-
-            <div className="space-y-5">
-              
-              {/* Aspect Ratio Presets */}
-              <div>
-                <label className="block text-xs font-bold text-text-secondary mb-2 uppercase tracking-wider">
-                  {t('formatLabel', lang) || 'Aspect Ratio'}
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['16:9', '9:16', '1:1'].map((fmt) => (
-                    <button
-                      key={fmt}
-                      onClick={() => setFormatPreset(fmt)}
-                      className={`py-2 rounded-xl text-xs font-bold transition-all border ${
-                        formatPreset === fmt
-                          ? 'bg-accent-gold text-black border-accent-gold shadow-md'
-                          : 'bg-surface-light text-text-secondary border-border-color hover:text-white'
-                      }`}
-                    >
-                      {fmt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Video Duration Slider */}
-              <div>
-                <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                  <span>{lang === 'tr' ? 'Video Süresi (Max 5 Dk)' : 'Video Duration (Max 5 Min)'}</span>
-                  <span className="text-accent-gold font-mono font-bold">{formatDuration(duration)}</span>
-                </div>
-                <input
-                  type="range"
-                  min="3"
-                  max="300"
-                  step="1"
-                  value={duration}
-                  onChange={(e) => setDuration(parseInt(e.target.value))}
-                  className="w-full accent-accent-gold"
-                />
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {[5, 15, 30, 60, 180, 300].map(s => (
-                    <button
-                      key={s}
-                      onClick={() => setDuration(s)}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold border transition-colors ${
-                        duration === s
-                          ? 'bg-accent-gold text-black border-accent-gold'
-                          : 'bg-surface-light text-text-muted border-border-color hover:text-white'
-                      }`}
-                    >
-                      {s >= 60 ? `${s / 60}m` : `${s}s`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 1. KEN BURNS GRANULAR CONTROLS */}
-              {type === 'ken-burns' && (
-                <div className="space-y-4 pt-4 border-t border-border-color">
-                  <div>
-                    <label className="block text-xs font-bold text-text-secondary mb-1.5">
-                      {lang === 'tr' ? 'Yakınlaştırma Yönü' : 'Zoom Direction'}
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { id: 'in', label: lang === 'tr' ? 'Yakınlaş (In)' : 'Zoom In' },
-                        { id: 'out', label: lang === 'tr' ? 'Uzaklaş (Out)' : 'Zoom Out' }
-                      ].map(z => (
-                        <button
-                          key={z.id}
-                          onClick={() => setZoomDirection(z.id)}
-                          className={`py-2 rounded-xl text-xs font-bold border transition-all ${
-                            zoomDirection === z.id
-                              ? 'bg-accent-gold text-black border-accent-gold'
-                              : 'bg-surface-light text-text-secondary border-border-color hover:text-white'
-                          }`}
-                        >
-                          {z.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-text-secondary mb-1.5">
-                      {lang === 'tr' ? 'Kamera Kaydırma (Pan)' : 'Camera Pan Style'}
-                    </label>
-                    <select
-                      value={panStyle}
-                      onChange={(e) => setPanStyle(e.target.value)}
-                      className="w-full bg-surface-light border border-border-color rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-accent-gold"
-                    >
-                      <option value="center">{lang === 'tr' ? 'Merkez (Sabit)' : 'Center (No Pan)'}</option>
-                      <option value="left_to_right">{lang === 'tr' ? 'Soldan Sağa' : 'Left to Right'}</option>
-                      <option value="right_to_left">{lang === 'tr' ? 'Sağdan Sola' : 'Right to Left'}</option>
-                      <option value="top_to_bottom">{lang === 'tr' ? 'Yukarıdan Aşağıya' : 'Top to Bottom'}</option>
-                      <option value="bottom_to_top">{lang === 'tr' ? 'Aşağıdan Yukarıya' : 'Bottom to Top'}</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                      <span>{lang === 'tr' ? 'Yakınlaştırma Hızı' : 'Zoom Rate'}</span>
-                      <span className="text-accent-gold font-mono">{zoomRate}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.01"
-                      max="0.10"
-                      step="0.01"
-                      value={zoomRate}
-                      onChange={(e) => setZoomRate(parseFloat(e.target.value))}
-                      className="w-full accent-accent-gold"
-                    />
-                  </div>
-                </div>
               )}
-
-              {/* 2. VHS TAPE GRANULAR CONTROLS */}
-              {type === 'vhs-tape' && (
-                <div className="space-y-4 pt-4 border-t border-border-color">
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                      <span>{lang === 'tr' ? 'Renk Bozulması (Aberration)' : 'Chromatic Aberration'}</span>
-                      <span className="text-accent-gold font-mono">{aberrationStrength}x</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.5"
-                      max="3.0"
-                      step="0.1"
-                      value={aberrationStrength}
-                      onChange={(e) => setAberrationStrength(parseFloat(e.target.value))}
-                      className="w-full accent-accent-gold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-text-secondary mb-1.5">
-                      {lang === 'tr' ? 'Bant Parazit Yoğunluğu' : 'Tracking Noise Level'}
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {['low', 'medium', 'high'].map(lvl => (
-                        <button
-                          key={lvl}
-                          onClick={() => setTrackingNoise(lvl)}
-                          className={`py-2 rounded-xl text-xs font-bold capitalize border transition-all ${
-                            trackingNoise === lvl
-                              ? 'bg-accent-gold text-black border-accent-gold'
-                              : 'bg-surface-light text-text-secondary border-border-color hover:text-white'
-                          }`}
-                        >
-                          {lvl}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-xs font-bold text-text-secondary">
-                      {lang === 'tr' ? 'Retro Zaman Damgası (OSD)' : 'VCR OSD Timestamp'}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={vhsTimestamp}
-                      onChange={(e) => setVhsTimestamp(e.target.checked)}
-                      className="w-4 h-4 accent-accent-gold cursor-pointer"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-text-secondary">
-                      {lang === 'tr' ? 'Tarama Çizgisi Titremesi' : 'Scanline Flicker'}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={scanlineFlicker}
-                      onChange={(e) => setScanlineFlicker(e.target.checked)}
-                      className="w-4 h-4 accent-accent-gold cursor-pointer"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* 3. GLITCH MASTER CONTROLS */}
-              {type === 'glitch-master' && (
-                <div className="space-y-4 pt-4 border-t border-border-color">
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                      <span>{t('glitchIntensityLabel', lang) || 'Glitch Intensity'}</span>
-                      <span className="text-accent-gold font-mono">{Math.round(glitchIntensity * 100)}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="1.0"
-                      step="0.05"
-                      value={glitchIntensity}
-                      onChange={(e) => setGlitchIntensity(parseFloat(e.target.value))}
-                      className="w-full accent-accent-gold"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                      <span>{t('rgbShiftLabel', lang) || 'RGB Color Split'}</span>
-                      <span className="text-accent-gold font-mono">{rgbShift}px</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="2"
-                      max="30"
-                      step="1"
-                      value={rgbShift}
-                      onChange={(e) => setRgbShift(parseInt(e.target.value))}
-                      className="w-full accent-accent-gold"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                      <span>{t('sliceRateLabel', lang) || 'Slice Slicing'}</span>
-                      <span className="text-accent-gold font-mono">{sliceRate}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="16"
-                      step="1"
-                      value={sliceRate}
-                      onChange={(e) => setSliceRate(parseInt(e.target.value))}
-                      className="w-full accent-accent-gold"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* 4. TYPEWRITER CONTROLS */}
-              {type === 'typewriter' && (
-                <div className="space-y-4 pt-4 border-t border-border-color">
-                  <div>
-                    <label className="block text-xs font-bold text-text-secondary mb-1.5">
-                      {t('typewriterTextLabel', lang) || 'Text to Animate'}
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={typewriterText}
-                      onChange={(e) => setTypewriterText(e.target.value)}
-                      className="w-full bg-surface-light border border-border-color rounded-xl p-3 text-xs text-white outline-none focus:border-accent-gold font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                      <span>{t('typingSpeedLabel', lang) || 'Typing Speed'}</span>
-                      <span className="text-accent-gold font-mono">{typingSpeed} chars/s</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="8"
-                      max="35"
-                      step="1"
-                      value={typingSpeed}
-                      onChange={(e) => setTypingSpeed(parseInt(e.target.value))}
-                      className="w-full accent-accent-gold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-text-secondary mb-1.5">
-                      {t('cursorStyleLabel', lang) || 'Cursor Style'}
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { id: 'block', label: 'Block' },
-                        { id: 'line', label: 'Line' },
-                        { id: 'underscore', label: 'Underscore' }
-                      ].map(c => (
-                        <button
-                          key={c.id}
-                          onClick={() => setCursorStyle(c.id)}
-                          className={`py-2 rounded-xl text-xs font-bold border transition-all ${
-                            cursorStyle === c.id
-                              ? 'bg-accent-gold text-black border-accent-gold'
-                              : 'bg-surface-light text-text-secondary border-border-color hover:text-white'
-                          }`}
-                        >
-                          {c.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 5. SCANLINE CRT CONTROLS */}
-              {type === 'scanline' && (
-                <div className="space-y-4 pt-4 border-t border-border-color">
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                      <span>{t('scanlineDensityLabel', lang) || 'Scanline Density'}</span>
-                      <span className="text-accent-gold font-mono">{scanlineDensity}px</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="2"
-                      max="10"
-                      step="1"
-                      value={scanlineDensity}
-                      onChange={(e) => setScanlineDensity(parseInt(e.target.value))}
-                      className="w-full accent-accent-gold"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                      <span>{t('phosphorGlowLabel', lang) || 'Phosphor Glow'}</span>
-                      <span className="text-accent-gold font-mono">{Math.round(phosphorGlow * 100)}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="1.0"
-                      step="0.05"
-                      value={phosphorGlow}
-                      onChange={(e) => setPhosphorGlow(parseFloat(e.target.value))}
-                      className="w-full accent-accent-gold"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* 6. ASCII MATRIX CONTROLS */}
-              {type === 'ascii' && (
-                <div className="space-y-4 pt-4 border-t border-border-color">
-                  <div>
-                    <label className="block text-xs font-bold text-text-secondary mb-2">
-                      {t('asciiThemeLabel', lang) || 'Color Palette'}
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { id: 'matrixGreen', label: 'Matrix Green' },
-                        { id: 'cyberNeon', label: 'Cyber Neon' },
-                        { id: 'retroAmber', label: 'Retro Amber' },
-                        { id: 'trueColor', label: 'True Color' }
-                      ].map(tObj => (
-                        <button
-                          key={tObj.id}
-                          onClick={() => setAsciiTheme(tObj.id)}
-                          className={`py-2 rounded-xl text-xs font-bold border transition-all ${
-                            asciiTheme === tObj.id
-                              ? 'bg-accent-gold text-black border-accent-gold'
-                              : 'bg-surface-light text-text-secondary border-border-color hover:text-white'
-                          }`}
-                        >
-                          {tObj.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                      <span>{t('asciiCharsetLabel', lang) || 'Pixel Cell Size'}</span>
-                      <span className="text-accent-gold font-mono">{asciiResolution}px</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="8"
-                      max="20"
-                      step="2"
-                      value={asciiResolution}
-                      onChange={(e) => setAsciiResolution(parseInt(e.target.value))}
-                      className="w-full accent-accent-gold"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* 7. ECHO MOTION CONTROLS */}
-              {type === 'echo' && (
-                <div className="space-y-4 pt-4 border-t border-border-color">
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                      <span>{t('echoCountLabel', lang) || 'Echo Frames'}</span>
-                      <span className="text-accent-gold font-mono">{echoCount}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="2"
-                      max="10"
-                      step="1"
-                      value={echoCount}
-                      onChange={(e) => setEchoCount(parseInt(e.target.value))}
-                      className="w-full accent-accent-gold"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-text-secondary mb-1.5">
-                      <span>{t('echoDecayLabel', lang) || 'Motion Trail Decay'}</span>
-                      <span className="text-accent-gold font-mono">{Math.round(echoDecay * 100)}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.3"
-                      max="0.95"
-                      step="0.05"
-                      value={echoDecay}
-                      onChange={(e) => setEchoDecay(parseFloat(e.target.value))}
-                      className="w-full accent-accent-gold"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Thematic Audio FX Toggle (Glitch, CRT Scanline, VHS) */}
-              {['vhs-tape', 'scanline', 'glitch-master'].includes(type) && (
-                <div className="pt-4 border-t border-border-color flex items-center justify-between">
-                  <div className="pr-3">
-                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                      <Volume2 size={13} className="text-accent-gold" />
-                      {lang === 'tr' ? 'Tematik Ses Efekti (DSP)' : 'Thematic Audio FX'}
-                      <span className="text-[10px] bg-surface-light text-accent-gold border border-border-color px-1.5 py-0.5 rounded font-mono">
-                        {type === 'vhs-tape' ? 'VHS Tape' : type === 'scanline' ? 'CRT TV' : 'Glitch'}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-text-muted">
-                      {type === 'vhs-tape'
-                        ? (lang === 'tr' ? '90’lar analog kaset filtre ve doygunluğu' : '90s analog tape warmth & EQ')
-                        : type === 'scanline'
-                        ? (lang === 'tr' ? 'CRT TV hoparlör kutusu tınısı' : 'Vintage CRT TV speaker simulation')
-                        : (lang === 'tr' ? 'Dijital overdrive ve crunch' : 'Digital glitch distortion overdrive')}
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={audioFxEnabled}
-                    onChange={(e) => setAudioFxEnabled(e.target.checked)}
-                    className="w-4 h-4 accent-accent-gold cursor-pointer flex-shrink-0"
-                  />
-                </div>
-              )}
-
-              {/* 1080p HD Output Toggle */}
-              <div className="pt-4 border-t border-border-color flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                    1080p Full HD
-                    <span className="text-[10px] bg-accent-gold text-black px-1.5 py-0.5 rounded font-black">PRO</span>
-                  </div>
-                  <div className="text-[11px] text-text-muted">High bitrate export</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={hdOutput}
-                  onChange={(e) => setHdOutput(e.target.checked)}
-                  className="w-4 h-4 accent-accent-gold cursor-pointer"
-                />
-              </div>
 
             </div>
           </div>
 
         </main>
-      </div>
+      </motion.div>
     </div>
   );
 }
-
-
