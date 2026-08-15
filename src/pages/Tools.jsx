@@ -356,20 +356,57 @@ const TOOLS = [
     path: '/effects/typewriter',
     isPro: true,
     isSoon: false,
-    bgClass: 'from-zinc-700 to-zinc-900',
+    bgClass: 'from-amber-950/40 via-stone-900 to-zinc-900',
     effect: (isHovered) => (
-      <div className="absolute inset-0 flex items-center justify-center opacity-40">
-        {isHovered ? (
-          <motion.div
-            animate={{ opacity: [0, 1], width: ['0%', '100%'] }}
-            transition={{ duration: 1, repeat: Infinity, repeatDelay: 1 }}
-            className="text-white font-mono text-xl whitespace-nowrap overflow-hidden border-r-2 border-white pr-1"
-          >
-            _Typewriter
-          </motion.div>
-        ) : (
-          <div className="text-white font-mono text-xl whitespace-nowrap">_Typewriter</div>
-        )}
+      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 overflow-hidden">
+        {/* Typewriter Roller Platen */}
+        <div className="w-48 h-3.5 bg-stone-800 border border-stone-600 rounded-t-sm shadow-inner flex items-center justify-between px-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-stone-600 border border-stone-500" />
+          <div className="h-0.5 w-32 bg-stone-700 rounded-full" />
+          <div className="w-2.5 h-2.5 rounded-full bg-stone-600 border border-stone-500" />
+        </div>
+
+        {/* Vintage Paper coming out of roller */}
+        <div className="w-40 bg-[#FAF7EE]/90 text-stone-900 border border-stone-300 rounded-b shadow-lg p-2.5 flex flex-col gap-1.5 -mt-0.5 relative">
+          <div className="text-[9px] font-mono tracking-widest text-stone-500 uppercase border-b border-stone-300/80 pb-1 flex justify-between items-center">
+            <span>ROYAL 1954</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-red-600/80" />
+          </div>
+
+          <div className="font-serif text-xs font-bold text-stone-900 tracking-wider flex items-center min-h-[20px]">
+            <motion.span
+              animate={isHovered ? { width: ['0%', '100%', '100%', '0%'] } : { width: '100%' }}
+              transition={isHovered ? { duration: 2.8, repeat: Infinity, times: [0, 0.5, 0.85, 1], ease: 'linear' } : { duration: 0.2 }}
+              className="whitespace-nowrap overflow-hidden inline-block"
+            >
+              TYPEWRITER
+            </motion.span>
+            <motion.span
+              animate={isHovered ? { opacity: [1, 0, 1], scaleY: [1, 1.3, 1] } : { opacity: 1 }}
+              transition={{ duration: 0.5, repeat: Infinity }}
+              className="inline-block w-[2px] h-3.5 bg-stone-900 ml-0.5"
+            />
+          </div>
+
+          <div className="w-full flex gap-1">
+            <div className="w-2/3 h-1 bg-stone-300 rounded-full" />
+            <div className="w-1/3 h-1 bg-stone-200 rounded-full" />
+          </div>
+        </div>
+
+        {/* Vintage Typewriter Round Key Caps Row */}
+        <div className="flex gap-1.5 mt-2 opacity-60">
+          {['Q', 'W', 'E', 'R', 'T', 'Y'].map((k) => (
+            <motion.div
+              key={k}
+              animate={isHovered ? { y: [0, 2, 0] } : { y: 0 }}
+              transition={{ duration: 0.6, repeat: isHovered ? Infinity : 0, delay: (k.charCodeAt(0) % 5) * 0.1 }}
+              className="w-4 h-4 rounded-full border border-stone-400 bg-stone-900 text-[8px] font-mono font-bold text-stone-300 flex items-center justify-center shadow"
+            >
+              {k}
+            </motion.div>
+          ))}
+        </div>
       </div>
     )
   },
@@ -722,17 +759,41 @@ const TOOLS = [
     isSoon: true,
     bgClass: 'from-stone-800 to-zinc-900',
     effect: (isHovered) => (
-      <div className="absolute inset-0 flex items-center justify-center opacity-40 perspective-1000">
-        <div className="w-32 h-40 bg-white/10 border-r border-white/30 relative origin-left" style={{ transformStyle: 'preserve-3d' }}>
-           {isHovered && (
-             <motion.div
-               animate={{ rotateY: [0, -180] }}
-               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.5 }}
-               className="absolute inset-0 bg-white/20 border border-white/30 origin-left"
-             />
-           )}
+      <div className="absolute inset-0 flex items-center justify-center opacity-50" style={{ perspective: '1000px' }}>
+        <div className="relative flex items-center shadow-2xl rounded-sm" style={{ transformStyle: 'preserve-3d' }}>
+          {/* Left Page (Static Base) */}
+          <div className="w-24 h-32 bg-stone-100/10 border-r border-stone-400/30 rounded-l-sm flex flex-col justify-center p-3 gap-1.5 shadow-inner">
+            <div className="w-full h-1.5 bg-white/20 rounded-full" />
+            <div className="w-4/5 h-1.5 bg-white/20 rounded-full" />
+            <div className="w-3/4 h-1.5 bg-white/20 rounded-full" />
+            <div className="w-5/6 h-1.5 bg-white/10 rounded-full mt-2" />
+          </div>
+
+          {/* Right Page (Static Base) */}
+          <div className="w-24 h-32 bg-stone-100/5 border-l border-stone-400/30 rounded-r-sm flex flex-col justify-center p-3 gap-1.5 shadow-inner">
+            <div className="w-full h-1.5 bg-white/20 rounded-full" />
+            <div className="w-4/5 h-1.5 bg-white/20 rounded-full" />
+            <div className="w-3/4 h-1.5 bg-white/20 rounded-full" />
+            <div className="w-2/3 h-1.5 bg-white/10 rounded-full mt-2" />
+          </div>
+
+          {/* Turning Page (Anchored to Center Spine) */}
+          {isHovered && (
+            <motion.div
+              animate={{ rotateY: [0, -180] }}
+              transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.4 }}
+              className="absolute right-0 top-0 w-24 h-32 bg-stone-100/20 border border-stone-300/30 rounded-r-sm p-3 flex flex-col justify-center gap-1.5 shadow-md"
+              style={{ transformOrigin: 'left center', transformStyle: 'preserve-3d' }}
+            >
+              <div className="w-full h-1.5 bg-white/30 rounded-full" />
+              <div className="w-4/5 h-1.5 bg-white/30 rounded-full" />
+              <div className="w-3/4 h-1.5 bg-white/30 rounded-full" />
+            </motion.div>
+          )}
+
+          {/* Book Spine Center Line */}
+          <div className="absolute left-1/2 top-0 bottom-0 w-[2px] -translate-x-1/2 bg-stone-400/40 shadow-sm" />
         </div>
-        <div className="w-32 h-40 bg-white/5 border-l border-white/30"></div>
       </div>
     )
   }
