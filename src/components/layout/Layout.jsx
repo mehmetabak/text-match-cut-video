@@ -35,7 +35,7 @@ const Layout = () => {
   const profileDropdownRef = useRef(null);
   const pointsDropdownRef = useRef(null);
 
-  const isToolPage = (['/match-cut', '/effects/ken-burns', '/effects/vhs-tape'].includes(location.pathname));
+  const isToolPage = location.pathname === '/match-cut' || location.pathname.startsWith('/effects');
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -51,9 +51,9 @@ const Layout = () => {
   }, []);
 
   useEffect(() => {
-    // Sadece araç içindeyken (match-cut) üst barın gizlenme/daralma (collapse) özelliği aktif olabilir.
+    // Sadece araç içindeyken (match-cut veya effects/*) üst barın gizlenme/daralma (collapse) özelliği aktif olur.
     // Ana sayfa, Profil veya Araçlar menüsüne geçildiğinde üst bar KESİNLİKLE görünür (açık) olmalıdır.
-    if ((['/match-cut', '/effects/ken-burns', '/effects/vhs-tape'].includes(location.pathname))) {
+    if (location.pathname === '/match-cut' || location.pathname.startsWith('/effects')) {
       setSetting('isHeaderCollapsed', true);
     } else {
       setSetting('isHeaderCollapsed', false);
