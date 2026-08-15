@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { MousePointer2, Volume2, Zap, Settings, Palette, Download, Play, Layers, ChevronDown, Check, Wand2, Mail, ArrowRight, LayoutGrid } from 'lucide-react';
+import { MousePointer2, Volume2, Zap, Settings, Palette, Download, Play, Layers, ChevronDown, Check, Wand2, Mail, ArrowRight, LayoutGrid, Globe } from 'lucide-react';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAuthStore } from '../store/authStore';
 import { t } from '../lib/i18n';
@@ -527,10 +527,27 @@ const Home = () => {
           </div>
 
           <div className="flex flex-col items-center md:items-start gap-4 text-center md:text-left">
-            <h4 className="text-white font-bold text-lg mb-2">Social</h4>
-            <a href="#" className="text-text-muted hover:text-white transition-colors">Facebook</a>
-            <a href="#" className="text-text-muted hover:text-white transition-colors">LinkedIn</a>
-            <a href="#" className="text-text-muted hover:text-white transition-colors">Instagram</a>
+            <h4 className="text-white font-bold text-lg mb-2">{lang === 'tr' ? 'Bağlantılar' : 'Social & Web'}</h4>
+            <a
+              href="https://x.com/AniMaker_m0s"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-text-muted hover:text-white transition-colors flex items-center gap-2 group"
+            >
+              <svg className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+              <span>X (Twitter)</span>
+            </a>
+            <a
+              href="https://m0s.space"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-text-muted hover:text-white transition-colors flex items-center gap-2 group"
+            >
+              <Globe className="w-4 h-4 text-[#F5B301] group-hover:scale-110 transition-transform shrink-0" />
+              <span>m0s.space</span>
+            </a>
             <div className="w-full max-w-[120px] h-px bg-border-color my-1"></div>
             <button
               onClick={() => setIsCookieModalOpen(true)}
