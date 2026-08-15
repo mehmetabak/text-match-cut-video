@@ -64,7 +64,7 @@ const TOOLS = [
     bgClass: 'from-blue-600/30 via-red-600/10 to-zinc-900',
     effect: (isHovered) => (
       <div className="absolute inset-0 flex flex-col items-center justify-center p-6 opacity-75 overflow-hidden">
-        <div className="flex gap-1.5 font-bold text-xl mb-2 tracking-tight">
+        <div className="flex font-semibold text-lg mb-2 tracking-normal items-center justify-center select-none">
           <span className="text-[#4285F4]">G</span>
           <span className="text-[#EA4335]">o</span>
           <span className="text-[#FBBC05]">o</span>
@@ -647,27 +647,43 @@ const TOOLS = [
     )
   },
   {
-    id: 'google-search',
-    titleKey: 'tool_gsearch_title',
-    descKey: 'tool_gsearch_desc',
+    id: 'audio-waveform',
+    titleKey: 'tool_audiowave_title',
+    descKey: 'tool_audiowave_desc',
     path: '#',
     isPro: true,
     isSoon: true,
-    bgClass: 'from-gray-800 to-zinc-900',
+    bgClass: 'from-cyan-950 via-sky-900/40 to-zinc-900',
     effect: (isHovered) => (
-      <div className="absolute inset-0 flex items-center justify-center opacity-40">
-        <div className="w-48 h-12 bg-white/10 rounded-full border border-white/20 flex items-center px-4 overflow-hidden relative">
-          <div className="w-4 h-4 rounded-full border-2 border-blue-400 mr-2 flex-shrink-0" />
-          {isHovered ? (
-            <motion.div
-              animate={{ width: ['0%', '100%'] }}
-              transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity, repeatDelay: 1 }}
-              className="h-2 bg-white/30 rounded-full w-full origin-left"
-            />
-          ) : (
-            <div className="h-2 bg-white/30 rounded-full w-full origin-left" />
-          )}
-        </div>
+      <div className="absolute inset-0 flex items-center justify-center gap-1.5 opacity-50 px-6">
+        {[0.3, 0.7, 0.4, 0.9, 0.6, 1, 0.5, 0.8, 0.35, 0.75, 0.45, 0.85, 0.5, 0.65, 0.3].map((height, i) => (
+          <motion.div
+            key={i}
+            animate={
+              isHovered
+                ? {
+                    height: [`${height * 20}%`, `${Math.max(20, Math.min(95, (1 - height) * 100))}%`, `${height * 65}%`],
+                    backgroundColor: ['#06b6d4', '#3b82f6', '#8b5cf6', '#06b6d4']
+                  }
+                : {
+                    height: `${height * 50}%`,
+                    backgroundColor: '#06b6d4'
+                  }
+            }
+            transition={
+              isHovered
+                ? {
+                    duration: 0.8 + (i % 5) * 0.15,
+                    repeat: Infinity,
+                    repeatType: 'reverse',
+                    ease: 'easeInOut',
+                    delay: (i * 0.05) % 0.4
+                  }
+                : { duration: 0.3 }
+            }
+            className="w-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.6)]"
+          />
+        ))}
       </div>
     )
   },

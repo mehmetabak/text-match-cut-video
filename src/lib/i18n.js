@@ -345,7 +345,9 @@ export const strings = {
     "cookieAnalyticsDesc": "Helps us measure site usage and identify technical errors to improve render speeds and reliability.",
     "cookieSave": "Save Preferences",
     "cookieAcceptAll": "Accept All Cookies",
-    "cookieSettings": "Cookie Settings"
+    "cookieSettings": "Cookie Settings",
+    "tool_audiowave_title": "Audio Waveform & Spectrum",
+    "tool_audiowave_desc": "Reactive neon audio waveforms and frequency visualizers for music & podcasts"
   },
   "tr": {
     "untitledProject": "İsimsiz Proje",
@@ -693,7 +695,9 @@ export const strings = {
     "active": "Aktif",
     "manageSubscription": "Aboneliği Yönet",
     "billingProDesc": "Şu anda PRO planındasınız. Aşağıdan ödeme yöntemlerinizi yönetebilir, faturaları görüntüleyebilir veya aboneliğinizi iptal edebilirsiniz.",
-    "billingFreeDesc": "Ödeme yöntemlerinizi yönetin, faturalarınızı görüntüleyin ve güvenle kredi satın alın."
+    "billingFreeDesc": "Ödeme yöntemlerinizi yönetin, faturalarınızı görüntüleyin ve güvenle kredi satın alın.",
+    "tool_audiowave_title": "Ses Dalgası & Spektrum",
+    "tool_audiowave_desc": "Müzik ve podcastler için reaktif neon ses dalgası ve frekans görselleştirici"
   },
   "de": {
     "loginGoogle": "Mit Google anmelden",
@@ -1041,7 +1045,9 @@ export const strings = {
     "cookieAnalyticsDesc": "Hilft uns, die Nutzung zu verstehen und Rendergeschwindigkeiten zu optimieren.",
     "cookieSave": "Einstellungen speichern",
     "cookieAcceptAll": "Alle akzeptieren",
-    "cookieSettings": "Cookie-Einstellungen"
+    "cookieSettings": "Cookie-Einstellungen",
+    "tool_audiowave_title": "Audiowellenform & Spektrum",
+    "tool_audiowave_desc": "Reaktive Neon-Audiowellenformen und Frequenz-Visualisierer für Musik & Podcasts"
   },
   "fr": {
     "loginGoogle": "Se connecter avec Google",
@@ -1389,7 +1395,9 @@ export const strings = {
     "cookieAnalyticsDesc": "Permet de mesurer l'utilisation et d'optimiser les vitesses de rendu.",
     "cookieSave": "Enregistrer les Préférences",
     "cookieAcceptAll": "Tout Accepter",
-    "cookieSettings": "Paramètres des Cookies"
+    "cookieSettings": "Paramètres des Cookies",
+    "tool_audiowave_title": "Spectre & Forme d'Onde Audio",
+    "tool_audiowave_desc": "Formes d'ondes réactives néon et visualiseur de fréquences pour musique et podcasts"
   },
   "es": {
     "loginGoogle": "Iniciar sesión con Google",
@@ -1737,7 +1745,9 @@ export const strings = {
     "cookieAnalyticsDesc": "Nos ayuda a entender el uso y optimizar las velocidades de renderizado.",
     "cookieSave": "Guardar Preferencias",
     "cookieAcceptAll": "Aceptar Todas",
-    "cookieSettings": "Configuración de Cookies"
+    "cookieSettings": "Configuración de Cookies",
+    "tool_audiowave_title": "Espectro y Onda de Audio",
+    "tool_audiowave_desc": "Ondas de audio reactivas de neón y visualizador de frecuencias para música y podcasts"
   },
   "zh": {
     "loginGoogle": "使用 Google 登录",
@@ -2085,7 +2095,9 @@ export const strings = {
     "cookieAnalyticsDesc": "协助我们监控性能瓶颈并持续提升视频渲染速度。",
     "cookieSave": "保存偏好",
     "cookieAcceptAll": "全部接受",
-    "cookieSettings": "Cookie 设置"
+    "cookieSettings": "Cookie 设置",
+    "tool_audiowave_title": "音频波形与频谱",
+    "tool_audiowave_desc": "用于音乐与播客的霓虹动态音频波形与频率可视化器"
   },
   "ar": {
     "loginGoogle": "تسجيل الدخول عبر Google",
@@ -2433,7 +2445,9 @@ export const strings = {
     "cookieAnalyticsDesc": "تساعدنا في قياس الاستخدام وتحسين سرعات معالجة الفيديو.",
     "cookieSave": "حفظ التفضيلات",
     "cookieAcceptAll": "قبول الكل",
-    "cookieSettings": "إعدادات الكوكيز"
+    "cookieSettings": "إعدادات الكوكيز",
+    "tool_audiowave_title": "موجات الصوت والطيف الترددي",
+    "tool_audiowave_desc": "أشكال موجية صوتية نيون متفاعلة ومحلل ترددات للموسيقى والبودكاست"
   },
   "ko": {
     "loginGoogle": "Google 계정으로 로그인",
@@ -2781,7 +2795,9 @@ export const strings = {
     "cookieAnalyticsDesc": "서비스 이용 패턴 분석 및 렌더링 속도 최적화에 기여합니다.",
     "cookieSave": "설정 저장",
     "cookieAcceptAll": "모두 허용",
-    "cookieSettings": "쿠키 설정"
+    "cookieSettings": "쿠키 설정",
+    "tool_audiowave_title": "오디오 파형 & 스펙트럼",
+    "tool_audiowave_desc": "음악과 팟캐스트를 위한 네온 반응형 오디오 파형 및 주파수 시각화"
   },
   "ja": {
     "loginGoogle": "Googleでログイン",
@@ -3129,7 +3145,9 @@ export const strings = {
     "cookieAnalyticsDesc": "利用状況の把握や動画処理速度の改善に役立てられます。",
     "cookieSave": "設定を保存",
     "cookieAcceptAll": "すべて同意",
-    "cookieSettings": "クッキー詳細設定"
+    "cookieSettings": "クッキー詳細設定",
+    "tool_audiowave_title": "オーディオ波形＆スペクトラム",
+    "tool_audiowave_desc": "音楽やポッドキャスト向けのネオン反応型オーディオ波形と周波数ビジュアライザー"
   },
   "id": {
     "loginGoogle": "Masuk dengan Google",
@@ -3477,7 +3495,9 @@ export const strings = {
     "cookieAnalyticsDesc": "Membantu kami memahami pola penggunaan untuk mempercepat proses render video.",
     "cookieSave": "Simpan Preferensi",
     "cookieAcceptAll": "Terima Semua",
-    "cookieSettings": "Pengaturan Cookie"
+    "cookieSettings": "Pengaturan Cookie",
+    "tool_audiowave_title": "Gelombang Audio & Spektrum",
+    "tool_audiowave_desc": "Bentuk gelombang audio neon reaktif dan visualizer frekuensi untuk musik & podcast"
   },
   "th": {
     "loginGoogle": "เข้าสู่ระบบด้วย Google",
@@ -3825,7 +3845,9 @@ export const strings = {
     "cookieAnalyticsDesc": "ช่วยให้เราเข้าใจการใช้งานและพัฒนาความเร็วในการเรนเดอร์วิดีโอให้ดียิ่งขึ้น",
     "cookieSave": "บันทึกการตั้งค่า",
     "cookieAcceptAll": "ยอมรับทั้งหมด",
-    "cookieSettings": "ตั้งค่าคุกกี้"
+    "cookieSettings": "ตั้งค่าคุกกี้",
+    "tool_audiowave_title": "คลื่นเสียงและสเปกตรัม (Audio Wave)",
+    "tool_audiowave_desc": "อนิเมชันคลื่นเสียงนีออนและกราฟแสดงความถี่เสียงสำหรับดนตรีและพอดแคสต์"
   },
   "hi": {
     "loginGoogle": "Google से लॉगिन करें",
@@ -4173,7 +4195,9 @@ export const strings = {
     "cookieAnalyticsDesc": "उपयोग पैटर्न समझने और रेंडरिंग गति में सुधार करने में मदद करता है।",
     "cookieSave": "प्राथमिकताएं सहेजें",
     "cookieAcceptAll": "सभी स्वीकार करें",
-    "cookieSettings": "कुकी सेटिंग्स"
+    "cookieSettings": "कुकी सेटिंग्स",
+    "tool_audiowave_title": "ऑडियो वेवफॉर्म और स्पेक्ट्रम",
+    "tool_audiowave_desc": "संगीत और पॉडकास्ट के लिए रिएक्टिव नियॉन ऑडियो वेवफॉर्म और फ़्रीक्वेंसी विज़ुअलाइज़र"
   },
   "ru": {
     "loginGoogle": "Войти через Google",
@@ -4521,7 +4545,9 @@ export const strings = {
     "cookieAnalyticsDesc": "Помогают анализировать использование и повышать скорость рендеринга видео.",
     "cookieSave": "Сохранить настройки",
     "cookieAcceptAll": "Принять все",
-    "cookieSettings": "Настройки Cookie"
+    "cookieSettings": "Настройки Cookie",
+    "tool_audiowave_title": "Аудиоволна и Спектр",
+    "tool_audiowave_desc": "Реактивные неоновые звуковые волны и визуализатор частот для музыки и подкастов"
   },
   "pt": {
     "loginGoogle": "Entrar com o Google",
@@ -4869,7 +4895,9 @@ export const strings = {
     "cookieAnalyticsDesc": "Nos ajuda a entender o uso e otimizar a velocidade de renderização dos vídeos.",
     "cookieSave": "Salvar Preferências",
     "cookieAcceptAll": "Aceitar Todos",
-    "cookieSettings": "Configurações de Cookies"
+    "cookieSettings": "Configurações de Cookies",
+    "tool_audiowave_title": "Forma de Onda e Espectro de Áudio",
+    "tool_audiowave_desc": "Formas de onda de áudio neon reativas e visualizador de frequências para música e podcasts"
   }
 };
 
