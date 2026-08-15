@@ -73,7 +73,9 @@ const CookieModal = ({ isOpen, onClose }) => {
                 <div className="flex-grow">
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="font-semibold text-white">{t('cookieEssential', lang)}</h3>
-                    <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 bg-zinc-800 px-2 py-1 rounded">Always Active</span>
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-400 bg-zinc-800 px-2 py-1 rounded">
+                      {t('cookieAlwaysActive', lang) || (lang === 'tr' ? 'Her Zaman Aktif' : 'Always Active')}
+                    </span>
                   </div>
                   <p className="text-xs text-zinc-500">{t('cookieEssentialDesc', lang)}</p>
                 </div>

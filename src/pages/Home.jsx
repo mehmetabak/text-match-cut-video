@@ -195,8 +195,8 @@ const Home = () => {
       icon: <Play className="w-6 h-6 text-[#00E5FF]" />,
       color: 'from-[#00E5FF] to-blue-500',
       border: 'border-border-color hover:border-[#00E5FF]',
-      link: '#',
-      badge: t('badgeSoon', lang)
+      link: '/effects/ken-burns',
+      badge: t('badgeAvailable', lang)
     },
     {
       id: 'glitch',
@@ -205,8 +205,8 @@ const Home = () => {
       icon: <Zap className="w-6 h-6 text-[#B026FF]" />,
       color: 'from-[#B026FF] to-pink-500',
       border: 'border-border-color hover:border-[#B026FF]',
-      link: '#',
-      badge: t('badgeSoon', lang)
+      link: '/effects/glitch-master',
+      badge: t('badgeAvailable', lang)
     }
   ];
 
@@ -496,7 +496,7 @@ const Home = () => {
               onClick={() => setIsCookieModalOpen(true)}
               className="text-text-muted hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2"
             >
-              <Settings className="w-4 h-4" /> Cookie Settings
+              <Settings className="w-4 h-4" /> {t('cookieSettings', lang) || (lang === 'tr' ? 'Çerez Ayarları' : 'Cookie Settings')}
             </button>
           </div>
         </div>

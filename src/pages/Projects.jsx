@@ -83,25 +83,26 @@ const Projects = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-white group-hover:text-accent-gold transition-colors">
-                      {proj.settings?.projectName || proj.settings?.phrase || 'İsimsiz Proje'}
+                      {proj.settings?.projectName || proj.settings?.phrase || t('untitledProject', lang) || (lang === 'tr' ? 'İsimsiz Proje' : 'Untitled Project')}
                     </h3>
                     <div className="flex items-center gap-1 text-xs text-text-muted mt-1">
                       <Clock size={12} /> 
-                      {proj.updatedAt?.toDate ? new Date(proj.updatedAt.toDate()).toLocaleDateString() : 'Şimdi'}
+                      {proj.updatedAt?.toDate ? new Date(proj.updatedAt.toDate()).toLocaleDateString() : (lang === 'tr' ? 'Şimdi' : 'Just now')}
                     </div>
                   </div>
                   
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (window.confirm("Bu projeyi silmek istediğinize emin misiniz?")) {
+                      const confirmText = lang === 'tr' ? "Bu projeyi silmek istediğinize emin misiniz?" : "Are you sure you want to delete this project?";
+                      if (window.confirm(confirmText)) {
                         setDeletingId(proj.id);
                         deleteProject(proj.id).finally(() => setDeletingId(null));
                       }
                     }}
                     disabled={deletingId === proj.id}
                     className="ml-auto p-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                    title="Projeyi Sil"
+                    title={lang === 'tr' ? "Projeyi Sil" : "Delete Project"}
                   >
                     {deletingId === proj.id ? (
                       <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
