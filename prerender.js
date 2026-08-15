@@ -21,6 +21,7 @@ async function build() {
     '/effects/scanline',
     '/effects/ascii',
     '/effects/echo',
+    '/effects/gsearch',
     '/terms',
     '/privacy',
     '/cookies',

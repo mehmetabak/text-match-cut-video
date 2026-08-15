@@ -31,6 +31,7 @@ function MatchCutTool() {
   const blurIntensity = useSettingsStore(state => state.blurIntensity);
   const darkTheme = useSettingsStore(state => state.darkTheme);
   const highQuality = useSettingsStore(state => state.highQuality);
+  const fastRender = useSettingsStore(state => state.fastRender);
   const renderMode = useSettingsStore(state => state.renderMode);
   const vignetteEffect = useSettingsStore(state => state.vignetteEffect);
   
@@ -67,6 +68,7 @@ function MatchCutTool() {
       setSetting('blurIntensity', 'Medium');
       setSetting('fontFamily', "'Times New Roman', Times, serif");
       setSetting('highQuality', false);
+      setSetting('fastRender', false);
       setSetting('renderMode', 'classic');
       setSetting('vignetteEffect', true);
       return;
@@ -117,7 +119,7 @@ function MatchCutTool() {
       setSaveStatus('Saving...');
       const projectSettings = { 
         phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps,
-        format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality,
+        format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender,
         renderMode: renderMode || 'newspaper',
         vignetteEffect: vignetteEffect ?? true
       };
@@ -170,7 +172,7 @@ function MatchCutTool() {
     }, 1500); // 1.5 saniye bekle (Debounce)
 
     return () => clearTimeout(timeoutId);
-  }, [phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps, format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, renderMode, vignetteEffect, user, projectId, projectName, saveProject]);
+  }, [phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps, format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender, renderMode, vignetteEffect, user, projectId, projectName, saveProject]);
 
   const handleGenerate = useCallback(async () => {
     if (!phrase.trim()) {

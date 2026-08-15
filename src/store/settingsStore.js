@@ -23,6 +23,7 @@ export const useSettingsStore = create(
       fontFamily: "'Times New Roman', Times, serif",
       lang: detectLanguage(),  // Otomatik dil tespiti
       highQuality: false, // Beta yüksek kalite ayarı
+      fastRender: false, // Hızlı render (Turbo) modu
       renderMode: 'classic', // Varsayılan: 'classic' (Klasik), Seçenek: 'newspaper' (Gazete / Yeni Mod)
       vignetteEffect: true, // Sinematik kenar karartma
       cookieConsent: { analytics: true, essential: true, hasConsented: false },

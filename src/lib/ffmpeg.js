@@ -50,15 +50,19 @@ export async function extractAudioFromVideo(videoFile) {
     return null;
 }
 
-export async function createVideoFromFrames(frames, audioBlob, fps, highQuality = false, onProgress) {
+export async function createVideoFromFrames(frames, audioBlob, fps, optionsOrHighQuality = false, onProgress) {
     const ffmpeg = await loadFfmpeg();
+
+    const isOptionsObj = typeof optionsOrHighQuality === 'object' && optionsOrHighQuality !== null;
+    const highQuality = isOptionsObj ? !!optionsOrHighQuality.highQuality : !!optionsOrHighQuality;
+    const fastRender = isOptionsObj ? !!optionsOrHighQuality.fastRender : false;
 
     const hasAudio = !!audioBlob;
     if (hasAudio) {
         await ffmpeg.writeFile('audio.wav', new Uint8Array(await audioBlob.arrayBuffer()));
     }
 
-    const ext = highQuality ? 'png' : 'jpg';
+    const ext = (highQuality && !fastRender) ? 'png' : 'jpg';
 
     for (let i = 0; i < frames.length; i++) {
         const name = `frame${String(i).padStart(4, '0')}.${ext}`;
@@ -71,8 +75,15 @@ export async function createVideoFromFrames(frames, audioBlob, fps, highQuality 
     };
     ffmpeg.on('progress', onFfmpegProgress);
 
-    const preset = highQuality ? 'fast' : 'ultrafast';
-    const crf = highQuality ? '23' : '28';
+    let preset = 'fast';
+    let crf = '22';
+    if (fastRender) {
+        preset = 'ultrafast';
+        crf = '24';
+    } else if (highQuality) {
+        preset = 'medium';
+        crf = '18';
+    }
 
     const args = [
         '-framerate', `${fps}`,

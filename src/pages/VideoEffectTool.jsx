@@ -27,6 +27,7 @@ import {
   drawTypewriterFrame,
   drawScanlineEffect,
   drawAsciiEffect,
+  drawGoogleSearchEffect,
   drawImageCover,
   drawVignette
 } from '../renderer/effects';
@@ -64,6 +65,7 @@ export default function VideoEffectTool() {
   // Common Settings
   const [formatPreset, setFormatPreset] = useState('16:9'); // '16:9' | '9:16' | '1:1'
   const [hdOutput, setHdOutput] = useState(false);
+  const [fastRender, setFastRender] = useState(false);
   const [duration, setDuration] = useState(5); // in seconds (3 - 300)
   const [audioFxEnabled, setAudioFxEnabled] = useState(true);
 
@@ -105,6 +107,13 @@ export default function VideoEffectTool() {
   const [echoCount, setEchoCount] = useState(5);
   const [echoDecay, setEchoDecay] = useState(0.7);
 
+  // 8. Google Search Settings
+  const [searchQuery, setSearchQuery] = useState(t('gsearchQueryDefault', lang));
+  const [searchUrl, setSearchUrl] = useState("https://animationmaker.m0s.space › effects");
+  const [searchHeadline, setSearchHeadline] = useState(t('gsearchHeadlineDefault', lang));
+  const [searchSnippet, setSearchSnippet] = useState(t('gsearchSnippetDefault', lang));
+  const [searchTheme, setSearchTheme] = useState('dark'); // 'dark' | 'light'
+
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
   const animFrameRef = useRef(null);
@@ -112,7 +121,7 @@ export default function VideoEffectTool() {
   const hasInitialized = useRef(false);
   const lastSavedSnapshotRef = useRef(null);
 
-  const validTypes = ['ken-burns', 'vhs-tape', 'glitch-master', 'typewriter', 'scanline', 'ascii', 'echo'];
+  const validTypes = ['ken-burns', 'vhs-tape', 'glitch-master', 'typewriter', 'scanline', 'ascii', 'echo', 'gsearch'];
 
   // Route validation
   useEffect(() => {
@@ -157,6 +166,11 @@ export default function VideoEffectTool() {
       title1: 'Echo',
       title2: 'Motion',
       desc: lang === 'tr' ? 'Görsel ve videolara rüya gibi hareket yankıları ve çoklu hayalet izleri ekleyin.' : 'Multi-layered ghost trails and motion echo effects for images and videos.'
+    },
+    'gsearch': {
+      title1: 'Google',
+      title2: 'Search',
+      desc: lang === 'tr' ? 'Sinematik Google arama çubuğu yazma efekti ve anlık arama sonucu video animasyonu.' : 'Cinematic Google search bar typing and instant results video animation.'
     }
   };
 
@@ -167,6 +181,7 @@ export default function VideoEffectTool() {
     projectName: projectName.trim(),
     formatPreset,
     hdOutput,
+    fastRender,
     duration,
     audioFxEnabled,
     zoomRate,
@@ -188,7 +203,12 @@ export default function VideoEffectTool() {
     asciiTheme,
     asciiResolution,
     echoCount,
-    echoDecay
+    echoDecay,
+    searchQuery,
+    searchUrl,
+    searchHeadline,
+    searchSnippet,
+    searchTheme
   });
 
   // 1. Load Draft / Restore Project (from query param or localStorage or cloud projects)
@@ -202,6 +222,7 @@ export default function VideoEffectTool() {
       setProjectName('');
       setFormatPreset('16:9');
       setHdOutput(false);
+      setFastRender(false);
       setDuration(5);
       setAudioFxEnabled(true);
       setZoomRate(0.04);
@@ -223,6 +244,11 @@ export default function VideoEffectTool() {
       setAsciiResolution(12);
       setEchoCount(5);
       setEchoDecay(0.7);
+      setSearchQuery(t('gsearchQueryDefault', lang));
+      setSearchUrl("https://animationmaker.m0s.space › effects");
+      setSearchHeadline(t('gsearchHeadlineDefault', lang));
+      setSearchSnippet(t('gsearchSnippetDefault', lang));
+      setSearchTheme('dark');
       
       // Store baseline snapshot so auto-save doesn't fire immediately
       lastSavedSnapshotRef.current = JSON.stringify(getCurrentSettings());
@@ -240,6 +266,7 @@ export default function VideoEffectTool() {
             if (draftData.projectName) setProjectName(draftData.projectName);
             if (draftData.formatPreset) setFormatPreset(draftData.formatPreset);
             if (draftData.hdOutput !== undefined) setHdOutput(draftData.hdOutput);
+            if (draftData.fastRender !== undefined) setFastRender(draftData.fastRender);
             if (draftData.duration) setDuration(draftData.duration);
             if (draftData.audioFxEnabled !== undefined) setAudioFxEnabled(draftData.audioFxEnabled);
             if (draftData.zoomRate) setZoomRate(draftData.zoomRate);
@@ -262,6 +289,11 @@ export default function VideoEffectTool() {
             if (draftData.asciiResolution) setAsciiResolution(draftData.asciiResolution);
             if (draftData.echoCount) setEchoCount(draftData.echoCount);
             if (draftData.echoDecay) setEchoDecay(draftData.echoDecay);
+            if (draftData.searchQuery) setSearchQuery(draftData.searchQuery);
+            if (draftData.searchUrl) setSearchUrl(draftData.searchUrl);
+            if (draftData.searchHeadline) setSearchHeadline(draftData.searchHeadline);
+            if (draftData.searchSnippet) setSearchSnippet(draftData.searchSnippet);
+            if (draftData.searchTheme) setSearchTheme(draftData.searchTheme);
             localStorage.removeItem('draft_project');
             lastSavedSnapshotRef.current = JSON.stringify(draftData);
             return;
@@ -279,6 +311,7 @@ export default function VideoEffectTool() {
           if (s.projectName) setProjectName(s.projectName);
           if (s.formatPreset) setFormatPreset(s.formatPreset);
           if (s.hdOutput !== undefined) setHdOutput(s.hdOutput);
+          if (s.fastRender !== undefined) setFastRender(s.fastRender);
           if (s.duration) setDuration(s.duration);
           if (s.audioFxEnabled !== undefined) setAudioFxEnabled(s.audioFxEnabled);
           if (s.zoomRate) setZoomRate(s.zoomRate);
@@ -301,6 +334,11 @@ export default function VideoEffectTool() {
           if (s.asciiResolution) setAsciiResolution(s.asciiResolution);
           if (s.echoCount) setEchoCount(s.echoCount);
           if (s.echoDecay) setEchoDecay(s.echoDecay);
+          if (s.searchQuery) setSearchQuery(s.searchQuery);
+          if (s.searchUrl) setSearchUrl(s.searchUrl);
+          if (s.searchHeadline) setSearchHeadline(s.searchHeadline);
+          if (s.searchSnippet) setSearchSnippet(s.searchSnippet);
+          if (s.searchTheme) setSearchTheme(s.searchTheme);
           lastSavedSnapshotRef.current = JSON.stringify(s);
         }
       }
@@ -365,6 +403,7 @@ export default function VideoEffectTool() {
     scanlineFlicker, vhsTimestamp, glitchIntensity, rgbShift, sliceRate,
     typewriterText, typingSpeed, cursorStyle, fontColor, scanlineDensity,
     phosphorGlow, asciiTheme, asciiResolution, echoCount, echoDecay,
+    searchQuery, searchUrl, searchHeadline, searchSnippet, searchTheme,
     lang, projectId, saveProject, type, projects, navigate
   ]);
 
@@ -491,6 +530,15 @@ export default function VideoEffectTool() {
             drawVignette(ctx, width, height, 0.4);
             ctx.restore();
           }
+        } else if (type === 'gsearch') {
+          drawGoogleSearchEffect(ctx, sourceMediaRef.current, width, height, progressVal, {
+            query: searchQuery,
+            url: searchUrl,
+            headline: searchHeadline,
+            snippet: searchSnippet,
+            theme: searchTheme,
+            lang
+          });
         }
       }
       animFrameRef.current = requestAnimationFrame(renderLoop);
@@ -506,7 +554,8 @@ export default function VideoEffectTool() {
     zoomRate, zoomDirection, panStyle,
     aberrationStrength, trackingNoise, scanlineFlicker, vhsTimestamp,
     glitchIntensity, rgbShift, sliceRate,
-    scanlineDensity, phosphorGlow, asciiTheme, asciiResolution
+    scanlineDensity, phosphorGlow, asciiTheme, asciiResolution,
+    echoCount, echoDecay, searchQuery, searchUrl, searchHeadline, searchSnippet, searchTheme
   ]);
 
   // Client-Side Device Render (FFmpeg WASM & Canvas Frames with Audio Preservation)
@@ -536,11 +585,20 @@ export default function VideoEffectTool() {
       }
 
       const canvas = document.createElement('canvas');
-      const [wRatio, hRatio] = formatPreset.split(':').map(Number);
-      const baseWidth = hdOutput ? 1080 : 720;
-      canvas.width = baseWidth;
-      canvas.height = Math.round((baseWidth / wRatio) * hRatio);
-      if (canvas.height % 2 !== 0) canvas.height += 1;
+      let outWidth, outHeight;
+      if (formatPreset === '16:9') {
+        outWidth = hdOutput ? 1920 : 1280;
+        outHeight = hdOutput ? 1080 : 720;
+      } else if (formatPreset === '9:16') {
+        outWidth = hdOutput ? 1080 : 720;
+        outHeight = hdOutput ? 1920 : 1280;
+      } else {
+        // 1:1 Square
+        outWidth = hdOutput ? 1080 : 720;
+        outHeight = hdOutput ? 1080 : 720;
+      }
+      canvas.width = outWidth;
+      canvas.height = outHeight;
 
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       const fps = 30;
@@ -612,6 +670,15 @@ export default function VideoEffectTool() {
             drawImageCover(ctx, sourceMediaRef.current, 0, 0, canvas.width, canvas.height, scale);
             drawVignette(ctx, canvas.width, canvas.height, 0.4);
           }
+        } else if (type === 'gsearch') {
+          drawGoogleSearchEffect(ctx, sourceMediaRef.current, canvas.width, canvas.height, frameProgress, {
+            query: searchQuery,
+            url: searchUrl,
+            headline: searchHeadline,
+            snippet: searchSnippet,
+            theme: searchTheme,
+            lang
+          });
         } else {
           ctx.fillStyle = '#0F1015';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -620,7 +687,9 @@ export default function VideoEffectTool() {
           }
         }
 
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+        const mime = (hdOutput && !fastRender) ? 'image/png' : 'image/jpeg';
+        const quality = (hdOutput && !fastRender) ? 1.0 : (fastRender ? 0.86 : 0.96);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, mime, quality));
         const arrayBuf = await blob.arrayBuffer();
         frames.push(new Uint8Array(arrayBuf));
 
@@ -630,7 +699,7 @@ export default function VideoEffectTool() {
       }
 
       setProgress(52);
-      const videoUrl = await createVideoFromFrames(frames, audioBlob, fps, hdOutput, (p) => {
+      const videoUrl = await createVideoFromFrames(frames, audioBlob, fps, { highQuality: hdOutput, fastRender }, (p) => {
         setProgress(Math.round(p));
       });
 
@@ -1202,6 +1271,72 @@ export default function VideoEffectTool() {
                     </>
                   )}
 
+                  {/* 8. GOOGLE SEARCH CONTROLS */}
+                  {type === 'gsearch' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('gsearchQueryLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="e.g. How to make viral videos?"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('gsearchUrlLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={searchUrl}
+                          onChange={(e) => setSearchUrl(e.target.value)}
+                          placeholder="e.g. https://animationmaker.m0s.space › effects"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('gsearchHeadlineLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={searchHeadline}
+                          onChange={(e) => setSearchHeadline(e.target.value)}
+                          placeholder="e.g. AnimationMaker — Pro Video Tools"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('gsearchSnippetLabel', lang)}
+                        </label>
+                        <textarea
+                          rows="3"
+                          value={searchSnippet}
+                          onChange={(e) => setSearchSnippet(e.target.value)}
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm resize-none"
+                        />
+                      </div>
+
+                      <SegmentedControl
+                        label={t('gsearchThemeLabel', lang)}
+                        options={[
+                          { value: 'dark', label: 'Dark Mode' },
+                          { value: 'light', label: 'Light Mode' }
+                        ]}
+                        value={searchTheme}
+                        onChange={setSearchTheme}
+                      />
+                    </>
+                  )}
+
                   {/* Thematic Audio FX Switch (VHS, Scanline, Glitch) */}
                   {['vhs-tape', 'scanline', 'glitch-master'].includes(type) && (
                     <Switch
@@ -1216,6 +1351,13 @@ export default function VideoEffectTool() {
                     label={t('highQualityLabel', lang) || 'Yüksek Kalite (1080p)'}
                     checked={hdOutput}
                     onChange={(e) => setHdOutput(e.target.checked)}
+                  />
+
+                  {/* Turbo Fast Render Switch */}
+                  <Switch
+                    label={t('fastRenderLabel', lang) || 'Hızlı Render (Turbo Mod)'}
+                    checked={fastRender}
+                    onChange={(e) => setFastRender(e.target.checked)}
                   />
 
                 </div>
@@ -1244,7 +1386,7 @@ export default function VideoEffectTool() {
                 {/* Generate Action Button matching MatchCutTool */}
                 <button
                   type="button"
-                  onClick={!isServerTool ? startDeviceRender : startCloudProcessing}
+                  onClick={startDeviceRender}
                   disabled={status === 'processing' || status === 'uploading'}
                   className="w-full bg-[#F5B301] text-black font-extrabold py-3.5 px-4 rounded-lg hover:bg-yellow-400 hover:text-black transition-all shadow-lg shadow-yellow-500/20 disabled:bg-zinc-700 disabled:text-zinc-400 disabled:cursor-not-allowed mt-4 flex-shrink-0 flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base"
                 >
@@ -1317,8 +1459,8 @@ export default function VideoEffectTool() {
                   }`}>
                     <canvas
                       ref={canvasRef}
-                      width={formatPreset === '9:16' ? 360 : 640}
-                      height={formatPreset === '9:16' ? 640 : (formatPreset === '1:1' ? 640 : 360)}
+                      width={formatPreset === '16:9' ? 1280 : (formatPreset === '9:16' ? 720 : 1080)}
+                      height={formatPreset === '16:9' ? 720 : (formatPreset === '9:16' ? 1280 : 1080)}
                       className="max-h-full max-w-full object-contain rounded-md shadow-2xl"
                     />
                   </div>

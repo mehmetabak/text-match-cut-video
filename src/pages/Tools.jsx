@@ -54,6 +54,38 @@ const TOOLS = [
     )
   },
   {
+    id: 'gsearch',
+    titleKey: 'tool_gsearch_title',
+    descKey: 'tool_gsearch_desc',
+    path: '/effects/gsearch',
+    isPro: false,
+    isSoon: false,
+    isFree: true,
+    bgClass: 'from-blue-600/30 via-red-600/10 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 flex flex-col items-center justify-center p-6 opacity-75 overflow-hidden">
+        <div className="flex gap-1.5 font-bold text-xl mb-2 tracking-tight">
+          <span className="text-[#4285F4]">G</span>
+          <span className="text-[#EA4335]">o</span>
+          <span className="text-[#FBBC05]">o</span>
+          <span className="text-[#4285F4]">g</span>
+          <span className="text-[#34A853]">l</span>
+          <span className="text-[#EA4335]">e</span>
+        </div>
+        <div className="w-full max-w-[200px] h-7 bg-zinc-800/90 border border-zinc-600/60 rounded-full flex items-center px-2.5 gap-1.5 shadow-inner">
+          <span className="text-xs text-zinc-400">🔍</span>
+          <motion.span
+            animate={{ width: isHovered ? ['0%', '100%'] : '70%' }}
+            transition={{ duration: 1.5, repeat: isHovered ? Infinity : 0 }}
+            className="text-[11px] font-medium text-white truncate whitespace-nowrap overflow-hidden"
+          >
+            viral video maker...
+          </motion.span>
+        </div>
+      </div>
+    )
+  },
+  {
     id: 'ken-burns',
     titleKey: 'toolKenBurns',
     descKey: 'toolKenBurnsDesc',
@@ -870,6 +902,12 @@ const Tools = () => {
                 "position": 8,
                 "name": "Echo Video Trails",
                 "url": "https://animationmaker.m0s.space/effects/echo"
+              },
+              {
+                "@type": "ListItem",
+                "position": 9,
+                "name": "Google Search Animator",
+                "url": "https://animationmaker.m0s.space/effects/gsearch"
               }
             ]
           })}

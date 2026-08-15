@@ -431,8 +431,8 @@ export class VideoRenderer {
             for (let f = 0; f < framesPerCut; f++) {
                 const p = f / framesPerCut;
                 this.drawNewspaperScene({ scene, progress: p, cutIndex });
-                const format = 'image/jpeg';
-                const quality = this.settings.highQuality ? 1.0 : 0.7;
+                const format = this.settings.highQuality && !this.settings.fastRender ? 'image/png' : 'image/jpeg';
+                const quality = this.settings.highQuality && !this.settings.fastRender ? 1.0 : (this.settings.fastRender ? 0.86 : 0.95);
                 const blob = await new Promise(res => this.canvas.toBlob(res, format, quality));
                 const arrayBuffer = await blob.arrayBuffer();
                 frameList.push(new Uint8Array(arrayBuffer));
@@ -449,8 +449,8 @@ export class VideoRenderer {
                     for (let f = 0; f < framesPerCut; f++) {
                         const p = f / framesPerCut;
                         this.drawClassicScene({ lineIndex: lineIdx, lineText: line, metrics, progress: p });
-                        const format = 'image/jpeg';
-                        const quality = this.settings.highQuality ? 1.0 : 0.7;
+                        const format = this.settings.highQuality && !this.settings.fastRender ? 'image/png' : 'image/jpeg';
+                        const quality = this.settings.highQuality && !this.settings.fastRender ? 1.0 : (this.settings.fastRender ? 0.86 : 0.95);
                         const blob = await new Promise(res => this.canvas.toBlob(res, format, quality));
                         const arrayBuffer = await blob.arrayBuffer();
                         frameList.push(new Uint8Array(arrayBuffer));
@@ -510,7 +510,7 @@ export class VideoRenderer {
         const audioBlob = await audioGen.generateAudio(positions.length, totalDuration);
         
         this.onProgress(90);
-        const videoUrl = await createVideoFromFrames(allFrames, audioBlob, fps, this.settings.highQuality, p => this.onProgress(90 + p * 0.1));
+        const videoUrl = await createVideoFromFrames(allFrames, audioBlob, fps, { highQuality: this.settings.highQuality, fastRender: this.settings.fastRender }, p => this.onProgress(90 + p * 0.1));
         return videoUrl;
     }
 }

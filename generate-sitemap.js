@@ -19,6 +19,7 @@ const pages = [
   { url: '/effects/scanline', changefreq: 'weekly', priority: '0.9' },
   { url: '/effects/ascii', changefreq: 'weekly', priority: '0.9' },
   { url: '/effects/echo', changefreq: 'weekly', priority: '0.9' },
+  { url: '/effects/gsearch', changefreq: 'weekly', priority: '0.9' },
   { url: '/pricing', changefreq: 'monthly', priority: '0.8' },
   { url: '/terms', changefreq: 'monthly', priority: '0.4' },
   { url: '/privacy', changefreq: 'monthly', priority: '0.4' },

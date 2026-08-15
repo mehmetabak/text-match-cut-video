@@ -81,6 +81,7 @@ const SettingsPanel = ({ onGenerate }) => {
         <Switch label={t('highlightLabel', lang)} checked={settings.textHighlight} onChange={(e) => setSetting('textHighlight', e.target.checked)} />
         <Switch label={t('vignetteEffectLabel', lang)} checked={settings.vignetteEffect ?? true} onChange={(e) => setSetting('vignetteEffect', e.target.checked)} />
         <Switch label={t('highQualityLabel', lang)} checked={settings.highQuality} onChange={(e) => setSetting('highQuality', e.target.checked)} />
+        <Switch label={t('fastRenderLabel', lang)} checked={settings.fastRender ?? false} onChange={(e) => setSetting('fastRender', e.target.checked)} />
       </div>
 
       <div className="border-t border-zinc-700 pt-4 flex-shrink-0">
