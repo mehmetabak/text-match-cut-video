@@ -77,11 +77,11 @@ const SettingsPanel = ({ onGenerate }) => {
           value={settings.renderMode || 'newspaper'}
           onChange={(v) => setSetting('renderMode', v)}
         />
-        <Switch label={t('darkThemeLabel', lang)} checked={settings.darkTheme} onChange={(e) => setSetting('darkTheme', e.target.checked)} />
-        <Switch label={t('highlightLabel', lang)} checked={settings.textHighlight} onChange={(e) => setSetting('textHighlight', e.target.checked)} />
-        <Switch label={t('vignetteEffectLabel', lang)} checked={settings.vignetteEffect ?? true} onChange={(e) => setSetting('vignetteEffect', e.target.checked)} />
-        <Switch label={t('highQualityLabel', lang)} checked={settings.highQuality} onChange={(e) => setSetting('highQuality', e.target.checked)} />
-        <Switch label={t('fastRenderLabel', lang)} checked={settings.fastRender ?? false} onChange={(e) => setSetting('fastRender', e.target.checked)} />
+        <Switch label={t('darkThemeLabel', lang)} checked={settings.darkTheme} onChange={(e) => setSetting('darkTheme', Boolean(e?.target ? e.target.checked : e))} />
+        <Switch label={t('highlightLabel', lang)} checked={settings.textHighlight} onChange={(e) => setSetting('textHighlight', Boolean(e?.target ? e.target.checked : e))} />
+        <Switch label={t('vignetteEffectLabel', lang)} checked={settings.vignetteEffect ?? true} onChange={(e) => setSetting('vignetteEffect', Boolean(e?.target ? e.target.checked : e))} />
+        <Switch label={t('highQualityLabel', lang)} checked={settings.highQuality} onChange={(e) => setSetting('highQuality', Boolean(e?.target ? e.target.checked : e))} />
+        <Switch label={t('fastRenderLabel', lang)} checked={settings.fastRender ?? false} onChange={(e) => setSetting('fastRender', Boolean(e?.target ? e.target.checked : e))} />
       </div>
 
       <div className="border-t border-zinc-700 pt-4 flex-shrink-0">

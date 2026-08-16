@@ -1132,13 +1132,13 @@ export default function VideoEffectTool() {
                       <Switch
                         label={lang === 'tr' ? 'CRT Tarama Titremesi' : 'Scanline Flicker'}
                         checked={scanlineFlicker}
-                        onChange={(e) => setScanlineFlicker(e.target.checked)}
+                        onChange={(e) => setScanlineFlicker(Boolean(e?.target ? e.target.checked : e))}
                       />
 
                       <Switch
                         label={lang === 'tr' ? 'VCR Tarih/Saat Damgası' : 'VCR Timestamp OSD'}
                         checked={vhsTimestamp}
-                        onChange={(e) => setVhsTimestamp(e.target.checked)}
+                        onChange={(e) => setVhsTimestamp(Boolean(e?.target ? e.target.checked : e))}
                       />
                     </>
                   )}
@@ -1446,7 +1446,7 @@ export default function VideoEffectTool() {
                     <Switch
                       label={lang === 'tr' ? 'Tematik Ses Efekti (DSP)' : 'Thematic Audio FX (DSP)'}
                       checked={audioFxEnabled}
-                      onChange={(e) => setAudioFxEnabled(e.target.checked)}
+                      onChange={(e) => setAudioFxEnabled(Boolean(e?.target ? e.target.checked : e))}
                     />
                   )}
 
@@ -1454,14 +1454,14 @@ export default function VideoEffectTool() {
                   <Switch
                     label={t('highQualityLabel', lang) || 'Yüksek Kalite (1080p)'}
                     checked={hdOutput}
-                    onChange={(e) => setHdOutput(e.target.checked)}
+                    onChange={(e) => setHdOutput(Boolean(e?.target ? e.target.checked : e))}
                   />
 
                   {/* Turbo Fast Render Switch */}
                   <Switch
                     label={t('fastRenderLabel', lang) || 'Hızlı Render (Turbo Mod)'}
                     checked={fastRender}
-                    onChange={(e) => setFastRender(e.target.checked)}
+                    onChange={(e) => setFastRender(Boolean(e?.target ? e.target.checked : e))}
                   />
 
                 </div>

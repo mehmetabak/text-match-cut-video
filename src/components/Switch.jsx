@@ -4,7 +4,17 @@ import React from 'react';
 export default function Switch({ label, checked, onChange }) {
   const handleChange = (e) => {
     if (typeof onChange === 'function') {
-      onChange(e.target.checked);
+      const isChecked = Boolean(e?.target ? e.target.checked : e);
+      const eventObj = {
+        target: { checked: isChecked },
+        currentTarget: { checked: isChecked },
+        nativeEvent: e?.nativeEvent || e,
+        stopPropagation: () => e?.stopPropagation?.(),
+        preventDefault: () => e?.preventDefault?.(),
+        valueOf: () => isChecked,
+        toString: () => String(isChecked)
+      };
+      onChange(eventObj);
     }
   };
 
