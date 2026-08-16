@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { t } from '../lib/i18n';
@@ -14,7 +14,8 @@ import {
   Download,
   Check,
   Edit2,
-  Volume2
+  Volume2,
+  Plus
 } from 'lucide-react';
 import Switch from '../components/Switch';
 import SegmentedControl from '../components/SegmentedControl';
@@ -45,6 +46,7 @@ export default function VideoEffectTool() {
   const { type } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const lang = useSettingsStore(state => state.lang);
   const { user, saveProject, projects, loading: authLoading } = useAuthStore();
 
@@ -234,50 +236,55 @@ export default function VideoEffectTool() {
     searchTheme
   });
 
+  const resetToDefaults = () => {
+    setSearchParams({}, { replace: true });
+    setProjectId(null);
+    setProjectName('');
+    setFormatPreset('16:9');
+    setHdOutput(false);
+    setFastRender(false);
+    setDuration(5);
+    setAudioFxEnabled(false);
+    audioFxEnabledRef.current = false;
+    muteLiveAudio();
+    setZoomRate(0.04);
+    setZoomDirection('in');
+    setPanStyle('center');
+    setAberrationStrength(1.2);
+    setTrackingNoise('medium');
+    setScanlineFlicker(true);
+    setVhsTimestamp(true);
+    setGlitchIntensity(0.6);
+    setRgbShift(14);
+    setSliceRate(8);
+    setTypewriterText(t('typewriterDefaultText', lang));
+    setTypingSpeed(18);
+    setCursorStyle('block');
+    setTypewriterMode('classic');
+    setFontColor('#FFFFFF');
+    setScanlineDensity(4);
+    setPhosphorGlow(0.5);
+    setAsciiTheme('matrixGreen');
+    setAsciiResolution(12);
+    setEchoCount(5);
+    setEchoDecay(0.7);
+    setSearchQuery(t('gsearchQueryDefault', lang));
+    setSearchUrl("https://animationmaker.m0s.space › effects");
+    setSearchHeadline(t('gsearchHeadlineDefault', lang));
+    setSearchSnippet(t('gsearchSnippetDefault', lang));
+    setSearchTheme('dark');
+    lastSavedSnapshotRef.current = null;
+  };
+
   // 1. Load Draft / Restore Project (from query param or localStorage or cloud projects)
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
     const draftId = searchParams.get('draft');
 
-    if (!draftId && (!hasInitialized.current || projectId)) {
-      hasInitialized.current = true;
-      setProjectId(null);
-      setProjectName('');
-      setFormatPreset('16:9');
-      setHdOutput(false);
-      setFastRender(false);
-      setDuration(5);
-      setAudioFxEnabled(false);
-      audioFxEnabledRef.current = false;
-      muteLiveAudio();
-      setZoomRate(0.04);
-      setZoomDirection('in');
-      setPanStyle('center');
-      setAberrationStrength(1.2);
-      setTrackingNoise('medium');
-      setScanlineFlicker(true);
-      setVhsTimestamp(true);
-      setGlitchIntensity(0.6);
-      setRgbShift(14);
-      setSliceRate(8);
-      setTypingSpeed(18);
-      setCursorStyle('block');
-      setTypewriterMode('classic');
-      setFontColor('#FFFFFF');
-      setScanlineDensity(4);
-      setPhosphorGlow(0.5);
-      setAsciiTheme('matrixGreen');
-      setAsciiResolution(12);
-      setEchoCount(5);
-      setEchoDecay(0.7);
-      setSearchQuery(t('gsearchQueryDefault', lang));
-      setSearchUrl("https://animationmaker.m0s.space › effects");
-      setSearchHeadline(t('gsearchHeadlineDefault', lang));
-      setSearchSnippet(t('gsearchSnippetDefault', lang));
-      setSearchTheme('dark');
-      
-      // Store baseline snapshot so auto-save doesn't fire immediately
-      lastSavedSnapshotRef.current = JSON.stringify(getCurrentSettings());
+    if (!draftId) {
+      if (!hasInitialized.current || projectId) {
+        hasInitialized.current = true;
+        resetToDefaults();
+      }
       return;
     }
 
@@ -371,7 +378,7 @@ export default function VideoEffectTool() {
         }
       }
     }
-  }, [location.search, projects, projectId]);
+  }, [searchParams, projects, projectId]);
 
   // 2. Debounced Auto-Save to Firestore (1:1 with MatchCutTool)
   useEffect(() => {
@@ -421,7 +428,7 @@ export default function VideoEffectTool() {
         const savedId = await saveProject(type, projectSettings, targetProjectId);
         if (savedId && savedId !== projectId) {
           setProjectId(savedId);
-          navigate(`?draft=${savedId}`, { replace: true });
+          setSearchParams({ draft: savedId }, { replace: true });
         }
         setSaveStatus('Saved to Cloud');
         setTimeout(() => setSaveStatus(''), 2000);
@@ -439,7 +446,7 @@ export default function VideoEffectTool() {
     typewriterText, typingSpeed, cursorStyle, typewriterMode, fontColor, scanlineDensity,
     phosphorGlow, asciiTheme, asciiResolution, echoCount, echoDecay,
     searchQuery, searchUrl, searchHeadline, searchSnippet, searchTheme,
-    projectId, saveProject, type, projects, navigate
+    projectId, saveProject, type, projects, setSearchParams
   ]);
 
   // Handle Media Upload
@@ -956,15 +963,29 @@ export default function VideoEffectTool() {
             </p>
           </div>
 
-          {saveStatus && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-              className="flex items-center gap-2 text-xs font-mono bg-zinc-900/90 px-3 py-1.5 rounded-full text-zinc-300 border border-zinc-700 shadow-lg absolute top-4 right-4 sm:relative sm:top-0 sm:right-0"
-            >
-              <span className={`w-2 h-2 rounded-full ${saveStatus === 'Saving...' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
-              {saveStatus}
-            </motion.div>
-          )}
+          <div className="flex items-center gap-3 absolute top-4 right-4 sm:relative sm:top-0 sm:right-0">
+            {user && (
+              <button
+                onClick={resetToDefaults}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg border border-zinc-700/80 shadow-md transition-all active:scale-95"
+                title={lang === 'tr' ? "Sıfır yeni bir proje aç" : "Open a fresh blank project"}
+              >
+                <Plus size={14} className="text-[#F5B301]" />
+                <span>{lang === 'tr' ? 'Yeni Proje' : 'New Project'}</span>
+              </button>
+            )}
+            {saveStatus && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="flex items-center gap-2 text-xs font-mono bg-zinc-900/90 px-3 py-1.5 rounded-full text-zinc-300 border border-zinc-700 shadow-lg"
+              >
+                <span className={`w-2 h-2 rounded-full ${saveStatus === 'Saving...' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
+                {saveStatus}
+              </motion.div>
+            )}
+          </div>
         </header>
 
         {/* Main Workspace (Left: Settings, Right: Preview) */}

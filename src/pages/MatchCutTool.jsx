@@ -1,11 +1,11 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAuthStore } from '../store/authStore';
 import { generateMatchCutData } from '../lib/textUtils';
 import { VideoRenderer } from '../renderer/VideoRenderer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit2, Check } from 'lucide-react';
+import { Edit2, Check, Plus } from 'lucide-react';
 import SettingsPanel from '../components/SettingsPanel';
 import Preview from '../components/Preview';
 import AdPlaceholder from '../components/monetization/AdPlaceholder';
@@ -42,6 +42,7 @@ function MatchCutTool() {
   const canvasRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [projectId, setProjectId] = useState(null);
   const [saveStatus, setSaveStatus] = useState('');
   const [projectName, setProjectName] = useState('');
@@ -49,28 +50,47 @@ function MatchCutTool() {
   const inputRef = useRef(null);
   const hasInitialized = useRef(false);
 
+  const handleNewProject = () => {
+    setSearchParams({}, { replace: true });
+    setProjectId(null);
+    setProjectName('');
+    setSetting('phrase', 'match cut');
+    setSetting('format', 'horizontal');
+    setSetting('videoLength', 'Medium');
+    setSetting('speed', 2.5);
+    setSetting('darkTheme', true);
+    setSetting('textHighlight', true);
+    setSetting('blurIntensity', 'Medium');
+    setSetting('fontFamily', "'Times New Roman', Times, serif");
+    setSetting('highQuality', false);
+    setSetting('fastRender', false);
+    setSetting('renderMode', 'classic');
+    setSetting('vignetteEffect', true);
+  };
+
   // 1. Taslak Projeyi Yükle veya Yeni Proje İçin Sıfırla
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
     const draftId = searchParams.get('draft');
     
-    // Eğer linkte draft yoksa (Yeni Proje tıklanmışsa) ve bizde eski proje açık kalmışsa veya ilk kez açıyorsak, her şeyi sıfırla
-    if (!draftId && (!hasInitialized.current || projectId)) {
-      hasInitialized.current = true;
-      setProjectId(null);
-      setProjectName('');
-      setSetting('phrase', 'match cut');
-      setSetting('format', 'horizontal');
-      setSetting('videoLength', 'Medium');
-      setSetting('speed', 2.5);
-      setSetting('darkTheme', true);
-      setSetting('textHighlight', true);
-      setSetting('blurIntensity', 'Medium');
-      setSetting('fontFamily', "'Times New Roman', Times, serif");
-      setSetting('highQuality', false);
-      setSetting('fastRender', false);
-      setSetting('renderMode', 'classic');
-      setSetting('vignetteEffect', true);
+    // Eğer linkte draft yoksa (Yeni Proje tıklanmışsa veya temiz açılmışsa)
+    if (!draftId) {
+      if (!hasInitialized.current || projectId) {
+        hasInitialized.current = true;
+        setProjectId(null);
+        setProjectName('');
+        setSetting('phrase', 'match cut');
+        setSetting('format', 'horizontal');
+        setSetting('videoLength', 'Medium');
+        setSetting('speed', 2.5);
+        setSetting('darkTheme', true);
+        setSetting('textHighlight', true);
+        setSetting('blurIntensity', 'Medium');
+        setSetting('fontFamily', "'Times New Roman', Times, serif");
+        setSetting('highQuality', false);
+        setSetting('fastRender', false);
+        setSetting('renderMode', 'classic');
+        setSetting('vignetteEffect', true);
+      }
       return;
     }
 
@@ -96,8 +116,7 @@ function MatchCutTool() {
         }
       }
 
-      // LocalStorage'da yoksa veya uyuşmuyorsa, Bulut projelerinden (projects) bul
-      // Bu sayede linkle dışarıdan giren biri de projeyi açabilir
+      // LocalStorage'da yoksa, Bulut projelerinden (projects) bul
       if (projects && projects.length > 0) {
         const cloudDraft = projects.find(p => p.id === draftId);
         if (cloudDraft) {
@@ -109,7 +128,7 @@ function MatchCutTool() {
         }
       }
     }
-  }, [location.search, setSetting, projects, projectId]);
+  }, [searchParams, setSetting, projects, projectId]);
 
   // 2. Auto-save (Debounced)
   useEffect(() => {
@@ -162,17 +181,22 @@ function MatchCutTool() {
         }
       }
 
-      const savedId = await saveProject('match-cut', projectSettings, targetProjectId);
-      if (savedId && savedId !== projectId) {
-        setProjectId(savedId);
-        navigate(`?draft=${savedId}`, { replace: true });
+      try {
+        const savedId = await saveProject('match-cut', projectSettings, targetProjectId);
+        if (savedId && savedId !== projectId) {
+          setProjectId(savedId);
+          setSearchParams({ draft: savedId }, { replace: true });
+        }
+        setSaveStatus('Saved to Cloud');
+        setTimeout(() => setSaveStatus(''), 2000);
+      } catch (err) {
+        console.error("MatchCut auto-save error:", err);
+        setSaveStatus('');
       }
-      setSaveStatus('Saved to Cloud');
-      setTimeout(() => setSaveStatus(''), 2000);
     }, 1500); // 1.5 saniye bekle (Debounce)
 
     return () => clearTimeout(timeoutId);
-  }, [phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps, format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender, renderMode, vignetteEffect, user, projectId, projectName, saveProject]);
+  }, [phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps, format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender, renderMode, vignetteEffect, user, projectId, projectName, saveProject, setSearchParams]);
 
   const handleGenerate = useCallback(async () => {
     if (!phrase.trim()) {
@@ -292,15 +316,27 @@ function MatchCutTool() {
               {t('matchCutToolDesc', lang)}
             </p>
           </div>
-          {saveStatus && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-              className="flex items-center gap-2 text-xs font-mono bg-zinc-900/90 px-3 py-1.5 rounded-full text-zinc-300 border border-zinc-700 shadow-lg absolute top-4 right-4 sm:relative sm:top-0 sm:right-0"
-            >
-              <span className={`w-2 h-2 rounded-full ${saveStatus === 'Saving...' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
-              {saveStatus}
-            </motion.div>
-          )}
+          <div className="flex items-center gap-3 absolute top-4 right-4 sm:relative sm:top-0 sm:right-0">
+            {user && (
+              <button
+                onClick={handleNewProject}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg border border-zinc-700/80 shadow-md transition-all active:scale-95"
+                title={lang === 'tr' ? "Sıfır yeni bir proje aç" : "Open a fresh blank project"}
+              >
+                <Plus size={14} className="text-[#F5B301]" />
+                <span>{lang === 'tr' ? 'Yeni Proje' : 'New Project'}</span>
+              </button>
+            )}
+            {saveStatus && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                className="flex items-center gap-2 text-xs font-mono bg-zinc-900/90 px-3 py-1.5 rounded-full text-zinc-300 border border-zinc-700 shadow-lg"
+              >
+                <span className={`w-2 h-2 rounded-full ${saveStatus === 'Saving...' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
+                {saveStatus}
+              </motion.div>
+            )}
+          </div>
         </header>
 
         <main className="flex flex-col lg:flex-row gap-6 lg:gap-6 flex-1 min-h-0 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
