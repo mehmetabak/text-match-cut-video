@@ -19,7 +19,7 @@ import {
 import Switch from '../components/Switch';
 import SegmentedControl from '../components/SegmentedControl';
 import { createVideoFromFrames, extractAudioFromVideo } from '../lib/ffmpeg';
-import { applyAudioEffect } from '../lib/audioUtils';
+import { applyAudioEffect, generateTypewriterAudioTrack, playLiveTypewriterClick } from '../lib/audioUtils';
 import {
   drawKenBurnsFrame,
   drawVhsEffect,
@@ -93,7 +93,7 @@ export default function VideoEffectTool() {
   );
   const [typingSpeed, setTypingSpeed] = useState(18); // chars per sec
   const [cursorStyle, setCursorStyle] = useState('block'); // 'block' | 'line' | 'underscore'
-  const [typewriterMode, setTypewriterMode] = useState('vintage'); // 'vintage' | 'terminal'
+  const [typewriterMode, setTypewriterMode] = useState('terminal'); // 'terminal' | 'vintage'
   const [fontColor, setFontColor] = useState('#FFFFFF');
 
   // 5. Scanline CRT Settings
@@ -121,6 +121,7 @@ export default function VideoEffectTool() {
   const sourceMediaRef = useRef(null);
   const hasInitialized = useRef(false);
   const lastSavedSnapshotRef = useRef(null);
+  const lastCharIndexRef = useRef(0);
 
   const validTypes = ['ken-burns', 'vhs-tape', 'glitch-master', 'typewriter', 'scanline', 'ascii', 'echo', 'gsearch'];
   const isProTool = type !== 'gsearch';
@@ -245,7 +246,7 @@ export default function VideoEffectTool() {
       setSliceRate(8);
       setTypingSpeed(18);
       setCursorStyle('block');
-      setTypewriterMode('vintage');
+      setTypewriterMode('terminal');
       setFontColor('#FFFFFF');
       setScanlineDensity(4);
       setPhosphorGlow(0.5);
@@ -503,6 +504,15 @@ export default function VideoEffectTool() {
         const progressVal = (elapsed % loopDuration) / loopDuration;
 
         if (type === 'typewriter') {
+          const totalChars = typewriterText.length;
+          const currentChars = Math.min(totalChars, Math.floor(progressVal * (totalChars + 4)));
+          if (audioFxEnabled && currentChars > 0 && currentChars !== lastCharIndexRef.current && currentChars <= totalChars) {
+            lastCharIndexRef.current = currentChars;
+            playLiveTypewriterClick(typewriterText[currentChars - 1] === ' ');
+          } else if (currentChars === 0) {
+            lastCharIndexRef.current = 0;
+          }
+
           drawTypewriterFrame(ctx, width, height, progressVal, {
             text: typewriterText,
             fontColor,
@@ -569,7 +579,7 @@ export default function VideoEffectTool() {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
   }, [
-    type, duration, typewriterText, fontColor, cursorStyle,
+    type, duration, typewriterText, fontColor, cursorStyle, typewriterMode, audioFxEnabled,
     zoomRate, zoomDirection, panStyle,
     aberrationStrength, trackingNoise, scanlineFlicker, vhsTimestamp,
     glitchIntensity, rgbShift, sliceRate,
@@ -589,9 +599,12 @@ export default function VideoEffectTool() {
       setProgress(2);
       setErrorMsg('');
 
-      // 1. Extract and process audio if the source is a video file
+      // 1. Extract and process audio if the source is a video file OR generate typewriter mechanical sound
       let audioBlob = null;
-      if (file && file.type.startsWith('video/')) {
+      if (type === 'typewriter' && audioFxEnabled) {
+        setProgress(4);
+        audioBlob = await generateTypewriterAudioTrack(typewriterText, totalDuration, typingSpeed);
+      } else if (file && file.type.startsWith('video/')) {
         setProgress(4);
         const rawAudioBlob = await extractAudioFromVideo(file);
         if (rawAudioBlob) {
@@ -829,19 +842,6 @@ export default function VideoEffectTool() {
   };
 
   const isServerTool = type === 'echo';
-
-  if (authLoading && isProTool) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center gap-3">
-        <div className="w-8 h-8 border-2 border-[#F5B301] border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs text-zinc-500 font-mono tracking-wider">VERIFYING ACCESS...</p>
-      </div>
-    );
-  }
-
-  if (!authLoading && isProTool && !user?.isPro) {
-    return null;
-  }
 
   return (
     <div className="w-full flex-grow flex flex-col h-full">

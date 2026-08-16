@@ -195,4 +195,130 @@ export class AudioGenerator {
         const renderedBuffer = await audioContext.startRendering();
         return bufferToWave(renderedBuffer, renderedBuffer.length);
     }
+}
+
+/**
+ * Procedurally generates an authentic mechanical typewriter audio track
+ * containing keystrokes, spacebar clacks, and carriage returns.
+ */
+export async function generateTypewriterAudioTrack(text, duration, typingSpeed = 18, sampleRate = 44100) {
+    if (!text || duration <= 0) return null;
+
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const offlineCtx = new OfflineAudioContext(1, Math.ceil(duration * sampleRate), sampleRate);
+
+        const totalChars = text.length;
+        const charsToType = Math.min(totalChars, Math.floor(duration * typingSpeed));
+
+        for (let i = 0; i < charsToType; i++) {
+            const char = text[i];
+            // Jitter for organic human typing cadence
+            const baseTime = (i / totalChars) * (totalChars / typingSpeed);
+            const jitter = ((Math.sin(i * 91) * 0.5 + 0.5) - 0.5) * 0.015;
+            const time = Math.max(0.01, Math.min(duration - 0.05, baseTime + jitter));
+
+            const isSpace = char === ' ' || char === '\t';
+            const isNewline = char === '\n';
+
+            // 1. Mechanical Metal Strike / Snap (Noise burst)
+            const snapLen = Math.floor(sampleRate * (isSpace ? 0.02 : 0.015));
+            const snapBuf = offlineCtx.createBuffer(1, snapLen, sampleRate);
+            const snapData = snapBuf.getChannelData(0);
+            for (let s = 0; s < snapLen; s++) {
+                snapData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (sampleRate * 0.003));
+            }
+            const snapSource = offlineCtx.createBufferSource();
+            snapSource.buffer = snapBuf;
+
+            const snapFilter = offlineCtx.createBiquadFilter();
+            snapFilter.type = 'bandpass';
+            snapFilter.frequency.value = isSpace ? 1200 : (2400 + (i % 5) * 120);
+            snapFilter.Q.value = 3.5;
+
+            const snapGain = offlineCtx.createGain();
+            snapGain.gain.setValueAtTime(isSpace ? 0.22 : 0.35, time);
+            snapGain.gain.exponentialRampToValueAtTime(0.001, time + 0.03);
+
+            snapSource.connect(snapFilter);
+            snapFilter.connect(snapGain);
+            snapGain.connect(offlineCtx.destination);
+            snapSource.start(time);
+
+            // 2. Platen / Body Thud (Low-frequency impact)
+            const thudOsc = offlineCtx.createOscillator();
+            thudOsc.type = 'triangle';
+            thudOsc.frequency.setValueAtTime(isSpace ? 110 : (145 + (i % 4) * 15), time);
+            thudOsc.frequency.exponentialRampToValueAtTime(45, time + 0.04);
+
+            const thudGain = offlineCtx.createGain();
+            thudGain.gain.setValueAtTime(isSpace ? 0.45 : 0.3, time);
+            thudGain.gain.exponentialRampToValueAtTime(0.001, time + 0.045);
+
+            thudOsc.connect(thudGain);
+            thudGain.connect(offlineCtx.destination);
+            thudOsc.start(time);
+            thudOsc.stop(time + 0.05);
+
+            // 3. Line-break carriage bell / return slide
+            if (isNewline) {
+                const bellOsc = offlineCtx.createOscillator();
+                bellOsc.type = 'sine';
+                bellOsc.frequency.setValueAtTime(2600, time + 0.02);
+                const bellGain = offlineCtx.createGain();
+                bellGain.gain.setValueAtTime(0.2, time + 0.02);
+                bellGain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
+                bellOsc.connect(bellGain);
+                bellGain.connect(offlineCtx.destination);
+                bellOsc.start(time + 0.02);
+                bellOsc.stop(time + 0.28);
+            }
+        }
+
+        const renderedBuffer = await offlineCtx.startRendering();
+        return bufferToWave(renderedBuffer, renderedBuffer.length);
+    } catch (e) {
+        console.warn("Typewriter procedural audio generation fallback:", e);
+        return null;
+    }
+}
+
+// Live interactive keystroke click sound for preview
+let liveAudioCtx = null;
+export function playLiveTypewriterClick(isSpace = false) {
+    try {
+        if (!liveAudioCtx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            liveAudioCtx = new AudioCtx();
+        }
+        if (liveAudioCtx.state === 'suspended') {
+            liveAudioCtx.resume();
+        }
+
+        const now = liveAudioCtx.currentTime;
+        const snapLen = Math.floor(liveAudioCtx.sampleRate * (isSpace ? 0.02 : 0.014));
+        const snapBuf = liveAudioCtx.createBuffer(1, snapLen, liveAudioCtx.sampleRate);
+        const snapData = snapBuf.getChannelData(0);
+        for (let s = 0; s < snapLen; s++) {
+            snapData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (liveAudioCtx.sampleRate * 0.0028));
+        }
+        const snapSource = liveAudioCtx.createBufferSource();
+        snapSource.buffer = snapBuf;
+
+        const snapFilter = liveAudioCtx.createBiquadFilter();
+        snapFilter.type = 'bandpass';
+        snapFilter.frequency.value = isSpace ? 1100 : 2600;
+        snapFilter.Q.value = 3.2;
+
+        const snapGain = liveAudioCtx.createGain();
+        snapGain.gain.setValueAtTime(isSpace ? 0.18 : 0.25, now);
+        snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+
+        snapSource.connect(snapFilter);
+        snapFilter.connect(snapGain);
+        snapGain.connect(liveAudioCtx.destination);
+        snapSource.start(now);
+    } catch (e) {
+        // Silently ignore if browser blocks audio autoplay
+    }
 }
