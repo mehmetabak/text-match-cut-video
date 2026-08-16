@@ -125,9 +125,10 @@ export default function VideoEffectTool() {
   const audioFxEnabledRef = useRef(audioFxEnabled);
 
   const handleAudioToggle = (val) => {
-    setAudioFxEnabled(val);
-    audioFxEnabledRef.current = val;
-    if (!val) {
+    const isChecked = typeof val === 'boolean' ? val : Boolean(val?.target?.checked ?? val);
+    setAudioFxEnabled(isChecked);
+    audioFxEnabledRef.current = isChecked;
+    if (!isChecked) {
       muteLiveAudio();
     }
   };
@@ -201,31 +202,31 @@ export default function VideoEffectTool() {
   const getCurrentSettings = () => ({
     projectName: projectName.trim(),
     formatPreset,
-    hdOutput,
-    fastRender,
-    duration,
-    audioFxEnabled,
-    zoomRate,
+    hdOutput: Boolean(hdOutput),
+    fastRender: Boolean(fastRender),
+    duration: Number(duration) || 5,
+    audioFxEnabled: Boolean(audioFxEnabled),
+    zoomRate: Number(zoomRate) || 0.04,
     zoomDirection,
     panStyle,
-    aberrationStrength,
+    aberrationStrength: Number(aberrationStrength) || 1.2,
     trackingNoise,
-    scanlineFlicker,
-    vhsTimestamp,
-    glitchIntensity,
-    rgbShift,
-    sliceRate,
+    scanlineFlicker: Boolean(scanlineFlicker),
+    vhsTimestamp: Boolean(vhsTimestamp),
+    glitchIntensity: Number(glitchIntensity) || 0.6,
+    rgbShift: Number(rgbShift) || 14,
+    sliceRate: Number(sliceRate) || 8,
     typewriterText,
-    typingSpeed,
+    typingSpeed: Number(typingSpeed) || 18,
     cursorStyle,
     typewriterMode,
     fontColor,
-    scanlineDensity,
-    phosphorGlow,
+    scanlineDensity: Number(scanlineDensity) || 4,
+    phosphorGlow: Number(phosphorGlow) || 0.5,
     asciiTheme,
-    asciiResolution,
-    echoCount,
-    echoDecay,
+    asciiResolution: Number(asciiResolution) || 12,
+    echoCount: Number(echoCount) || 5,
+    echoDecay: Number(echoDecay) || 0.7,
     searchQuery,
     searchUrl,
     searchHeadline,
