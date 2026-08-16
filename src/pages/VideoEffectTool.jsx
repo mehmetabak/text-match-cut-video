@@ -46,7 +46,7 @@ export default function VideoEffectTool() {
   const location = useLocation();
   const navigate = useNavigate();
   const lang = useSettingsStore(state => state.lang);
-  const { user, saveProject, projects } = useAuthStore();
+  const { user, saveProject, projects, loading: authLoading } = useAuthStore();
 
   const [projectId, setProjectId] = useState(null);
   const [saveStatus, setSaveStatus] = useState('');
@@ -93,6 +93,7 @@ export default function VideoEffectTool() {
   );
   const [typingSpeed, setTypingSpeed] = useState(18); // chars per sec
   const [cursorStyle, setCursorStyle] = useState('block'); // 'block' | 'line' | 'underscore'
+  const [typewriterMode, setTypewriterMode] = useState('vintage'); // 'vintage' | 'terminal'
   const [fontColor, setFontColor] = useState('#FFFFFF');
 
   // 5. Scanline CRT Settings
@@ -122,13 +123,19 @@ export default function VideoEffectTool() {
   const lastSavedSnapshotRef = useRef(null);
 
   const validTypes = ['ken-burns', 'vhs-tape', 'glitch-master', 'typewriter', 'scanline', 'ascii', 'echo', 'gsearch'];
+  const isProTool = type !== 'gsearch';
 
-  // Route validation
+  // Route & Pro Access Protection
   useEffect(() => {
     if (!validTypes.includes(type)) {
-      navigate('/tools');
+      navigate('/tools', { replace: true });
+      return;
     }
-  }, [type, navigate]);
+
+    if (!authLoading && isProTool && !user?.isPro) {
+      navigate('/pricing', { replace: true });
+    }
+  }, [type, isProTool, authLoading, user?.isPro, navigate]);
 
   // Tool Meta (Title & Description formatted like MatchCutTool)
   const toolMetaMap = {
@@ -197,6 +204,7 @@ export default function VideoEffectTool() {
     typewriterText,
     typingSpeed,
     cursorStyle,
+    typewriterMode,
     fontColor,
     scanlineDensity,
     phosphorGlow,
@@ -237,6 +245,7 @@ export default function VideoEffectTool() {
       setSliceRate(8);
       setTypingSpeed(18);
       setCursorStyle('block');
+      setTypewriterMode('vintage');
       setFontColor('#FFFFFF');
       setScanlineDensity(4);
       setPhosphorGlow(0.5);
@@ -282,6 +291,7 @@ export default function VideoEffectTool() {
             if (draftData.typewriterText) setTypewriterText(draftData.typewriterText);
             if (draftData.typingSpeed) setTypingSpeed(draftData.typingSpeed);
             if (draftData.cursorStyle) setCursorStyle(draftData.cursorStyle);
+            if (draftData.typewriterMode) setTypewriterMode(draftData.typewriterMode);
             if (draftData.fontColor) setFontColor(draftData.fontColor);
             if (draftData.scanlineDensity) setScanlineDensity(draftData.scanlineDensity);
             if (draftData.phosphorGlow) setPhosphorGlow(draftData.phosphorGlow);
@@ -327,6 +337,7 @@ export default function VideoEffectTool() {
           if (s.typewriterText) setTypewriterText(s.typewriterText);
           if (s.typingSpeed) setTypingSpeed(s.typingSpeed);
           if (s.cursorStyle) setCursorStyle(s.cursorStyle);
+          if (s.typewriterMode) setTypewriterMode(s.typewriterMode);
           if (s.fontColor) setFontColor(s.fontColor);
           if (s.scanlineDensity) setScanlineDensity(s.scanlineDensity);
           if (s.phosphorGlow) setPhosphorGlow(s.phosphorGlow);
@@ -408,7 +419,7 @@ export default function VideoEffectTool() {
     user, projectName, formatPreset, hdOutput, fastRender, duration, audioFxEnabled,
     zoomRate, zoomDirection, panStyle, aberrationStrength, trackingNoise,
     scanlineFlicker, vhsTimestamp, glitchIntensity, rgbShift, sliceRate,
-    typewriterText, typingSpeed, cursorStyle, fontColor, scanlineDensity,
+    typewriterText, typingSpeed, cursorStyle, typewriterMode, fontColor, scanlineDensity,
     phosphorGlow, asciiTheme, asciiResolution, echoCount, echoDecay,
     searchQuery, searchUrl, searchHeadline, searchSnippet, searchTheme,
     projectId, saveProject, type, projects, navigate
@@ -496,6 +507,7 @@ export default function VideoEffectTool() {
             text: typewriterText,
             fontColor,
             cursorStyle,
+            typewriterMode,
             darkTheme: true
           });
         } else if (type === 'ken-burns') {
@@ -567,6 +579,11 @@ export default function VideoEffectTool() {
 
   // Client-Side Device Render (FFmpeg WASM & Canvas Frames with Audio Preservation)
   const startDeviceRender = async () => {
+    if (isProTool && !user?.isPro) {
+      navigate('/pricing', { replace: true });
+      return;
+    }
+
     try {
       setStatus('processing');
       setProgress(2);
@@ -638,6 +655,7 @@ export default function VideoEffectTool() {
             text: typewriterText,
             fontColor,
             cursorStyle,
+            typewriterMode,
             darkTheme: true
           });
         } else if (type === 'ken-burns') {
@@ -812,6 +830,19 @@ export default function VideoEffectTool() {
 
   const isServerTool = type === 'echo';
 
+  if (authLoading && isProTool) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-2 border-[#F5B301] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-xs text-zinc-500 font-mono tracking-wider">VERIFYING ACCESS...</p>
+      </div>
+    );
+  }
+
+  if (!authLoading && isProTool && !user?.isPro) {
+    return null;
+  }
+
   return (
     <div className="w-full flex-grow flex flex-col h-full">
       <Helmet>
@@ -826,11 +857,11 @@ export default function VideoEffectTool() {
         <meta property="og:url" content={`https://animationmaker.m0s.space/effects/${type}`} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AnimationMaker" />
-        <meta property="og:image" content="https://animationmaker.m0s.space/logo.png" />
+        <meta property="og:image" content="https://animationmaker.m0s.space/og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${toolInfo.title1} ${toolInfo.title2} | AnimationMaker`} />
         <meta name="twitter:description" content={toolInfo.desc} />
-        <meta name="twitter:image" content="https://animationmaker.m0s.space/logo.png" />
+        <meta name="twitter:image" content="https://animationmaker.m0s.space/og-image.png" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -1151,6 +1182,16 @@ export default function VideoEffectTool() {
                         ]}
                         value={cursorStyle}
                         onChange={setCursorStyle}
+                      />
+
+                      <SegmentedControl
+                        label={t('typewriterModeLabel', lang)}
+                        options={[
+                          { value: 'vintage', label: t('typewriterModeVintage', lang) },
+                          { value: 'terminal', label: t('typewriterModeTerminal', lang) }
+                        ]}
+                        value={typewriterMode}
+                        onChange={setTypewriterMode}
                       />
 
                       <div>

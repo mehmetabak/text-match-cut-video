@@ -255,89 +255,276 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
     const fontColor = options.fontColor || '#FFFFFF';
     const fontFamily = options.fontFamily || "'Courier New', Courier, monospace";
     const cursorStyle = options.cursorStyle || 'block'; // 'block' | 'line' | 'underscore'
+    const typewriterMode = options.typewriterMode || 'vintage'; // 'vintage' | 'terminal'
     const isDark = options.darkTheme !== false;
+    const isVertical = height > width;
 
     ctx.save();
-    ctx.fillStyle = isDark ? '#0F1015' : '#F5F5F0';
-    ctx.fillRect(0, 0, width, height);
 
-    // Subtle background grid
-    ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)';
-    ctx.lineWidth = 1;
-    const gridSize = 40;
-    for (let x = 0; x < width; x += gridSize) {
+    if (typewriterMode === 'vintage') {
+        // --- 1. PREMIUM VINTAGE ARCHIVAL TYPEWRITER ---
+        // Deep cinematic studio backdrop
+        const bgGrad = ctx.createRadialGradient(width / 2, height / 2, width * 0.1, width / 2, height / 2, width * 0.85);
+        bgGrad.addColorStop(0, '#15161C');
+        bgGrad.addColorStop(0.6, '#0B0C0E');
+        bgGrad.addColorStop(1, '#040506');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        const paperWidth = width * (isVertical ? 0.88 : 0.74);
+        const paperHeight = height * (isVertical ? 0.82 : 0.76);
+        const paperX = (width - paperWidth) / 2;
+        const paperY = (height - paperHeight) / 2 + (isVertical ? 16 : 12);
+
+        // 1.1 Mechanical Platen Roller (Behind / above paper)
+        const rollerHeight = Math.max(18, Math.floor(width / 30));
+        const rollerY = paperY - rollerHeight / 2;
+        
+        // Platen metal gradient
+        const rollerGrad = ctx.createLinearGradient(0, rollerY, 0, rollerY + rollerHeight);
+        rollerGrad.addColorStop(0, '#4B4C54');
+        rollerGrad.addColorStop(0.15, '#2D2E35');
+        rollerGrad.addColorStop(0.5, '#18191D');
+        rollerGrad.addColorStop(0.85, '#26272E');
+        rollerGrad.addColorStop(1, '#3B3C44');
+        ctx.fillStyle = rollerGrad;
+        if (ctx.roundRect) {
+            ctx.roundRect(paperX - 22, rollerY, paperWidth + 44, rollerHeight, 6);
+        } else {
+            ctx.fillRect(paperX - 22, rollerY, paperWidth + 44, rollerHeight);
+        }
+        ctx.fill();
+
+        // Roller top chrome highlight wire
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
+        ctx.moveTo(paperX - 20, rollerY + 1.5);
+        ctx.lineTo(paperX + paperWidth + 20, rollerY + 1.5);
         ctx.stroke();
-    }
-    for (let y = 0; y < height; y += gridSize) {
+
+        // Roller Knurled Side Knobs
+        const knobRadius = rollerHeight * 0.46;
+        const knobGrad = ctx.createLinearGradient(0, rollerY, 0, rollerY + rollerHeight);
+        knobGrad.addColorStop(0, '#8E909A');
+        knobGrad.addColorStop(0.5, '#40414A');
+        knobGrad.addColorStop(1, '#6A6C76');
+        ctx.fillStyle = knobGrad;
+
         ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
+        ctx.arc(paperX - 22, rollerY + rollerHeight / 2, knobRadius, 0, Math.PI * 2);
+        ctx.arc(paperX + paperWidth + 22, rollerY + rollerHeight / 2, knobRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 1.2 Soft Realistic Paper Drop Shadow
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 36;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 16;
+
+        // Archival Cream Paper Sheet
+        const paperGrad = ctx.createLinearGradient(paperX, paperY, paperX, paperY + paperHeight);
+        paperGrad.addColorStop(0, '#FAF8F4');
+        paperGrad.addColorStop(0.5, '#F7F4EC');
+        paperGrad.addColorStop(1, '#F0ECE0');
+        ctx.fillStyle = paperGrad;
+
+        if (ctx.roundRect) {
+            ctx.roundRect(paperX, paperY, paperWidth, paperHeight, 4);
+            ctx.fill();
+        } else {
+            ctx.fillRect(paperX, paperY, paperWidth, paperHeight);
+        }
+        ctx.shadowColor = 'transparent';
+
+        // Paper Double Micro-Border
+        ctx.strokeStyle = '#DBD4C5';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(paperX + 0.5, paperY + 0.5, paperWidth - 1, paperHeight - 1);
+        ctx.strokeStyle = '#EBE5D8';
+        ctx.strokeRect(paperX + 2.5, paperY + 2.5, paperWidth - 5, paperHeight - 5);
+
+        // 1.3 Vintage Letterhead Header & Stamp
+        const stampFontSize = Math.max(10, Math.floor(width / 50));
+        ctx.fillStyle = '#786F60';
+        ctx.font = `700 ${stampFontSize}px 'Courier New', Courier, monospace`;
+        ctx.fillText("ROYAL IMPERIAL • 1954", paperX + 28, paperY + 26);
+
+        // Dual Ribbon Eyelets (Crimson & Charcoal)
+        ctx.fillStyle = '#B91C1C';
+        ctx.beginPath();
+        ctx.arc(paperX + paperWidth - 44, paperY + 24, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1E293B';
+        ctx.beginPath();
+        ctx.arc(paperX + paperWidth - 30, paperY + 24, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hairline Header Divider
+        ctx.strokeStyle = 'rgba(120, 111, 96, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(paperX + 28, paperY + 38);
+        ctx.lineTo(paperX + paperWidth - 28, paperY + 38);
         ctx.stroke();
-    }
 
-    const totalChars = text.length;
-    const currentChars = Math.min(totalChars, Math.floor(progress * (totalChars + 4)));
-    const visibleText = text.substring(0, currentChars);
+        // 1.4 Subtle Ruled Writing Guidelines
+        const fontSize = Math.floor(isVertical ? width / 18 : width / 26);
+        const lineHeight = fontSize * 1.6;
+        const textStartX = paperX + 28;
+        const textStartY = paperY + 58;
 
-    const isVertical = height > width;
-    const fontSize = Math.floor(isVertical ? width / 18 : width / 28);
-    const lineHeight = fontSize * 1.5;
-    ctx.font = `700 ${fontSize}px ${fontFamily}`;
-    ctx.textBaseline = 'top';
+        ctx.strokeStyle = 'rgba(60, 50, 40, 0.045)';
+        ctx.lineWidth = 1;
+        const availableHeight = paperHeight - 80;
+        const maxLines = Math.floor(availableHeight / lineHeight);
+        for (let l = 0; l < maxLines; l++) {
+            const ruleY = textStartY + (l * lineHeight) + fontSize + 2;
+            ctx.beginPath();
+            ctx.moveTo(textStartX, ruleY);
+            ctx.lineTo(paperX + paperWidth - 28, ruleY);
+            ctx.stroke();
+        }
 
-    const maxContentWidth = width * 0.82;
-    const startX = (width - maxContentWidth) / 2;
+        // 1.5 Authentic Mechanical Typewriter Text Stamping
+        const totalChars = text.length;
+        const currentChars = Math.min(totalChars, Math.floor(progress * (totalChars + 4)));
+        const visibleText = text.substring(0, currentChars);
 
-    // Wrap text lines
-    const paragraphs = visibleText.split('\n');
-    const renderedLines = [];
+        ctx.font = `700 ${fontSize}px 'Courier New', Courier, monospace`;
+        ctx.textBaseline = 'top';
 
-    paragraphs.forEach((para) => {
-        const words = para.split(' ');
-        let currentLine = '';
-        words.forEach((word) => {
-            const testLine = currentLine ? `${currentLine} ${word}` : word;
-            if (ctx.measureText(testLine).width > maxContentWidth) {
-                renderedLines.push(currentLine);
-                currentLine = word;
-            } else {
-                currentLine = testLine;
-            }
-        });
-        renderedLines.push(currentLine);
-    });
+        const maxTextWidth = paperWidth - 56;
+        const paragraphs = visibleText.split('\n');
+        const renderedLines = [];
 
-    const totalBlockHeight = renderedLines.length * lineHeight;
-    const startY = Math.max(60, (height - totalBlockHeight) / 2);
-
-    ctx.fillStyle = fontColor;
-    renderedLines.forEach((line, idx) => {
-        const lineY = startY + (idx * lineHeight);
-        ctx.fillText(line, startX, lineY);
-
-        // Draw cursor at the end of the last line
-        if (idx === renderedLines.length - 1) {
-            const isCursorBlink = Math.floor(progress * 24) % 2 === 0 || progress >= 1;
-            if (isCursorBlink) {
-                const lineWidth = ctx.measureText(line).width;
-                const cursorX = startX + lineWidth + 4;
-                ctx.fillStyle = '#F5B301';
-
-                if (cursorStyle === 'block') {
-                    ctx.fillRect(cursorX, lineY + 2, fontSize * 0.55, fontSize);
-                } else if (cursorStyle === 'line') {
-                    ctx.fillRect(cursorX, lineY + 2, 3, fontSize);
+        paragraphs.forEach((para) => {
+            const words = para.split(' ');
+            let currentLine = '';
+            words.forEach((word) => {
+                const testLine = currentLine ? `${currentLine} ${word}` : word;
+                if (ctx.measureText(testLine).width > maxTextWidth) {
+                    renderedLines.push(currentLine);
+                    currentLine = word;
                 } else {
-                    ctx.fillRect(cursorX, lineY + fontSize - 4, fontSize * 0.6, 4);
+                    currentLine = testLine;
+                }
+            });
+            renderedLines.push(currentLine);
+        });
+
+        // Deep carbon typewriter ribbon ink
+        ctx.fillStyle = '#1A1816';
+
+        renderedLines.forEach((line, idx) => {
+            const lineY = textStartY + (idx * lineHeight);
+            if (lineY + lineHeight <= paperY + paperHeight - 20) {
+                ctx.fillText(line, textStartX, lineY);
+
+                // Cursor on last line
+                if (idx === renderedLines.length - 1) {
+                    const isCursorBlink = Math.floor(progress * 24) % 2 === 0 || progress >= 1;
+                    if (isCursorBlink) {
+                        const lineWidth = ctx.measureText(line).width;
+                        const cursorX = textStartX + lineWidth + 4;
+                        ctx.fillStyle = '#DC2626'; // Ribbon strike color
+
+                        if (cursorStyle === 'block') {
+                            ctx.fillRect(cursorX, lineY + 1, fontSize * 0.52, fontSize);
+                        } else if (cursorStyle === 'line') {
+                            ctx.fillRect(cursorX, lineY + 1, 3, fontSize);
+                        } else {
+                            ctx.fillRect(cursorX, lineY + fontSize - 3, fontSize * 0.6, 4);
+                        }
+                    }
                 }
             }
-        }
-    });
+        });
 
-    drawVignette(ctx, width, height, 0.35);
+        drawVignette(ctx, width, height, 0.38);
+    } else {
+        // --- 2. MODERN TERMINAL / CLASSIC MODE ---
+        ctx.fillStyle = isDark ? '#0F1015' : '#F5F5F0';
+        ctx.fillRect(0, 0, width, height);
+
+        // Subtle background grid
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)';
+        ctx.lineWidth = 1;
+        const gridSize = 40;
+        for (let x = 0; x < width; x += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+        }
+        for (let y = 0; y < height; y += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+
+        const totalChars = text.length;
+        const currentChars = Math.min(totalChars, Math.floor(progress * (totalChars + 4)));
+        const visibleText = text.substring(0, currentChars);
+
+        const fontSize = Math.floor(isVertical ? width / 18 : width / 28);
+        const lineHeight = fontSize * 1.5;
+        ctx.font = `700 ${fontSize}px ${fontFamily}`;
+        ctx.textBaseline = 'top';
+
+        const maxContentWidth = width * 0.82;
+        const startX = (width - maxContentWidth) / 2;
+
+        // Wrap text lines
+        const paragraphs = visibleText.split('\n');
+        const renderedLines = [];
+
+        paragraphs.forEach((para) => {
+            const words = para.split(' ');
+            let currentLine = '';
+            words.forEach((word) => {
+                const testLine = currentLine ? `${currentLine} ${word}` : word;
+                if (ctx.measureText(testLine).width > maxContentWidth) {
+                    renderedLines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            });
+            renderedLines.push(currentLine);
+        });
+
+        const totalBlockHeight = renderedLines.length * lineHeight;
+        const startY = Math.max(60, (height - totalBlockHeight) / 2);
+
+        ctx.fillStyle = fontColor;
+        renderedLines.forEach((line, idx) => {
+            const lineY = startY + (idx * lineHeight);
+            ctx.fillText(line, startX, lineY);
+
+            // Draw cursor at the end of the last line
+            if (idx === renderedLines.length - 1) {
+                const isCursorBlink = Math.floor(progress * 24) % 2 === 0 || progress >= 1;
+                if (isCursorBlink) {
+                    const lineWidth = ctx.measureText(line).width;
+                    const cursorX = startX + lineWidth + 4;
+                    ctx.fillStyle = '#F5B301';
+
+                    if (cursorStyle === 'block') {
+                        ctx.fillRect(cursorX, lineY + 2, fontSize * 0.55, fontSize);
+                    } else if (cursorStyle === 'line') {
+                        ctx.fillRect(cursorX, lineY + 2, 3, fontSize);
+                    } else {
+                        ctx.fillRect(cursorX, lineY + fontSize - 4, fontSize * 0.6, 4);
+                    }
+                }
+            }
+        });
+
+        drawVignette(ctx, width, height, 0.35);
+    }
+
     ctx.restore();
 }
 

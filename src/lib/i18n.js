@@ -347,7 +347,10 @@ export const strings = {
     "cookieAcceptAll": "Accept All Cookies",
     "cookieSettings": "Cookie Settings",
     "tool_audiowave_title": "Audio Waveform & Spectrum",
-    "tool_audiowave_desc": "Reactive neon audio waveforms and frequency visualizers for music & podcasts"
+    "tool_audiowave_desc": "Reactive neon audio waveforms and frequency visualizers for music & podcasts",
+    "typewriterModeLabel": "Typewriter Style",
+    "typewriterModeVintage": "Vintage Paper",
+    "typewriterModeTerminal": "Modern Terminal"
   },
   "tr": {
     "untitledProject": "İsimsiz Proje",
@@ -697,7 +700,10 @@ export const strings = {
     "billingProDesc": "Şu anda PRO planındasınız. Aşağıdan ödeme yöntemlerinizi yönetebilir, faturaları görüntüleyebilir veya aboneliğinizi iptal edebilirsiniz.",
     "billingFreeDesc": "Ödeme yöntemlerinizi yönetin, faturalarınızı görüntüleyin ve güvenle kredi satın alın.",
     "tool_audiowave_title": "Ses Dalgası & Spektrum",
-    "tool_audiowave_desc": "Müzik ve podcastler için reaktif neon ses dalgası ve frekans görselleştirici"
+    "tool_audiowave_desc": "Müzik ve podcastler için reaktif neon ses dalgası ve frekans görselleştirici",
+    "typewriterModeLabel": "Daktilo Modu",
+    "typewriterModeVintage": "Antika Kağıt",
+    "typewriterModeTerminal": "Modern Terminal"
   },
   "de": {
     "loginGoogle": "Mit Google anmelden",
@@ -1047,7 +1053,10 @@ export const strings = {
     "cookieAcceptAll": "Alle akzeptieren",
     "cookieSettings": "Cookie-Einstellungen",
     "tool_audiowave_title": "Audiowellenform & Spektrum",
-    "tool_audiowave_desc": "Reaktive Neon-Audiowellenformen und Frequenz-Visualisierer für Musik & Podcasts"
+    "tool_audiowave_desc": "Reaktive Neon-Audiowellenformen und Frequenz-Visualisierer für Musik & Podcasts",
+    "typewriterModeLabel": "Schreibmaschinen-Stil",
+    "typewriterModeVintage": "Vintage-Papier",
+    "typewriterModeTerminal": "Modernes Terminal"
   },
   "fr": {
     "loginGoogle": "Se connecter avec Google",
@@ -1397,7 +1406,10 @@ export const strings = {
     "cookieAcceptAll": "Tout Accepter",
     "cookieSettings": "Paramètres des Cookies",
     "tool_audiowave_title": "Spectre & Forme d'Onde Audio",
-    "tool_audiowave_desc": "Formes d'ondes réactives néon et visualiseur de fréquences pour musique et podcasts"
+    "tool_audiowave_desc": "Formes d'ondes réactives néon et visualiseur de fréquences pour musique et podcasts",
+    "typewriterModeLabel": "Style de Machine à Écrire",
+    "typewriterModeVintage": "Papier Vintage",
+    "typewriterModeTerminal": "Terminal Moderne"
   },
   "es": {
     "loginGoogle": "Iniciar sesión con Google",
@@ -1747,7 +1759,10 @@ export const strings = {
     "cookieAcceptAll": "Aceptar Todas",
     "cookieSettings": "Configuración de Cookies",
     "tool_audiowave_title": "Espectro y Onda de Audio",
-    "tool_audiowave_desc": "Ondas de audio reactivas de neón y visualizador de frecuencias para música y podcasts"
+    "tool_audiowave_desc": "Ondas de audio reactivas de neón y visualizador de frecuencias para música y podcasts",
+    "typewriterModeLabel": "Estilo de Máquina de Escribir",
+    "typewriterModeVintage": "Papel Vintage",
+    "typewriterModeTerminal": "Terminal Moderno"
   },
   "zh": {
     "loginGoogle": "使用 Google 登录",
@@ -2097,7 +2112,10 @@ export const strings = {
     "cookieAcceptAll": "全部接受",
     "cookieSettings": "Cookie 设置",
     "tool_audiowave_title": "音频波形与频谱",
-    "tool_audiowave_desc": "用于音乐与播客的霓虹动态音频波形与频率可视化器"
+    "tool_audiowave_desc": "用于音乐与播客的霓虹动态音频波形与频率可视化器",
+    "typewriterModeLabel": "打字机风格",
+    "typewriterModeVintage": "复古稿纸",
+    "typewriterModeTerminal": "现代终端"
   },
   "ar": {
     "loginGoogle": "تسجيل الدخول عبر Google",
@@ -2447,7 +2465,10 @@ export const strings = {
     "cookieAcceptAll": "قبول الكل",
     "cookieSettings": "إعدادات الكوكيز",
     "tool_audiowave_title": "موجات الصوت والطيف الترددي",
-    "tool_audiowave_desc": "أشكال موجية صوتية نيون متفاعلة ومحلل ترددات للموسيقى والبودكاست"
+    "tool_audiowave_desc": "أشكال موجية صوتية نيون متفاعلة ومحلل ترددات للموسيقى والبودكاست",
+    "typewriterModeLabel": "نمط الآلة الكاتبة",
+    "typewriterModeVintage": "ورق كلاسيكي",
+    "typewriterModeTerminal": "طرفية حديثة"
   },
   "ko": {
     "loginGoogle": "Google 계정으로 로그인",
@@ -2797,7 +2818,10 @@ export const strings = {
     "cookieAcceptAll": "모두 허용",
     "cookieSettings": "쿠키 설정",
     "tool_audiowave_title": "오디오 파형 & 스펙트럼",
-    "tool_audiowave_desc": "음악과 팟캐스트를 위한 네온 반응형 오디오 파형 및 주파수 시각화"
+    "tool_audiowave_desc": "음악과 팟캐스트를 위한 네온 반응형 오디오 파형 및 주파수 시각화",
+    "typewriterModeLabel": "타자기 스타일",
+    "typewriterModeVintage": "빈티지 원고지",
+    "typewriterModeTerminal": "모던 터미널"
   },
   "ja": {
     "loginGoogle": "Googleでログイン",
@@ -3147,7 +3171,10 @@ export const strings = {
     "cookieAcceptAll": "すべて同意",
     "cookieSettings": "クッキー詳細設定",
     "tool_audiowave_title": "オーディオ波形＆スペクトラム",
-    "tool_audiowave_desc": "音楽やポッドキャスト向けのネオン反応型オーディオ波形と周波数ビジュアライザー"
+    "tool_audiowave_desc": "音楽やポッドキャスト向けのネオン反応型オーディオ波形と周波数ビジュアライザー",
+    "typewriterModeLabel": "タイプライタースタイル",
+    "typewriterModeVintage": "ヴィンテージ原稿用紙",
+    "typewriterModeTerminal": "モダンターミナル"
   },
   "id": {
     "loginGoogle": "Masuk dengan Google",
@@ -3497,7 +3524,10 @@ export const strings = {
     "cookieAcceptAll": "Terima Semua",
     "cookieSettings": "Pengaturan Cookie",
     "tool_audiowave_title": "Gelombang Audio & Spektrum",
-    "tool_audiowave_desc": "Bentuk gelombang audio neon reaktif dan visualizer frekuensi untuk musik & podcast"
+    "tool_audiowave_desc": "Bentuk gelombang audio neon reaktif dan visualizer frekuensi untuk musik & podcast",
+    "typewriterModeLabel": "Gaya Mesin Tik",
+    "typewriterModeVintage": "Kertas Vintage",
+    "typewriterModeTerminal": "Terminal Modern"
   },
   "th": {
     "loginGoogle": "เข้าสู่ระบบด้วย Google",
@@ -3847,7 +3877,10 @@ export const strings = {
     "cookieAcceptAll": "ยอมรับทั้งหมด",
     "cookieSettings": "ตั้งค่าคุกกี้",
     "tool_audiowave_title": "คลื่นเสียงและสเปกตรัม (Audio Wave)",
-    "tool_audiowave_desc": "อนิเมชันคลื่นเสียงนีออนและกราฟแสดงความถี่เสียงสำหรับดนตรีและพอดแคสต์"
+    "tool_audiowave_desc": "อนิเมชันคลื่นเสียงนีออนและกราฟแสดงความถี่เสียงสำหรับดนตรีและพอดแคสต์",
+    "typewriterModeLabel": "สไตล์เครื่องพิมพ์ดีด",
+    "typewriterModeVintage": "กระดาษโบราณ",
+    "typewriterModeTerminal": "เทอร์มินัลสมัยใหม่"
   },
   "hi": {
     "loginGoogle": "Google से लॉगिन करें",
@@ -4197,7 +4230,10 @@ export const strings = {
     "cookieAcceptAll": "सभी स्वीकार करें",
     "cookieSettings": "कुकी सेटिंग्स",
     "tool_audiowave_title": "ऑडियो वेवफॉर्म और स्पेक्ट्रम",
-    "tool_audiowave_desc": "संगीत और पॉडकास्ट के लिए रिएक्टिव नियॉन ऑडियो वेवफॉर्म और फ़्रीक्वेंसी विज़ुअलाइज़र"
+    "tool_audiowave_desc": "संगीत और पॉडकास्ट के लिए रिएक्टिव नियॉन ऑडियो वेवफॉर्म और फ़्रीक्वेंसी विज़ुअलाइज़र",
+    "typewriterModeLabel": "टाइपराइटर स्टाइल",
+    "typewriterModeVintage": "विंटेज पेपर",
+    "typewriterModeTerminal": "मॉडर्न टर्मिनल"
   },
   "ru": {
     "loginGoogle": "Войти через Google",
@@ -4547,7 +4583,10 @@ export const strings = {
     "cookieAcceptAll": "Принять все",
     "cookieSettings": "Настройки Cookie",
     "tool_audiowave_title": "Аудиоволна и Спектр",
-    "tool_audiowave_desc": "Реактивные неоновые звуковые волны и визуализатор частот для музыки и подкастов"
+    "tool_audiowave_desc": "Реактивные неоновые звуковые волны и визуализатор частот для музыки и подкастов",
+    "typewriterModeLabel": "Стиль машинки",
+    "typewriterModeVintage": "Винтажная бумага",
+    "typewriterModeTerminal": "Современный терминал"
   },
   "pt": {
     "loginGoogle": "Entrar com o Google",
@@ -4897,7 +4936,10 @@ export const strings = {
     "cookieAcceptAll": "Aceitar Todos",
     "cookieSettings": "Configurações de Cookies",
     "tool_audiowave_title": "Forma de Onda e Espectro de Áudio",
-    "tool_audiowave_desc": "Formas de onda de áudio neon reativas e visualizador de frequências para música e podcasts"
+    "tool_audiowave_desc": "Formas de onda de áudio neon reativas e visualizador de frequências para música e podcasts",
+    "typewriterModeLabel": "Estilo de Máquina de Escrever",
+    "typewriterModeVintage": "Papel Vintage",
+    "typewriterModeTerminal": "Terminal Moderno"
   }
 };
 
