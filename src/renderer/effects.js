@@ -255,7 +255,7 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
     const fontColor = options.fontColor || '#FFFFFF';
     const fontFamily = options.fontFamily || "'JetBrains Mono', 'Courier New', monospace";
     const cursorStyle = options.cursorStyle || 'block'; // 'block' | 'line' | 'underscore'
-    const typewriterMode = options.typewriterMode || 'terminal'; // 'terminal' | 'vintage'
+    const typewriterMode = options.typewriterMode || 'classic'; // 'classic' | 'terminal' | 'vintage'
     const isDark = options.darkTheme !== false;
     const isVertical = height > width;
 
@@ -263,10 +263,8 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
 
     if (typewriterMode === 'vintage') {
         // ==========================================
-        // 1. ELEGANT VINTAGE MANUSCRIPT & TYPEWRITER
+        // 1. VINTAGE PAPER & TYPEWRITER MANUSCRIPT
         // ==========================================
-        
-        // Deep Warm Studio Desk Backdrop
         const bgGrad = ctx.createRadialGradient(width / 2, height / 2, width * 0.15, width / 2, height / 2, width * 0.85);
         bgGrad.addColorStop(0, '#1E1B18');
         bgGrad.addColorStop(0.6, '#12100E');
@@ -274,34 +272,16 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, width, height);
 
-        // Ambient Warm Blotter Mat under paper
-        const matWidth = width * (isVertical ? 0.94 : 0.82);
-        const matHeight = height * (isVertical ? 0.90 : 0.84);
-        const matX = (width - matWidth) / 2;
-        const matY = (height - matHeight) / 2;
-        
-        ctx.fillStyle = '#161412';
-        if (ctx.roundRect) {
-            ctx.roundRect(matX, matY, matWidth, matHeight, 8);
-        } else {
-            ctx.fillRect(matX, matY, matWidth, matHeight);
-        }
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(245, 179, 1, 0.08)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(matX, matY, matWidth, matHeight);
-
-        // Archival Paper Sheet Dimensions
-        const paperWidth = width * (isVertical ? 0.86 : 0.72);
-        const paperHeight = height * (isVertical ? 0.80 : 0.74);
+        const paperWidth = width * (isVertical ? 0.90 : 0.80);
+        const paperHeight = height * (isVertical ? 0.86 : 0.80);
         const paperX = (width - paperWidth) / 2;
         const paperY = (height - paperHeight) / 2;
 
-        // Realistic Soft Multi-Layer Drop Shadow
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-        ctx.shadowBlur = 32;
+        // Realistic Soft Drop Shadow
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+        ctx.shadowBlur = 36;
         ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 12;
+        ctx.shadowOffsetY = 14;
 
         // Archival Parchment Paper Sheet
         const paperGrad = ctx.createLinearGradient(paperX, paperY, paperX, paperY + paperHeight);
@@ -311,7 +291,7 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
         ctx.fillStyle = paperGrad;
 
         if (ctx.roundRect) {
-            ctx.roundRect(paperX, paperY, paperWidth, paperHeight, 4);
+            ctx.roundRect(paperX, paperY, paperWidth, paperHeight, 6);
             ctx.fill();
         } else {
             ctx.fillRect(paperX, paperY, paperWidth, paperHeight);
@@ -322,53 +302,29 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
         ctx.strokeStyle = '#DBD3C2';
         ctx.lineWidth = 1;
         ctx.strokeRect(paperX + 1, paperY + 1, paperWidth - 2, paperHeight - 2);
-        ctx.strokeStyle = '#EBE3D3';
-        ctx.strokeRect(paperX + 3, paperY + 3, paperWidth - 6, paperHeight - 6);
-
-        // Top Mechanical Metal Paper-Clamp Guide Bar
-        const barHeight = Math.max(10, Math.floor(width / 64));
-        const barY = paperY - barHeight / 2;
-        const barGrad = ctx.createLinearGradient(0, barY, 0, barY + barHeight);
-        barGrad.addColorStop(0, '#4A4843');
-        barGrad.addColorStop(0.5, '#282622');
-        barGrad.addColorStop(1, '#3B3935');
-        ctx.fillStyle = barGrad;
-        if (ctx.roundRect) {
-            ctx.roundRect(paperX - 8, barY, paperWidth + 16, barHeight, 3);
-        } else {
-            ctx.fillRect(paperX - 8, barY, paperWidth + 16, barHeight);
-        }
-        ctx.fill();
-
-        // Guide Bar Gold / Brass Rivets
-        ctx.fillStyle = '#D97706';
-        ctx.beginPath();
-        ctx.arc(paperX + 12, barY + barHeight / 2, 2.5, 0, Math.PI * 2);
-        ctx.arc(paperX + paperWidth - 12, barY + barHeight / 2, 2.5, 0, Math.PI * 2);
-        ctx.fill();
 
         // Vintage Letterhead Header & Stamp
         const stampFontSize = Math.max(10, Math.floor(width / 52));
         ctx.fillStyle = '#7C7365';
         ctx.font = `700 ${stampFontSize}px 'Courier New', Courier, monospace`;
-        ctx.fillText("ROYAL IMPERIAL • 1954", paperX + 24, paperY + 26);
+        ctx.fillText("ROYAL IMPERIAL • 1954", paperX + 28, paperY + 28);
 
         // Dual Ribbon Color Indicators (Red / Black)
         ctx.fillStyle = '#DC2626';
         ctx.beginPath();
-        ctx.arc(paperX + paperWidth - 36, paperY + 24, 4, 0, Math.PI * 2);
+        ctx.arc(paperX + paperWidth - 40, paperY + 26, 4, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = '#1C1917';
         ctx.beginPath();
-        ctx.arc(paperX + paperWidth - 24, paperY + 24, 4, 0, Math.PI * 2);
+        ctx.arc(paperX + paperWidth - 28, paperY + 26, 4, 0, Math.PI * 2);
         ctx.fill();
 
         // Header Hairline Rule
-        ctx.strokeStyle = 'rgba(124, 115, 101, 0.3)';
+        ctx.strokeStyle = 'rgba(124, 115, 101, 0.25)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(paperX + 24, paperY + 38);
-        ctx.lineTo(paperX + paperWidth - 24, paperY + 38);
+        ctx.moveTo(paperX + 28, paperY + 40);
+        ctx.lineTo(paperX + paperWidth - 28, paperY + 40);
         ctx.stroke();
 
         // Calculate Typewriter Text & Progress
@@ -378,26 +334,13 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
 
         const fontSize = Math.floor(isVertical ? width / 18 : width / 26);
         const lineHeight = fontSize * 1.6;
-        const textStartX = paperX + 24;
-        const textStartY = paperY + 56;
-
-        // Subtle Writing Guideline Rules
-        ctx.strokeStyle = 'rgba(60, 50, 40, 0.04)';
-        ctx.lineWidth = 1;
-        const availableHeight = paperHeight - 80;
-        const maxLines = Math.floor(availableHeight / lineHeight);
-        for (let l = 0; l < maxLines; l++) {
-            const ruleY = textStartY + (l * lineHeight) + fontSize + 2;
-            ctx.beginPath();
-            ctx.moveTo(textStartX, ruleY);
-            ctx.lineTo(paperX + paperWidth - 24, ruleY);
-            ctx.stroke();
-        }
+        const textStartX = paperX + 28;
+        const textStartY = paperY + 60;
 
         ctx.font = `700 ${fontSize}px 'Courier New', Courier, monospace`;
         ctx.textBaseline = 'top';
 
-        const maxTextWidth = paperWidth - 48;
+        const maxTextWidth = paperWidth - 56;
         const paragraphs = visibleText.split('\n');
         const renderedLines = [];
 
@@ -424,26 +367,20 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
             if (lineY + lineHeight <= paperY + paperHeight - 16) {
                 ctx.fillText(line, textStartX, lineY);
 
-                // Cursor on last line with mechanical strike motion
+                // Cursor on last line
                 if (idx === renderedLines.length - 1) {
-                    const isTypingActive = progress < 0.98 && currentChars < totalChars;
-                    const isBlink = Math.floor(progress * 24) % 2 === 0 || isTypingActive;
-                    
+                    const isBlink = Math.floor(progress * 24) % 2 === 0 || progress >= 1;
                     if (isBlink) {
                         const lineWidth = ctx.measureText(line).width;
                         const cursorX = textStartX + lineWidth + 4;
-                        
-                        // Mechanical Typebar Strike Motion (recoil jump during typing)
-                        const strikeRecoil = isTypingActive ? Math.sin(progress * 120) * 1.5 : 0;
-                        
                         ctx.fillStyle = '#DC2626'; // Ribbon strike color
 
                         if (cursorStyle === 'block') {
-                            ctx.fillRect(cursorX, lineY + 1 - strikeRecoil, fontSize * 0.52, fontSize);
+                            ctx.fillRect(cursorX, lineY + 1, fontSize * 0.52, fontSize);
                         } else if (cursorStyle === 'line') {
-                            ctx.fillRect(cursorX, lineY + 1 - strikeRecoil, 3, fontSize);
+                            ctx.fillRect(cursorX, lineY + 1, 3, fontSize);
                         } else {
-                            ctx.fillRect(cursorX, lineY + fontSize - 3 - strikeRecoil, fontSize * 0.6, 4);
+                            ctx.fillRect(cursorX, lineY + fontSize - 3, fontSize * 0.6, 4);
                         }
                     }
                 }
@@ -452,12 +389,10 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
 
         drawVignette(ctx, width, height, 0.4);
 
-    } else {
+    } else if (typewriterMode === 'terminal') {
         // ==========================================
-        // 2. ULTRA-CLEAN MODERN TERMINAL / CODE STUDIO
+        // 2. MODERN TERMINAL WINDOW
         // ==========================================
-        
-        // Deep Obsidian Dark Matrix Backdrop
         ctx.fillStyle = '#090A0F';
         ctx.fillRect(0, 0, width, height);
 
@@ -478,19 +413,16 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
             ctx.stroke();
         }
 
-        // Terminal Window Dimensions
-        const winWidth = width * (isVertical ? 0.92 : 0.82);
-        const winHeight = height * (isVertical ? 0.84 : 0.78);
+        const winWidth = width * (isVertical ? 0.92 : 0.84);
+        const winHeight = height * (isVertical ? 0.86 : 0.80);
         const winX = (width - winWidth) / 2;
         const winY = (height - winHeight) / 2;
 
-        // Terminal Glassmorphic Drop Shadow
+        // Terminal Window Chassis (#10121A)
         ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
         ctx.shadowBlur = 36;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 16;
-
-        // Terminal Window Chassis (#10121A)
         ctx.fillStyle = '#10121A';
         if (ctx.roundRect) {
             ctx.roundRect(winX, winY, winWidth, winHeight, 10);
@@ -521,29 +453,19 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
             ctx.fillRect(winX, winY, winWidth, titleBarHeight);
         }
 
-        // Title Bar Divider
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(winX, winY + titleBarHeight);
-        ctx.lineTo(winX + winWidth, winY + titleBarHeight);
-        ctx.stroke();
-
         // macOS Traffic Lights (Red, Yellow, Green)
         const dotRadius = Math.max(4, Math.floor(titleBarHeight / 5.5));
         const dotY = winY + titleBarHeight / 2;
         
-        ctx.fillStyle = '#EF4444'; // Red
+        ctx.fillStyle = '#EF4444';
         ctx.beginPath();
         ctx.arc(winX + 18, dotY, dotRadius, 0, Math.PI * 2);
         ctx.fill();
-
-        ctx.fillStyle = '#F59E0B'; // Yellow
+        ctx.fillStyle = '#F59E0B';
         ctx.beginPath();
         ctx.arc(winX + 34, dotY, dotRadius, 0, Math.PI * 2);
         ctx.fill();
-
-        ctx.fillStyle = '#10B981'; // Green
+        ctx.fillStyle = '#10B981';
         ctx.beginPath();
         ctx.arc(winX + 50, dotY, dotRadius, 0, Math.PI * 2);
         ctx.fill();
@@ -620,6 +542,90 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
                             ctx.fillRect(cursorX, lineY + fontSize - 3, fontSize * 0.6, 4);
                         }
                         ctx.shadowColor = 'transparent';
+                    }
+                }
+            }
+        });
+
+        drawVignette(ctx, width, height, 0.35);
+
+    } else {
+        // ==========================================
+        // 3. CLASSIC MINIMAL FULL-FRAME (DEFAULT)
+        // ==========================================
+        ctx.fillStyle = isDark ? '#0F1015' : '#F5F5F0';
+        ctx.fillRect(0, 0, width, height);
+
+        // Subtle background grid
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)';
+        ctx.lineWidth = 1;
+        const gridSize = 40;
+        for (let x = 0; x < width; x += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+        }
+        for (let y = 0; y < height; y += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+
+        const totalChars = text.length;
+        const currentChars = Math.min(totalChars, Math.floor(progress * (totalChars + 4)));
+        const visibleText = text.substring(0, currentChars);
+
+        const fontSize = Math.floor(isVertical ? width / 18 : width / 28);
+        const lineHeight = fontSize * 1.5;
+        ctx.font = `700 ${fontSize}px ${fontFamily}`;
+        ctx.textBaseline = 'top';
+
+        const maxContentWidth = width * 0.82;
+        const startX = (width - maxContentWidth) / 2;
+
+        // Wrap text lines
+        const paragraphs = visibleText.split('\n');
+        const renderedLines = [];
+
+        paragraphs.forEach((para) => {
+            const words = para.split(' ');
+            let currentLine = '';
+            words.forEach((word) => {
+                const testLine = currentLine ? `${currentLine} ${word}` : word;
+                if (ctx.measureText(testLine).width > maxContentWidth) {
+                    renderedLines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            });
+            renderedLines.push(currentLine);
+        });
+
+        const totalBlockHeight = renderedLines.length * lineHeight;
+        const startY = Math.max(60, (height - totalBlockHeight) / 2);
+
+        ctx.fillStyle = fontColor;
+        renderedLines.forEach((line, idx) => {
+            const lineY = startY + (idx * lineHeight);
+            ctx.fillText(line, startX, lineY);
+
+            // Draw cursor at the end of the last line
+            if (idx === renderedLines.length - 1) {
+                const isCursorBlink = Math.floor(progress * 24) % 2 === 0 || progress >= 1;
+                if (isCursorBlink) {
+                    const lineWidth = ctx.measureText(line).width;
+                    const cursorX = startX + lineWidth + 4;
+                    ctx.fillStyle = '#F5B301';
+
+                    if (cursorStyle === 'block') {
+                        ctx.fillRect(cursorX, lineY + 2, fontSize * 0.55, fontSize);
+                    } else if (cursorStyle === 'line') {
+                        ctx.fillRect(cursorX, lineY + 2, 3, fontSize);
+                    } else {
+                        ctx.fillRect(cursorX, lineY + fontSize - 4, fontSize * 0.6, 4);
                     }
                 }
             }

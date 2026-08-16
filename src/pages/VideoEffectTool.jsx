@@ -93,7 +93,7 @@ export default function VideoEffectTool() {
   );
   const [typingSpeed, setTypingSpeed] = useState(18); // chars per sec
   const [cursorStyle, setCursorStyle] = useState('block'); // 'block' | 'line' | 'underscore'
-  const [typewriterMode, setTypewriterMode] = useState('terminal'); // 'terminal' | 'vintage'
+  const [typewriterMode, setTypewriterMode] = useState('classic'); // 'classic' | 'terminal' | 'vintage'
   const [fontColor, setFontColor] = useState('#FFFFFF');
 
   // 5. Scanline CRT Settings
@@ -246,7 +246,7 @@ export default function VideoEffectTool() {
       setSliceRate(8);
       setTypingSpeed(18);
       setCursorStyle('block');
-      setTypewriterMode('terminal');
+      setTypewriterMode('classic');
       setFontColor('#FFFFFF');
       setScanlineDensity(4);
       setPhosphorGlow(0.5);
@@ -1187,12 +1187,29 @@ export default function VideoEffectTool() {
                       <SegmentedControl
                         label={t('typewriterModeLabel', lang)}
                         options={[
-                          { value: 'vintage', label: t('typewriterModeVintage', lang) },
-                          { value: 'terminal', label: t('typewriterModeTerminal', lang) }
+                          { value: 'classic', label: t('typewriterModeClassic', lang) },
+                          { value: 'terminal', label: t('typewriterModeTerminal', lang) },
+                          { value: 'vintage', label: t('typewriterModeVintage', lang) }
                         ]}
                         value={typewriterMode}
                         onChange={setTypewriterMode}
                       />
+
+                      <div className="flex items-center justify-between p-3 bg-zinc-800/80 border border-zinc-700/60 rounded-xl">
+                        <div className="flex flex-col pr-2">
+                          <span className="text-sm font-medium text-white flex items-center gap-2">
+                            <Volume2 size={16} className="text-[#F5B301]" />
+                            {t('typewriterSoundLabel', lang)}
+                          </span>
+                          <span className="text-xs text-zinc-400 mt-0.5">
+                            {t('typewriterSoundDesc', lang)}
+                          </span>
+                        </div>
+                        <Switch
+                          checked={audioFxEnabled}
+                          onChange={setAudioFxEnabled}
+                        />
+                      </div>
 
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
