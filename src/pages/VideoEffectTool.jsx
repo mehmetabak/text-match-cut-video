@@ -19,7 +19,7 @@ import {
 import Switch from '../components/Switch';
 import SegmentedControl from '../components/SegmentedControl';
 import { createVideoFromFrames, extractAudioFromVideo } from '../lib/ffmpeg';
-import { applyAudioEffect, generateTypewriterAudioTrack, playLiveTypewriterClick } from '../lib/audioUtils';
+import { applyAudioEffect, generateTypewriterAudioTrack, playLiveTypewriterClick, muteLiveAudio } from '../lib/audioUtils';
 import {
   drawKenBurnsFrame,
   drawVhsEffect,
@@ -67,7 +67,7 @@ export default function VideoEffectTool() {
   const [hdOutput, setHdOutput] = useState(false);
   const [fastRender, setFastRender] = useState(false);
   const [duration, setDuration] = useState(5); // in seconds (3 - 300)
-  const [audioFxEnabled, setAudioFxEnabled] = useState(true);
+  const [audioFxEnabled, setAudioFxEnabled] = useState(false);
 
   // 1. Ken Burns Settings
   const [zoomRate, setZoomRate] = useState(0.04);
@@ -123,6 +123,14 @@ export default function VideoEffectTool() {
   const lastSavedSnapshotRef = useRef(null);
   const lastCharIndexRef = useRef(0);
   const audioFxEnabledRef = useRef(audioFxEnabled);
+
+  const handleAudioToggle = (val) => {
+    setAudioFxEnabled(val);
+    audioFxEnabledRef.current = val;
+    if (!val) {
+      muteLiveAudio();
+    }
+  };
 
   useEffect(() => {
     audioFxEnabledRef.current = audioFxEnabled;
@@ -238,7 +246,9 @@ export default function VideoEffectTool() {
       setHdOutput(false);
       setFastRender(false);
       setDuration(5);
-      setAudioFxEnabled(true);
+      setAudioFxEnabled(false);
+      audioFxEnabledRef.current = false;
+      muteLiveAudio();
       setZoomRate(0.04);
       setZoomDirection('in');
       setPanStyle('center');
@@ -1213,7 +1223,7 @@ export default function VideoEffectTool() {
                         </div>
                         <Switch
                           checked={audioFxEnabled}
-                          onChange={setAudioFxEnabled}
+                          onChange={handleAudioToggle}
                         />
                       </div>
 

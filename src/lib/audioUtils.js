@@ -285,7 +285,15 @@ export async function generateTypewriterAudioTrack(text, duration, typingSpeed =
 
 // Live interactive keystroke click sound for preview
 let liveAudioCtx = null;
-export function playLiveTypewriterClick(isSpace = false) {
+
+export function muteLiveAudio() {
+    if (liveAudioCtx && liveAudioCtx.state === 'running') {
+        liveAudioCtx.suspend().catch(() => {});
+    }
+}
+
+export function playLiveTypewriterClick(isSpace = false, enabled = true) {
+    if (!enabled) return;
     try {
         if (!liveAudioCtx) {
             const AudioCtx = window.AudioContext || window.webkitAudioContext;

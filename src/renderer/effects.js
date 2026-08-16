@@ -249,37 +249,53 @@ export function drawGlitchEffect(ctx, source, width, height, progress = 0, optio
     ctx.restore();
 }
 
-// Lightweight JS/Python/Code Syntax Tokenizer for Code Editor Mode
-function tokenizeCodeLine(line) {
-    const tokens = [];
-    const regex = /(\/\/.*|#.*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(\b(?:const|let|var|function|return|import|export|from|if|else|for|while|async|await|class|new|try|catch|def|print|self|switch|case|break|continue|default|typeof|instanceof)\b)|(\b(?:true|false|null|undefined|None|True|False)\b)|(\b[A-Za-z_$][A-Za-z0-9_$]*(?=\s*\())|(\b\d+(?:\.\d+)?\b)|([{}()\[\].,;:+\-*/%=!&|<>?]+)|(\s+)|([A-Za-z_$][A-Za-z0-9_$]*)|(.)/g;
+import Prism from 'prismjs';
 
-    let match;
-    while ((match = regex.exec(line)) !== null) {
-        const [full, comment, str, kw, boolVal, fnName, num, punct, whitespace, ident, other] = match;
-        let color = '#CDD6F4'; // Default text (Dracula / Catppuccin slate)
+const PRISM_THEME = {
+    keyword: '#F38BA8',      // Coral Pink (const, let, function, return, import, etc.)
+    string: '#A6E3A1',       // Soft Emerald Green ("...", '...', `...`)
+    comment: '#6C7086',      // Muted Slate Gray (// ..., /* ... */, # ...)
+    function: '#89B4FA',     // Sky Blue (function names, method calls)
+    number: '#FAB387',       // Warm Peach / Orange (123, 0.5, 0xFF)
+    boolean: '#FAB387',      // Warm Peach (true, false, null, undefined)
+    operator: '#89DCEB',     // Cyan (+, -, =, =>, &&, ||)
+    punctuation: '#9399B2',  // Lavender Gray ({, }, (, ), [, ], ;, ,)
+    'class-name': '#F9E2AF', // Warm Yellow
+    property: '#CBA6F7',     // Mauve / Violet
+    builtin: '#F9E2AF',      // Gold
+    regex: '#F5C2E7',        // Pink
+    variable: '#CDD6F4',     // Light Slate
+    default: '#CDD6F4'       // Light Slate White
+};
 
-        if (comment) {
-            color = '#6C7086'; // Muted Gray Comment
-        } else if (str) {
-            color = '#A6E3A1'; // Emerald Green String
-        } else if (kw) {
-            color = '#F38BA8'; // Coral Pink Keyword
-        } else if (boolVal) {
-            color = '#FAB387'; // Peach Boolean / Special
-        } else if (fnName) {
-            color = '#89B4FA'; // Sky Blue Function Name
-        } else if (num) {
-            color = '#FAB387'; // Orange Number
-        } else if (punct) {
-            color = '#9399B2'; // Slate Punctuation
-        } else if (ident) {
-            color = '#CBA6F7'; // Mauve Variable / Property
+function tokenizeCodeWithPrism(line) {
+    if (!line) return [];
+    try {
+        const grammar = Prism.languages.javascript;
+        const rawTokens = Prism.tokenize(line, grammar);
+        const tokens = [];
+
+        function walk(tok, parentType) {
+            if (typeof tok === 'string') {
+                tokens.push({
+                    text: tok,
+                    color: PRISM_THEME[parentType] || PRISM_THEME.default
+                });
+            } else if (Array.isArray(tok.content)) {
+                tok.content.forEach(sub => walk(sub, tok.type || parentType));
+            } else {
+                tokens.push({
+                    text: typeof tok.content === 'string' ? tok.content : String(tok.content),
+                    color: PRISM_THEME[tok.type] || PRISM_THEME[parentType] || PRISM_THEME.default
+                });
+            }
         }
 
-        tokens.push({ text: full, color });
+        rawTokens.forEach(t => walk(t, null));
+        return tokens;
+    } catch (e) {
+        return [{ text: line, color: '#CDD6F4' }];
     }
-    return tokens;
 }
 
 // 4. KINETIC TYPEWRITER FRAME RENDERER
@@ -296,7 +312,7 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
 
     if (typewriterMode === 'code') {
         // ========================================================
-        // 1. MODERN CODE EDITOR (VS CODE STYLE WITH SYNTAX HIGHLIGHT)
+        // 1. MODERN CODE EDITOR (VS CODE STYLE WITH PRISM SYNTAX HIGHLIGHT)
         // ========================================================
         ctx.fillStyle = '#0F1117';
         ctx.fillRect(0, 0, width, height);
@@ -360,26 +376,30 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
             ctx.fillRect(winX, winY, winWidth, titleBarHeight);
         }
 
-        // macOS Traffic Lights (🔴 🟡 🟢)
-        const dotRadius = Math.max(4, Math.floor(titleBarHeight / 5.5));
+        // macOS Traffic Lights (🔴 🟡 🟢) - Proportional, perfectly spaced
+        const dotRadius = Math.max(5, Math.min(8, Math.floor(titleBarHeight / 5.2)));
+        const dotSpacing = Math.max(18, Math.floor(dotRadius * 3.0));
+        const dotStartX = winX + Math.max(20, Math.floor(winWidth * 0.035));
         const dotY = winY + titleBarHeight / 2;
         
-        ctx.fillStyle = '#F38BA8';
+        ctx.fillStyle = '#FF5F56';
         ctx.beginPath();
-        ctx.arc(winX + 18, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.arc(dotStartX, dotY, dotRadius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#F9E2AF';
+
+        ctx.fillStyle = '#FFBD2E';
         ctx.beginPath();
-        ctx.arc(winX + 34, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.arc(dotStartX + dotSpacing, dotY, dotRadius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#A6E3A1';
+
+        ctx.fillStyle = '#27C93F';
         ctx.beginPath();
-        ctx.arc(winX + 50, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.arc(dotStartX + dotSpacing * 2, dotY, dotRadius, 0, Math.PI * 2);
         ctx.fill();
 
         // Active File Tab (📄 main.js)
-        const tabWidth = Math.min(140, winWidth * 0.35);
-        const tabX = winX + 70;
+        const tabWidth = Math.min(140, Math.max(90, Math.floor(winWidth * 0.28)));
+        const tabX = dotStartX + dotSpacing * 2 + dotRadius + 20;
         ctx.fillStyle = '#181825';
         ctx.fillRect(tabX, winY, tabWidth, titleBarHeight);
         
@@ -451,9 +471,9 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
                 const lineNumStr = String(idx + 1).padStart(2, '0');
                 ctx.fillText(lineNumStr, winX + 12, lineY + 2);
 
-                // Render Syntax-Highlighted Tokens for this line
+                // Render Prism-Highlighted Tokens for this line
                 ctx.font = `600 ${fontSize}px ${fontFamily}`;
-                const tokens = tokenizeCodeLine(line);
+                const tokens = tokenizeCodeWithPrism(line);
                 let currentX = textStartX;
 
                 tokens.forEach((tok) => {
@@ -543,21 +563,25 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
             ctx.fillRect(winX, winY, winWidth, titleBarHeight);
         }
 
-        // macOS Traffic Lights (🔴 🟡 🟢)
-        const dotRadius = Math.max(4, Math.floor(titleBarHeight / 5.5));
+        // macOS Traffic Lights (🔴 🟡 🟢) - Proportional, perfectly spaced
+        const dotRadius = Math.max(5, Math.min(8, Math.floor(titleBarHeight / 5.2)));
+        const dotSpacing = Math.max(18, Math.floor(dotRadius * 3.0));
+        const dotStartX = winX + Math.max(20, Math.floor(winWidth * 0.035));
         const dotY = winY + titleBarHeight / 2;
         
-        ctx.fillStyle = '#EF4444';
+        ctx.fillStyle = '#FF5F56';
         ctx.beginPath();
-        ctx.arc(winX + 18, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.arc(dotStartX, dotY, dotRadius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#F59E0B';
+
+        ctx.fillStyle = '#FFBD2E';
         ctx.beginPath();
-        ctx.arc(winX + 34, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.arc(dotStartX + dotSpacing, dotY, dotRadius, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#10B981';
+
+        ctx.fillStyle = '#27C93F';
         ctx.beginPath();
-        ctx.arc(winX + 50, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.arc(dotStartX + dotSpacing * 2, dotY, dotRadius, 0, Math.PI * 2);
         ctx.fill();
 
         // Terminal Title Badge
