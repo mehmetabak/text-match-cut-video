@@ -198,11 +198,11 @@ export class AudioGenerator {
 }
 
 /**
- * Procedurally generates an authentic mechanical typewriter audio track
- * containing keystrokes, spacebar clacks, and carriage returns.
- * Perfectly synchronized to canvas character progress over duration.
+ * Procedurally generates an authentic audio track for typing animations.
+ * When mode === 'vintage', synthesizes authentic heavy mechanical typewriter strikes with body thud and classic carriage return bell.
+ * When mode !== 'vintage' (classic, terminal, code), synthesizes modern, soft, satisfying tactile keyboard clicks.
  */
-export async function generateTypewriterAudioTrack(text, duration, sampleRate = 44100) {
+export async function generateTypewriterAudioTrack(text, duration, mode = 'classic', sampleRate = 44100) {
     if (!text || duration <= 0) return null;
 
     try {
@@ -210,66 +210,124 @@ export async function generateTypewriterAudioTrack(text, duration, sampleRate = 
         const offlineCtx = new OfflineAudioContext(1, Math.ceil(duration * sampleRate), sampleRate);
 
         const totalChars = text.length;
+        const isVintage = mode === 'vintage';
 
         for (let i = 0; i < totalChars; i++) {
             const char = text[i];
-            // Exactly matching the canvas render formula: ((i + 1) / (totalChars + 4)) * duration
             const time = Math.max(0.005, Math.min(duration - 0.05, ((i + 1) / (totalChars + 4)) * duration));
 
             const isSpace = char === ' ' || char === '\t';
             const isNewline = char === '\n';
 
-            // 1. Mechanical Metal Strike / Snap (Noise burst)
-            const snapLen = Math.floor(sampleRate * (isSpace ? 0.02 : 0.015));
-            const snapBuf = offlineCtx.createBuffer(1, snapLen, sampleRate);
-            const snapData = snapBuf.getChannelData(0);
-            for (let s = 0; s < snapLen; s++) {
-                snapData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (sampleRate * 0.003));
-            }
-            const snapSource = offlineCtx.createBufferSource();
-            snapSource.buffer = snapBuf;
+            if (isVintage) {
+                // --- VINTAGE DAKTİLO SES PROFİLİ ---
+                // 1. Metal Hammer Snap (Daktilo Harf Çekici Vuruşu)
+                const snapLen = Math.floor(sampleRate * (isSpace ? 0.022 : 0.016));
+                const snapBuf = offlineCtx.createBuffer(1, snapLen, sampleRate);
+                const snapData = snapBuf.getChannelData(0);
+                for (let s = 0; s < snapLen; s++) {
+                    snapData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (sampleRate * 0.003));
+                }
+                const snapSource = offlineCtx.createBufferSource();
+                snapSource.buffer = snapBuf;
 
-            const snapFilter = offlineCtx.createBiquadFilter();
-            snapFilter.type = 'bandpass';
-            snapFilter.frequency.value = isSpace ? 1200 : (2400 + (i % 5) * 120);
-            snapFilter.Q.value = 3.5;
+                const snapFilter = offlineCtx.createBiquadFilter();
+                snapFilter.type = 'bandpass';
+                snapFilter.frequency.value = isSpace ? 1150 : (2400 + (i % 5) * 110);
+                snapFilter.Q.value = 3.4;
 
-            const snapGain = offlineCtx.createGain();
-            snapGain.gain.setValueAtTime(isSpace ? 0.22 : 0.35, time);
-            snapGain.gain.exponentialRampToValueAtTime(0.001, time + 0.03);
+                const snapGain = offlineCtx.createGain();
+                snapGain.gain.setValueAtTime(isSpace ? 0.22 : 0.32, time);
+                snapGain.gain.exponentialRampToValueAtTime(0.001, time + 0.028);
 
-            snapSource.connect(snapFilter);
-            snapFilter.connect(snapGain);
-            snapGain.connect(offlineCtx.destination);
-            snapSource.start(time);
+                snapSource.connect(snapFilter);
+                snapFilter.connect(snapGain);
+                snapGain.connect(offlineCtx.destination);
+                snapSource.start(time);
 
-            // 2. Platen / Body Thud (Low-frequency impact)
-            const thudOsc = offlineCtx.createOscillator();
-            thudOsc.type = 'triangle';
-            thudOsc.frequency.setValueAtTime(isSpace ? 110 : (145 + (i % 4) * 15), time);
-            thudOsc.frequency.exponentialRampToValueAtTime(45, time + 0.04);
+                // 2. Rubber Platen Body Thud (Daktilo Silindir Gövde Vuruşu)
+                const thudOsc = offlineCtx.createOscillator();
+                thudOsc.type = 'triangle';
+                thudOsc.frequency.setValueAtTime(isSpace ? 105 : (135 + (i % 4) * 12), time);
+                thudOsc.frequency.exponentialRampToValueAtTime(42, time + 0.04);
 
-            const thudGain = offlineCtx.createGain();
-            thudGain.gain.setValueAtTime(isSpace ? 0.45 : 0.3, time);
-            thudGain.gain.exponentialRampToValueAtTime(0.001, time + 0.045);
+                const thudGain = offlineCtx.createGain();
+                thudGain.gain.setValueAtTime(isSpace ? 0.35 : 0.26, time);
+                thudGain.gain.exponentialRampToValueAtTime(0.001, time + 0.042);
 
-            thudOsc.connect(thudGain);
-            thudGain.connect(offlineCtx.destination);
-            thudOsc.start(time);
-            thudOsc.stop(time + 0.05);
+                thudOsc.connect(thudGain);
+                thudGain.connect(offlineCtx.destination);
+                thudOsc.start(time);
+                thudOsc.stop(time + 0.045);
 
-            // 3. Line-break carriage bell / return slide
-            if (isNewline) {
-                const bellOsc = offlineCtx.createOscillator();
-                bellOsc.type = 'sine';
-                bellOsc.frequency.setValueAtTime(2600, time + 0.02);
-                const bellGain = offlineCtx.createGain();
-                bellGain.gain.setValueAtTime(0.2, time + 0.02);
-                bellGain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
-                bellOsc.connect(bellGain);
-                bellGain.connect(offlineCtx.destination);
-                bellOsc.start(time + 0.02);
-                bellOsc.stop(time + 0.28);
+                // 3. Vintage Carriage Bell & Return Ratchet (Daktilo Satır Sonu Çanı & Kızak Kayması)
+                if (isNewline) {
+                    const bellOsc = offlineCtx.createOscillator();
+                    bellOsc.type = 'sine';
+                    bellOsc.frequency.setValueAtTime(2450, time + 0.015);
+                    const bellGain = offlineCtx.createGain();
+                    bellGain.gain.setValueAtTime(0.18, time + 0.015);
+                    bellGain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+                    bellOsc.connect(bellGain);
+                    bellGain.connect(offlineCtx.destination);
+                    bellOsc.start(time + 0.015);
+                    bellOsc.stop(time + 0.24);
+                }
+            } else {
+                // --- MODERN / KOD / TERMİNAL SES PROFİLİ (Yumuşak, Tok & Doğal) ---
+                const snapLen = Math.floor(sampleRate * (isNewline ? 0.024 : (isSpace ? 0.018 : 0.014)));
+                const snapBuf = offlineCtx.createBuffer(1, snapLen, sampleRate);
+                const snapData = snapBuf.getChannelData(0);
+                const decayRate = isNewline ? 0.0034 : 0.0026;
+
+                for (let s = 0; s < snapLen; s++) {
+                    snapData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (sampleRate * decayRate));
+                }
+
+                const snapSource = offlineCtx.createBufferSource();
+                snapSource.buffer = snapBuf;
+
+                const snapFilter = offlineCtx.createBiquadFilter();
+                snapFilter.type = 'bandpass';
+                snapFilter.frequency.value = isNewline ? 1350 : (isSpace ? 1050 : (2150 + (i % 4) * 75));
+                snapFilter.Q.value = 2.8;
+
+                const snapGain = offlineCtx.createGain();
+                const volume = isNewline ? 0.24 : (isSpace ? 0.16 : 0.22);
+                snapGain.gain.setValueAtTime(volume, time);
+                snapGain.gain.exponentialRampToValueAtTime(0.001, time + (isNewline ? 0.034 : 0.022));
+
+                snapSource.connect(snapFilter);
+                snapFilter.connect(snapGain);
+                snapGain.connect(offlineCtx.destination);
+                snapSource.start(time);
+
+                // Modern Enter key subtle double latch click (no bells)
+                if (isNewline && time + 0.04 < duration) {
+                    const latchTime = time + 0.036;
+                    const latchLen = Math.floor(sampleRate * 0.012);
+                    const latchBuf = offlineCtx.createBuffer(1, latchLen, sampleRate);
+                    const latchData = latchBuf.getChannelData(0);
+                    for (let s = 0; s < latchLen; s++) {
+                        latchData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (sampleRate * 0.002));
+                    }
+                    const latchSource = offlineCtx.createBufferSource();
+                    latchSource.buffer = latchBuf;
+
+                    const latchFilter = offlineCtx.createBiquadFilter();
+                    latchFilter.type = 'bandpass';
+                    latchFilter.frequency.value = 1650;
+                    latchFilter.Q.value = 3.0;
+
+                    const latchGain = offlineCtx.createGain();
+                    latchGain.gain.setValueAtTime(0.14, latchTime);
+                    latchGain.gain.exponentialRampToValueAtTime(0.001, latchTime + 0.018);
+
+                    latchSource.connect(latchFilter);
+                    latchFilter.connect(latchGain);
+                    latchGain.connect(offlineCtx.destination);
+                    latchSource.start(latchTime);
+                }
             }
         }
 
@@ -290,7 +348,7 @@ export function muteLiveAudio() {
     }
 }
 
-export function playLiveTypewriterClick(isSpace = false, enabled = true) {
+export function playLiveTypewriterClick(charType = 'letter', enabled = true, mode = 'classic') {
     if (!enabled) return;
     try {
         if (!liveAudioCtx) {
@@ -302,28 +360,118 @@ export function playLiveTypewriterClick(isSpace = false, enabled = true) {
         }
 
         const now = liveAudioCtx.currentTime;
-        const snapLen = Math.floor(liveAudioCtx.sampleRate * (isSpace ? 0.02 : 0.014));
-        const snapBuf = liveAudioCtx.createBuffer(1, snapLen, liveAudioCtx.sampleRate);
-        const snapData = snapBuf.getChannelData(0);
-        for (let s = 0; s < snapLen; s++) {
-            snapData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (liveAudioCtx.sampleRate * 0.0028));
+        const isSpace = charType === 'space';
+        const isNewline = charType === 'newline';
+        const isVintage = mode === 'vintage';
+
+        if (isVintage) {
+            // --- VINTAGE DAKTİLO CANLI ÖNİZLEME ---
+            const snapLen = Math.floor(liveAudioCtx.sampleRate * (isSpace ? 0.022 : 0.016));
+            const snapBuf = liveAudioCtx.createBuffer(1, snapLen, liveAudioCtx.sampleRate);
+            const snapData = snapBuf.getChannelData(0);
+            for (let s = 0; s < snapLen; s++) {
+                snapData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (liveAudioCtx.sampleRate * 0.003));
+            }
+            const snapSource = liveAudioCtx.createBufferSource();
+            snapSource.buffer = snapBuf;
+
+            const snapFilter = liveAudioCtx.createBiquadFilter();
+            snapFilter.type = 'bandpass';
+            snapFilter.frequency.value = isSpace ? 1150 : 2450;
+            snapFilter.Q.value = 3.4;
+
+            const snapGain = liveAudioCtx.createGain();
+            snapGain.gain.setValueAtTime(isSpace ? 0.22 : 0.32, now);
+            snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.028);
+
+            snapSource.connect(snapFilter);
+            snapFilter.connect(snapGain);
+            snapGain.connect(liveAudioCtx.destination);
+            snapSource.start(now);
+
+            // Platen thud
+            const thudOsc = liveAudioCtx.createOscillator();
+            thudOsc.type = 'triangle';
+            thudOsc.frequency.setValueAtTime(isSpace ? 105 : 135, now);
+            thudOsc.frequency.exponentialRampToValueAtTime(42, now + 0.04);
+
+            const thudGain = liveAudioCtx.createGain();
+            thudGain.gain.setValueAtTime(isSpace ? 0.35 : 0.26, now);
+            thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.042);
+
+            thudOsc.connect(thudGain);
+            thudGain.connect(liveAudioCtx.destination);
+            thudOsc.start(now);
+            thudOsc.stop(now + 0.045);
+
+            // Vintage bell for newline
+            if (isNewline) {
+                const bellOsc = liveAudioCtx.createOscillator();
+                bellOsc.type = 'sine';
+                bellOsc.frequency.setValueAtTime(2450, now + 0.015);
+                const bellGain = liveAudioCtx.createGain();
+                bellGain.gain.setValueAtTime(0.18, now + 0.015);
+                bellGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                bellOsc.connect(bellGain);
+                bellGain.connect(liveAudioCtx.destination);
+                bellOsc.start(now + 0.015);
+                bellOsc.stop(now + 0.24);
+            }
+        } else {
+            // --- MODERN / TERMİNAL / KOD CANLI ÖNİZLEME (Yumuşak & Tok) ---
+            const snapLen = Math.floor(liveAudioCtx.sampleRate * (isNewline ? 0.024 : (isSpace ? 0.018 : 0.014)));
+            const snapBuf = liveAudioCtx.createBuffer(1, snapLen, liveAudioCtx.sampleRate);
+            const snapData = snapBuf.getChannelData(0);
+            const decayRate = isNewline ? 0.0034 : 0.0026;
+
+            for (let s = 0; s < snapLen; s++) {
+                snapData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (liveAudioCtx.sampleRate * decayRate));
+            }
+            const snapSource = liveAudioCtx.createBufferSource();
+            snapSource.buffer = snapBuf;
+
+            const snapFilter = liveAudioCtx.createBiquadFilter();
+            snapFilter.type = 'bandpass';
+            snapFilter.frequency.value = isNewline ? 1350 : (isSpace ? 1050 : 2200);
+            snapFilter.Q.value = 2.8;
+
+            const snapGain = liveAudioCtx.createGain();
+            const volume = isNewline ? 0.24 : (isSpace ? 0.16 : 0.22);
+            snapGain.gain.setValueAtTime(volume, now);
+            snapGain.gain.exponentialRampToValueAtTime(0.001, now + (isNewline ? 0.034 : 0.022));
+
+            snapSource.connect(snapFilter);
+            snapFilter.connect(snapGain);
+            snapGain.connect(liveAudioCtx.destination);
+            snapSource.start(now);
+
+            // Secondary latch for newline
+            if (isNewline) {
+                const latchTime = now + 0.036;
+                const latchLen = Math.floor(liveAudioCtx.sampleRate * 0.012);
+                const latchBuf = liveAudioCtx.createBuffer(1, latchLen, liveAudioCtx.sampleRate);
+                const latchData = latchBuf.getChannelData(0);
+                for (let s = 0; s < latchLen; s++) {
+                    latchData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (liveAudioCtx.sampleRate * 0.002));
+                }
+                const latchSource = liveAudioCtx.createBufferSource();
+                latchSource.buffer = latchBuf;
+
+                const latchFilter = liveAudioCtx.createBiquadFilter();
+                latchFilter.type = 'bandpass';
+                latchFilter.frequency.value = 1650;
+                latchFilter.Q.value = 3.0;
+
+                const latchGain = liveAudioCtx.createGain();
+                latchGain.gain.setValueAtTime(0.14, latchTime);
+                latchGain.gain.exponentialRampToValueAtTime(0.001, latchTime + 0.018);
+
+                latchSource.connect(latchFilter);
+                latchFilter.connect(latchGain);
+                latchGain.connect(liveAudioCtx.destination);
+                latchSource.start(latchTime);
+            }
         }
-        const snapSource = liveAudioCtx.createBufferSource();
-        snapSource.buffer = snapBuf;
-
-        const snapFilter = liveAudioCtx.createBiquadFilter();
-        snapFilter.type = 'bandpass';
-        snapFilter.frequency.value = isSpace ? 1100 : 2600;
-        snapFilter.Q.value = 3.2;
-
-        const snapGain = liveAudioCtx.createGain();
-        snapGain.gain.setValueAtTime(isSpace ? 0.18 : 0.25, now);
-        snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
-
-        snapSource.connect(snapFilter);
-        snapFilter.connect(snapGain);
-        snapGain.connect(liveAudioCtx.destination);
-        snapSource.start(now);
     } catch (e) {
         // Silently ignore if browser blocks audio autoplay
     }

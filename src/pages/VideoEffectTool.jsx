@@ -524,7 +524,9 @@ export default function VideoEffectTool() {
           const currentChars = Math.min(totalChars, Math.floor(progressVal * (totalChars + 4)));
           if (audioFxEnabledRef.current && currentChars > 0 && currentChars !== lastCharIndexRef.current && currentChars <= totalChars) {
             lastCharIndexRef.current = currentChars;
-            playLiveTypewriterClick(typewriterText[currentChars - 1] === ' ');
+            const char = typewriterText[currentChars - 1];
+            const charType = char === '\n' ? 'newline' : (char === ' ' || char === '\t' ? 'space' : 'letter');
+            playLiveTypewriterClick(charType, true, typewriterMode);
           } else if (currentChars === 0) {
             lastCharIndexRef.current = 0;
           }
@@ -621,7 +623,7 @@ export default function VideoEffectTool() {
       let audioBlob = null;
       if (type === 'typewriter' && audioFxEnabled) {
         setProgress(4);
-        audioBlob = await generateTypewriterAudioTrack(typewriterText, totalDuration);
+        audioBlob = await generateTypewriterAudioTrack(typewriterText, totalDuration, typewriterMode);
       } else if (file && file.type.startsWith('video/')) {
         setProgress(4);
         const rawAudioBlob = await extractAudioFromVideo(file);
