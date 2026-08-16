@@ -615,15 +615,13 @@ export default function VideoEffectTool() {
       setProgress(2);
       setErrorMsg('');
 
-      const totalDuration = type === 'typewriter'
-        ? Math.max(3, Math.ceil(typewriterText.length / Math.max(1, typingSpeed)) + 1)
-        : duration;
+      const totalDuration = Math.max(3, Number(duration) || 5);
 
       // 1. Extract and process audio if the source is a video file OR generate typewriter mechanical sound
       let audioBlob = null;
       if (type === 'typewriter' && audioFxEnabled) {
         setProgress(4);
-        audioBlob = await generateTypewriterAudioTrack(typewriterText, totalDuration, typingSpeed);
+        audioBlob = await generateTypewriterAudioTrack(typewriterText, totalDuration);
       } else if (file && file.type.startsWith('video/')) {
         setProgress(4);
         const rawAudioBlob = await extractAudioFromVideo(file);

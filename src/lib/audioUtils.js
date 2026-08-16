@@ -200,8 +200,9 @@ export class AudioGenerator {
 /**
  * Procedurally generates an authentic mechanical typewriter audio track
  * containing keystrokes, spacebar clacks, and carriage returns.
+ * Perfectly synchronized to canvas character progress over duration.
  */
-export async function generateTypewriterAudioTrack(text, duration, typingSpeed = 18, sampleRate = 44100) {
+export async function generateTypewriterAudioTrack(text, duration, sampleRate = 44100) {
     if (!text || duration <= 0) return null;
 
     try {
@@ -209,14 +210,11 @@ export async function generateTypewriterAudioTrack(text, duration, typingSpeed =
         const offlineCtx = new OfflineAudioContext(1, Math.ceil(duration * sampleRate), sampleRate);
 
         const totalChars = text.length;
-        const charsToType = Math.min(totalChars, Math.floor(duration * typingSpeed));
 
-        for (let i = 0; i < charsToType; i++) {
+        for (let i = 0; i < totalChars; i++) {
             const char = text[i];
-            // Jitter for organic human typing cadence
-            const baseTime = (i / totalChars) * (totalChars / typingSpeed);
-            const jitter = ((Math.sin(i * 91) * 0.5 + 0.5) - 0.5) * 0.015;
-            const time = Math.max(0.01, Math.min(duration - 0.05, baseTime + jitter));
+            // Exactly matching the canvas render formula: ((i + 1) / (totalChars + 4)) * duration
+            const time = Math.max(0.005, Math.min(duration - 0.05, ((i + 1) / (totalChars + 4)) * duration));
 
             const isSpace = char === ' ' || char === '\t';
             const isNewline = char === '\n';
