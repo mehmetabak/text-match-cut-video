@@ -249,21 +249,419 @@ export function drawGlitchEffect(ctx, source, width, height, progress = 0, optio
     ctx.restore();
 }
 
+// Lightweight JS/Python/Code Syntax Tokenizer for Code Editor Mode
+function tokenizeCodeLine(line) {
+    const tokens = [];
+    const regex = /(\/\/.*|#.*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(\b(?:const|let|var|function|return|import|export|from|if|else|for|while|async|await|class|new|try|catch|def|print|self|switch|case|break|continue|default|typeof|instanceof)\b)|(\b(?:true|false|null|undefined|None|True|False)\b)|(\b[A-Za-z_$][A-Za-z0-9_$]*(?=\s*\())|(\b\d+(?:\.\d+)?\b)|([{}()\[\].,;:+\-*/%=!&|<>?]+)|(\s+)|([A-Za-z_$][A-Za-z0-9_$]*)|(.)/g;
+
+    let match;
+    while ((match = regex.exec(line)) !== null) {
+        const [full, comment, str, kw, boolVal, fnName, num, punct, whitespace, ident, other] = match;
+        let color = '#CDD6F4'; // Default text (Dracula / Catppuccin slate)
+
+        if (comment) {
+            color = '#6C7086'; // Muted Gray Comment
+        } else if (str) {
+            color = '#A6E3A1'; // Emerald Green String
+        } else if (kw) {
+            color = '#F38BA8'; // Coral Pink Keyword
+        } else if (boolVal) {
+            color = '#FAB387'; // Peach Boolean / Special
+        } else if (fnName) {
+            color = '#89B4FA'; // Sky Blue Function Name
+        } else if (num) {
+            color = '#FAB387'; // Orange Number
+        } else if (punct) {
+            color = '#9399B2'; // Slate Punctuation
+        } else if (ident) {
+            color = '#CBA6F7'; // Mauve Variable / Property
+        }
+
+        tokens.push({ text: full, color });
+    }
+    return tokens;
+}
+
 // 4. KINETIC TYPEWRITER FRAME RENDERER
 export function drawTypewriterFrame(ctx, width, height, progress = 0, options = {}) {
     const text = options.text || "Every story begins with a single word.\nAnimationMaker creates the magic.";
     const fontColor = options.fontColor || '#FFFFFF';
     const fontFamily = options.fontFamily || "'JetBrains Mono', 'Courier New', monospace";
     const cursorStyle = options.cursorStyle || 'block'; // 'block' | 'line' | 'underscore'
-    const typewriterMode = options.typewriterMode || 'classic'; // 'classic' | 'terminal' | 'vintage'
+    const typewriterMode = options.typewriterMode || 'classic'; // 'classic' | 'terminal' | 'code' | 'vintage'
     const isDark = options.darkTheme !== false;
     const isVertical = height > width;
 
     ctx.save();
 
-    if (typewriterMode === 'vintage') {
+    if (typewriterMode === 'code') {
+        // ========================================================
+        // 1. MODERN CODE EDITOR (VS CODE STYLE WITH SYNTAX HIGHLIGHT)
+        // ========================================================
+        ctx.fillStyle = '#0F1117';
+        ctx.fillRect(0, 0, width, height);
+
+        // Subtle Ambient Grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+        ctx.lineWidth = 1;
+        const gridSize = 40;
+        for (let x = 0; x < width; x += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+        }
+        for (let y = 0; y < height; y += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+
+        const winWidth = width * (isVertical ? 0.94 : 0.86);
+        const winHeight = height * (isVertical ? 0.88 : 0.82);
+        const winX = (width - winWidth) / 2;
+        const winY = (height - winHeight) / 2;
+
+        // Window Chassis Shadow
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+        ctx.shadowBlur = 40;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 18;
+
+        // Editor Canvas Chassis (#181825)
+        ctx.fillStyle = '#181825';
+        if (ctx.roundRect) {
+            ctx.roundRect(winX, winY, winWidth, winHeight, 10);
+            ctx.fill();
+        } else {
+            ctx.fillRect(winX, winY, winWidth, winHeight);
+        }
+        ctx.shadowColor = 'transparent';
+
+        // Editor Accent Border
+        ctx.strokeStyle = 'rgba(137, 180, 250, 0.2)';
+        ctx.lineWidth = 1.5;
+        if (ctx.roundRect) {
+            ctx.roundRect(winX, winY, winWidth, winHeight, 10);
+            ctx.stroke();
+        } else {
+            ctx.strokeRect(winX, winY, winWidth, winHeight);
+        }
+
+        // Window Title & Tab Bar
+        const titleBarHeight = Math.max(34, Math.floor(winHeight / 11));
+        ctx.fillStyle = '#11111B';
+        if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(winX, winY, winWidth, titleBarHeight, [10, 10, 0, 0]);
+            ctx.fill();
+        } else {
+            ctx.fillRect(winX, winY, winWidth, titleBarHeight);
+        }
+
+        // macOS Traffic Lights (🔴 🟡 🟢)
+        const dotRadius = Math.max(4, Math.floor(titleBarHeight / 5.5));
+        const dotY = winY + titleBarHeight / 2;
+        
+        ctx.fillStyle = '#F38BA8';
+        ctx.beginPath();
+        ctx.arc(winX + 18, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#F9E2AF';
+        ctx.beginPath();
+        ctx.arc(winX + 34, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#A6E3A1';
+        ctx.beginPath();
+        ctx.arc(winX + 50, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Active File Tab (📄 main.js)
+        const tabWidth = Math.min(140, winWidth * 0.35);
+        const tabX = winX + 70;
+        ctx.fillStyle = '#181825';
+        ctx.fillRect(tabX, winY, tabWidth, titleBarHeight);
+        
+        // Active Tab Top Blue Indicator Line
+        ctx.fillStyle = '#89B4FA';
+        ctx.fillRect(tabX, winY, tabWidth, 2);
+
+        // Tab Text
+        ctx.fillStyle = '#CDD6F4';
+        ctx.font = `600 ${Math.max(11, Math.floor(titleBarHeight / 2.6))}px 'JetBrains Mono', monospace`;
+        ctx.textAlign = 'left';
+        ctx.fillText("main.js", tabX + 14, dotY + 4);
+
+        // Title Bar Bottom Border
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(winX, winY + titleBarHeight);
+        ctx.lineTo(winX + winWidth, winY + titleBarHeight);
+        ctx.stroke();
+
+        // Calculate Visible Text
+        const totalChars = text.length;
+        const currentChars = Math.min(totalChars, Math.floor(progress * (totalChars + 4)));
+        const visibleText = text.substring(0, currentChars);
+
+        const fontSize = Math.floor(isVertical ? width / 20 : width / 30);
+        const lineHeight = fontSize * 1.6;
+        const gutterWidth = Math.max(42, fontSize * 2.2);
+        const textStartX = winX + gutterWidth + 16;
+        const textStartY = winY + titleBarHeight + 20;
+
+        ctx.font = `600 ${fontSize}px ${fontFamily}`;
+        ctx.textBaseline = 'top';
+
+        // Gutter Vertical Separator Rule
+        ctx.strokeStyle = '#313244';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(winX + gutterWidth + 4, winY + titleBarHeight);
+        ctx.lineTo(winX + gutterWidth + 4, winY + winHeight);
+        ctx.stroke();
+
+        const maxContentWidth = winWidth - gutterWidth - 36;
+        const paragraphs = visibleText.split('\n');
+        const renderedLines = [];
+
+        paragraphs.forEach((para) => {
+            const words = para.split(' ');
+            let currentLine = '';
+            words.forEach((word) => {
+                const testLine = currentLine ? `${currentLine} ${word}` : word;
+                if (ctx.measureText(testLine).width > maxContentWidth) {
+                    renderedLines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            });
+            renderedLines.push(currentLine);
+        });
+
+        renderedLines.forEach((line, idx) => {
+            const lineY = textStartY + (idx * lineHeight);
+            if (lineY + lineHeight <= winY + winHeight - 12) {
+                // Line Number in Gutter (01, 02, 03)
+                ctx.fillStyle = '#6C7086';
+                ctx.font = `600 ${Math.floor(fontSize * 0.85)}px ${fontFamily}`;
+                const lineNumStr = String(idx + 1).padStart(2, '0');
+                ctx.fillText(lineNumStr, winX + 12, lineY + 2);
+
+                // Render Syntax-Highlighted Tokens for this line
+                ctx.font = `600 ${fontSize}px ${fontFamily}`;
+                const tokens = tokenizeCodeLine(line);
+                let currentX = textStartX;
+
+                tokens.forEach((tok) => {
+                    ctx.fillStyle = tok.color;
+                    ctx.fillText(tok.text, currentX, lineY);
+                    currentX += ctx.measureText(tok.text).width;
+                });
+
+                // Glowing Cyan/Purple Cursor on last line
+                if (idx === renderedLines.length - 1) {
+                    const isBlink = Math.floor(progress * 24) % 2 === 0 || progress >= 1;
+                    if (isBlink) {
+                        const cursorX = currentX + 3;
+                        ctx.shadowColor = '#89B4FA';
+                        ctx.shadowBlur = 10;
+                        ctx.fillStyle = '#89B4FA';
+
+                        if (cursorStyle === 'block') {
+                            ctx.fillRect(cursorX, lineY + 2, fontSize * 0.55, fontSize);
+                        } else if (cursorStyle === 'line') {
+                            ctx.fillRect(cursorX, lineY + 2, 3, fontSize);
+                        } else {
+                            ctx.fillRect(cursorX, lineY + fontSize - 3, fontSize * 0.6, 4);
+                        }
+                        ctx.shadowColor = 'transparent';
+                    }
+                }
+            }
+        });
+
+        drawVignette(ctx, width, height, 0.35);
+
+    } else if (typewriterMode === 'terminal') {
+        // ========================================================
+        // 2. MODERN HACKER / MATRIX GREEN TERMINAL
+        // ========================================================
+        ctx.fillStyle = '#06080A';
+        ctx.fillRect(0, 0, width, height);
+
+        // Subtle Terminal Scanlines
+        ctx.strokeStyle = 'rgba(34, 197, 94, 0.03)';
+        ctx.lineWidth = 1;
+        for (let y = 0; y < height; y += 4) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+
+        const winWidth = width * (isVertical ? 0.94 : 0.86);
+        const winHeight = height * (isVertical ? 0.88 : 0.82);
+        const winX = (width - winWidth) / 2;
+        const winY = (height - winHeight) / 2;
+
+        // Terminal Window Chassis (#0B0F12)
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        ctx.shadowBlur = 40;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 18;
+        ctx.fillStyle = '#0B0F12';
+        if (ctx.roundRect) {
+            ctx.roundRect(winX, winY, winWidth, winHeight, 10);
+            ctx.fill();
+        } else {
+            ctx.fillRect(winX, winY, winWidth, winHeight);
+        }
+        ctx.shadowColor = 'transparent';
+
+        // Glowing Emerald Accent Border
+        ctx.strokeStyle = 'rgba(34, 197, 94, 0.3)';
+        ctx.lineWidth = 1.5;
+        if (ctx.roundRect) {
+            ctx.roundRect(winX, winY, winWidth, winHeight, 10);
+            ctx.stroke();
+        } else {
+            ctx.strokeRect(winX, winY, winWidth, winHeight);
+        }
+
+        // Window Title Bar
+        const titleBarHeight = Math.max(34, Math.floor(winHeight / 11));
+        ctx.fillStyle = '#0F1519';
+        if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(winX, winY, winWidth, titleBarHeight, [10, 10, 0, 0]);
+            ctx.fill();
+        } else {
+            ctx.fillRect(winX, winY, winWidth, titleBarHeight);
+        }
+
+        // macOS Traffic Lights (🔴 🟡 🟢)
+        const dotRadius = Math.max(4, Math.floor(titleBarHeight / 5.5));
+        const dotY = winY + titleBarHeight / 2;
+        
+        ctx.fillStyle = '#EF4444';
+        ctx.beginPath();
+        ctx.arc(winX + 18, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#F59E0B';
+        ctx.beginPath();
+        ctx.arc(winX + 34, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#10B981';
+        ctx.beginPath();
+        ctx.arc(winX + 50, dotY, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Terminal Title Badge
+        ctx.fillStyle = '#4ADE80';
+        ctx.font = `600 ${Math.max(11, Math.floor(titleBarHeight / 2.6))}px 'JetBrains Mono', monospace`;
+        ctx.textAlign = 'center';
+        ctx.fillText("zsh — matrix@terminal", winX + winWidth / 2, dotY + 4);
+        ctx.textAlign = 'left';
+
+        // Title Bar Divider
+        ctx.strokeStyle = 'rgba(34, 197, 94, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(winX, winY + titleBarHeight);
+        ctx.lineTo(winX + winWidth, winY + titleBarHeight);
+        ctx.stroke();
+
+        // Calculate Visible Text
+        const totalChars = text.length;
+        const currentChars = Math.min(totalChars, Math.floor(progress * (totalChars + 4)));
+        const visibleText = text.substring(0, currentChars);
+
+        const fontSize = Math.floor(isVertical ? width / 19 : width / 28);
+        const lineHeight = fontSize * 1.55;
+        const gutterWidth = Math.max(42, fontSize * 2.0);
+        const textStartX = winX + gutterWidth + 16;
+        const textStartY = winY + titleBarHeight + 22;
+
+        ctx.font = `700 ${fontSize}px ${fontFamily}`;
+        ctx.textBaseline = 'top';
+
+        // Gutter Vertical Separator Rule
+        ctx.strokeStyle = 'rgba(34, 197, 94, 0.12)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(winX + gutterWidth + 4, winY + titleBarHeight);
+        ctx.lineTo(winX + gutterWidth + 4, winY + winHeight);
+        ctx.stroke();
+
+        const maxContentWidth = winWidth - gutterWidth - 36;
+        const paragraphs = visibleText.split('\n');
+        const renderedLines = [];
+
+        paragraphs.forEach((para) => {
+            const words = para.split(' ');
+            let currentLine = '';
+            words.forEach((word) => {
+                const testLine = currentLine ? `${currentLine} ${word}` : word;
+                if (ctx.measureText(testLine).width > maxContentWidth) {
+                    renderedLines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            });
+            renderedLines.push(currentLine);
+        });
+
+        renderedLines.forEach((line, idx) => {
+            const lineY = textStartY + (idx * lineHeight);
+            if (lineY + lineHeight <= winY + winHeight - 14) {
+                // Line Number Gutter (01, 02, 03 in muted emerald green)
+                ctx.fillStyle = '#15803D';
+                ctx.font = `700 ${Math.floor(fontSize * 0.85)}px ${fontFamily}`;
+                const lineNumStr = String(idx + 1).padStart(2, '0');
+                ctx.fillText(lineNumStr, winX + 12, lineY + 2);
+
+                // Line text in Vibrant Hacker Matrix Green
+                ctx.font = `700 ${fontSize}px ${fontFamily}`;
+                ctx.fillStyle = '#4ADE80';
+                ctx.shadowColor = 'rgba(34, 197, 94, 0.4)';
+                ctx.shadowBlur = 6;
+                ctx.fillText(line, textStartX, lineY);
+                ctx.shadowColor = 'transparent';
+
+                // Cursor on last line with glowing green aura
+                if (idx === renderedLines.length - 1) {
+                    const isBlink = Math.floor(progress * 24) % 2 === 0 || progress >= 1;
+                    if (isBlink) {
+                        const lineWidth = ctx.measureText(line).width;
+                        const cursorX = textStartX + lineWidth + 3;
+
+                        ctx.shadowColor = '#22C55E';
+                        ctx.shadowBlur = 12;
+                        ctx.fillStyle = '#22C55E';
+
+                        if (cursorStyle === 'block') {
+                            ctx.fillRect(cursorX, lineY + 2, fontSize * 0.55, fontSize);
+                        } else if (cursorStyle === 'line') {
+                            ctx.fillRect(cursorX, lineY + 2, 3, fontSize);
+                        } else {
+                            ctx.fillRect(cursorX, lineY + fontSize - 3, fontSize * 0.6, 4);
+                        }
+                        ctx.shadowColor = 'transparent';
+                    }
+                }
+            }
+        });
+
+        drawVignette(ctx, width, height, 0.4);
+
+    } else if (typewriterMode === 'vintage') {
         // ==========================================
-        // 1. VINTAGE PAPER & TYPEWRITER MANUSCRIPT
+        // 3. VINTAGE PAPER & TYPEWRITER MANUSCRIPT
         // ==========================================
         const bgGrad = ctx.createRadialGradient(width / 2, height / 2, width * 0.15, width / 2, height / 2, width * 0.85);
         bgGrad.addColorStop(0, '#1E1B18');
@@ -389,170 +787,10 @@ export function drawTypewriterFrame(ctx, width, height, progress = 0, options = 
 
         drawVignette(ctx, width, height, 0.4);
 
-    } else if (typewriterMode === 'terminal') {
-        // ==========================================
-        // 2. MODERN TERMINAL WINDOW
-        // ==========================================
-        ctx.fillStyle = '#090A0F';
-        ctx.fillRect(0, 0, width, height);
-
-        // Subtle Cyber Grid Lines
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
-        ctx.lineWidth = 1;
-        const gridSize = 40;
-        for (let x = 0; x < width; x += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, height);
-            ctx.stroke();
-        }
-        for (let y = 0; y < height; y += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(width, y);
-            ctx.stroke();
-        }
-
-        const winWidth = width * (isVertical ? 0.92 : 0.84);
-        const winHeight = height * (isVertical ? 0.86 : 0.80);
-        const winX = (width - winWidth) / 2;
-        const winY = (height - winHeight) / 2;
-
-        // Terminal Window Chassis (#10121A)
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-        ctx.shadowBlur = 36;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 16;
-        ctx.fillStyle = '#10121A';
-        if (ctx.roundRect) {
-            ctx.roundRect(winX, winY, winWidth, winHeight, 10);
-            ctx.fill();
-        } else {
-            ctx.fillRect(winX, winY, winWidth, winHeight);
-        }
-        ctx.shadowColor = 'transparent';
-
-        // Glowing Neon Accent Border
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
-        ctx.lineWidth = 1.5;
-        if (ctx.roundRect) {
-            ctx.roundRect(winX, winY, winWidth, winHeight, 10);
-            ctx.stroke();
-        } else {
-            ctx.strokeRect(winX, winY, winWidth, winHeight);
-        }
-
-        // Window Title Bar
-        const titleBarHeight = Math.max(32, Math.floor(winHeight / 12));
-        ctx.fillStyle = '#161922';
-        if (ctx.roundRect) {
-            ctx.beginPath();
-            ctx.roundRect(winX, winY, winWidth, titleBarHeight, [10, 10, 0, 0]);
-            ctx.fill();
-        } else {
-            ctx.fillRect(winX, winY, winWidth, titleBarHeight);
-        }
-
-        // macOS Traffic Lights (Red, Yellow, Green)
-        const dotRadius = Math.max(4, Math.floor(titleBarHeight / 5.5));
-        const dotY = winY + titleBarHeight / 2;
-        
-        ctx.fillStyle = '#EF4444';
-        ctx.beginPath();
-        ctx.arc(winX + 18, dotY, dotRadius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#F59E0B';
-        ctx.beginPath();
-        ctx.arc(winX + 34, dotY, dotRadius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#10B981';
-        ctx.beginPath();
-        ctx.arc(winX + 50, dotY, dotRadius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Terminal Title Badge
-        ctx.fillStyle = '#94A3B8';
-        ctx.font = `600 ${Math.max(11, Math.floor(titleBarHeight / 2.6))}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.fillText("bash — animationmaker.sh", winX + winWidth / 2, dotY + 4);
-        ctx.textAlign = 'left';
-
-        // Calculate Visible Text
-        const totalChars = text.length;
-        const currentChars = Math.min(totalChars, Math.floor(progress * (totalChars + 4)));
-        const visibleText = text.substring(0, currentChars);
-
-        const fontSize = Math.floor(isVertical ? width / 18 : width / 28);
-        const lineHeight = fontSize * 1.55;
-        const textStartX = winX + (isVertical ? 38 : 52);
-        const textStartY = winY + titleBarHeight + 24;
-
-        ctx.font = `700 ${fontSize}px ${fontFamily}`;
-        ctx.textBaseline = 'top';
-
-        const maxContentWidth = winWidth - (isVertical ? 50 : 70);
-        const paragraphs = visibleText.split('\n');
-        const renderedLines = [];
-
-        paragraphs.forEach((para) => {
-            const words = para.split(' ');
-            let currentLine = '';
-            words.forEach((word) => {
-                const testLine = currentLine ? `${currentLine} ${word}` : word;
-                if (ctx.measureText(testLine).width > maxContentWidth) {
-                    renderedLines.push(currentLine);
-                    currentLine = word;
-                } else {
-                    currentLine = testLine;
-                }
-            });
-            renderedLines.push(currentLine);
-        });
-
-        renderedLines.forEach((line, idx) => {
-            const lineY = textStartY + (idx * lineHeight);
-            if (lineY + lineHeight <= winY + winHeight - 16) {
-                // Line Number Gutter (01, 02, 03)
-                ctx.fillStyle = '#475569';
-                ctx.font = `600 ${Math.floor(fontSize * 0.85)}px ${fontFamily}`;
-                const lineNumStr = String(idx + 1).padStart(2, '0');
-                ctx.fillText(lineNumStr, winX + 16, lineY + 2);
-
-                // Line text in fontColor
-                ctx.font = `700 ${fontSize}px ${fontFamily}`;
-                ctx.fillStyle = fontColor || '#FFFFFF';
-                ctx.fillText(line, textStartX, lineY);
-
-                // Cursor on last line with glowing cyber aura
-                if (idx === renderedLines.length - 1) {
-                    const isBlink = Math.floor(progress * 24) % 2 === 0 || progress >= 1;
-                    if (isBlink) {
-                        const lineWidth = ctx.measureText(line).width;
-                        const cursorX = textStartX + lineWidth + 3;
-
-                        ctx.shadowColor = '#F5B301';
-                        ctx.shadowBlur = 10;
-                        ctx.fillStyle = '#F5B301';
-
-                        if (cursorStyle === 'block') {
-                            ctx.fillRect(cursorX, lineY + 2, fontSize * 0.55, fontSize);
-                        } else if (cursorStyle === 'line') {
-                            ctx.fillRect(cursorX, lineY + 2, 3, fontSize);
-                        } else {
-                            ctx.fillRect(cursorX, lineY + fontSize - 3, fontSize * 0.6, 4);
-                        }
-                        ctx.shadowColor = 'transparent';
-                    }
-                }
-            }
-        });
-
-        drawVignette(ctx, width, height, 0.35);
-
     } else {
-        // ==========================================
-        // 3. CLASSIC MINIMAL FULL-FRAME (DEFAULT)
-        // ==========================================
+        // ========================================================
+        // 4. CLASSIC MINIMAL FULL-FRAME (DEFAULT)
+        // ========================================================
         ctx.fillStyle = isDark ? '#0F1015' : '#F5F5F0';
         ctx.fillRect(0, 0, width, height);
 

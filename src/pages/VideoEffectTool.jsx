@@ -122,6 +122,11 @@ export default function VideoEffectTool() {
   const hasInitialized = useRef(false);
   const lastSavedSnapshotRef = useRef(null);
   const lastCharIndexRef = useRef(0);
+  const audioFxEnabledRef = useRef(audioFxEnabled);
+
+  useEffect(() => {
+    audioFxEnabledRef.current = audioFxEnabled;
+  }, [audioFxEnabled]);
 
   const validTypes = ['ken-burns', 'vhs-tape', 'glitch-master', 'typewriter', 'scanline', 'ascii', 'echo', 'gsearch'];
   const isProTool = type !== 'gsearch';
@@ -506,7 +511,7 @@ export default function VideoEffectTool() {
         if (type === 'typewriter') {
           const totalChars = typewriterText.length;
           const currentChars = Math.min(totalChars, Math.floor(progressVal * (totalChars + 4)));
-          if (audioFxEnabled && currentChars > 0 && currentChars !== lastCharIndexRef.current && currentChars <= totalChars) {
+          if (audioFxEnabledRef.current && currentChars > 0 && currentChars !== lastCharIndexRef.current && currentChars <= totalChars) {
             lastCharIndexRef.current = currentChars;
             playLiveTypewriterClick(typewriterText[currentChars - 1] === ' ');
           } else if (currentChars === 0) {
@@ -1189,6 +1194,7 @@ export default function VideoEffectTool() {
                         options={[
                           { value: 'classic', label: t('typewriterModeClassic', lang) },
                           { value: 'terminal', label: t('typewriterModeTerminal', lang) },
+                          { value: 'code', label: t('typewriterModeCode', lang) },
                           { value: 'vintage', label: t('typewriterModeVintage', lang) }
                         ]}
                         value={typewriterMode}

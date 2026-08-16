@@ -353,7 +353,8 @@ export const strings = {
     "typewriterModeTerminal": "Modern Terminal",
     "typewriterModeClassic": "Classic Minimal",
     "typewriterSoundLabel": "Keystroke Sound Effects",
-    "typewriterSoundDesc": "Play and export realistic mechanical typing sounds"
+    "typewriterSoundDesc": "Play and export realistic mechanical typing sounds",
+    "typewriterModeCode": "Code Editor"
   },
   "tr": {
     "untitledProject": "İsimsiz Proje",
@@ -709,7 +710,8 @@ export const strings = {
     "typewriterModeTerminal": "Modern Terminal",
     "typewriterModeClassic": "Klasik Tipografi",
     "typewriterSoundLabel": "Tuş Vuruş Sesleri",
-    "typewriterSoundDesc": "Yazım sırasında mekanik daktilo tuş sesleri ekle"
+    "typewriterSoundDesc": "Yazım sırasında mekanik daktilo tuş sesleri ekle",
+    "typewriterModeCode": "Kod Editörü"
   },
   "de": {
     "loginGoogle": "Mit Google anmelden",
@@ -1065,7 +1067,8 @@ export const strings = {
     "typewriterModeTerminal": "Modernes Terminal",
     "typewriterModeClassic": "Klassisch Minimal",
     "typewriterSoundLabel": "Tastatur-Soundeffekte",
-    "typewriterSoundDesc": "Realistische Schreibmaschinengeräusche abspielen"
+    "typewriterSoundDesc": "Realistische Schreibmaschinengeräusche abspielen",
+    "typewriterModeCode": "Code-Editor"
   },
   "fr": {
     "loginGoogle": "Se connecter avec Google",
@@ -1421,7 +1424,8 @@ export const strings = {
     "typewriterModeTerminal": "Terminal Moderne",
     "typewriterModeClassic": "Classique Minimal",
     "typewriterSoundLabel": "Effets Sonores de Frappe",
-    "typewriterSoundDesc": "Ajouter des sons réalistes de machine à écrire"
+    "typewriterSoundDesc": "Ajouter des sons réalistes de machine à écrire",
+    "typewriterModeCode": "Éditeur de Code"
   },
   "es": {
     "loginGoogle": "Iniciar sesión con Google",
@@ -1777,7 +1781,8 @@ export const strings = {
     "typewriterModeTerminal": "Terminal Moderno",
     "typewriterModeClassic": "Clásico Minimalista",
     "typewriterSoundLabel": "Sonidos de Pulsación",
-    "typewriterSoundDesc": "Añadir efectos de sonido de máquina de escribir"
+    "typewriterSoundDesc": "Añadir efectos de sonido de máquina de escribir",
+    "typewriterModeCode": "Editor de Código"
   },
   "zh": {
     "loginGoogle": "使用 Google 登录",
@@ -2133,7 +2138,8 @@ export const strings = {
     "typewriterModeTerminal": "现代终端",
     "typewriterModeClassic": "经典极简",
     "typewriterSoundLabel": "打字机音效",
-    "typewriterSoundDesc": "播放与导出真实的机械按键音效"
+    "typewriterSoundDesc": "播放与导出真实的机械按键音效",
+    "typewriterModeCode": "代码编辑器"
   },
   "ar": {
     "loginGoogle": "تسجيل الدخول عبر Google",
@@ -2489,7 +2495,8 @@ export const strings = {
     "typewriterModeTerminal": "طرفية حديثة",
     "typewriterModeClassic": "كلاسيكي بسيط",
     "typewriterSoundLabel": "مؤثرات صوت النقر",
-    "typewriterSoundDesc": "تشغيل وتصدير أصوات الآلة الكاتبة الميكانيكية"
+    "typewriterSoundDesc": "تشغيل وتصدير أصوات الآلة الكاتبة الميكانيكية",
+    "typewriterModeCode": "محرر الكود"
   },
   "ko": {
     "loginGoogle": "Google 계정으로 로그인",
@@ -2845,7 +2852,8 @@ export const strings = {
     "typewriterModeTerminal": "모던 터미널",
     "typewriterModeClassic": "클래식 미니멀",
     "typewriterSoundLabel": "타자기 타건 효과음",
-    "typewriterSoundDesc": "리얼한 기계식 타자기 소리 추가 및 내보내기"
+    "typewriterSoundDesc": "리얼한 기계식 타자기 소리 추가 및 내보내기",
+    "typewriterModeCode": "코드 에디터"
   },
   "ja": {
     "loginGoogle": "Googleでログイン",
@@ -3201,7 +3209,8 @@ export const strings = {
     "typewriterModeTerminal": "モダンターミナル",
     "typewriterModeClassic": "クラシック・ミニマル",
     "typewriterSoundLabel": "タイピング効果音",
-    "typewriterSoundDesc": "リアルな機械式タイプライター音を追加"
+    "typewriterSoundDesc": "リアルな機械式タイプライター音を追加",
+    "typewriterModeCode": "コードエディタ"
   },
   "id": {
     "loginGoogle": "Masuk dengan Google",
@@ -3557,7 +3566,8 @@ export const strings = {
     "typewriterModeTerminal": "Terminal Modern",
     "typewriterModeClassic": "Klasik Minimal",
     "typewriterSoundLabel": "Efek Suara Ketikan",
-    "typewriterSoundDesc": "Putar dan ekspor suara mesin tik mekanik"
+    "typewriterSoundDesc": "Putar dan ekspor suara mesin tik mekanik",
+    "typewriterModeCode": "Editor Kode"
   },
   "th": {
     "loginGoogle": "เข้าสู่ระบบด้วย Google",
@@ -3913,7 +3923,8 @@ export const strings = {
     "typewriterModeTerminal": "เทอร์มินัลสมัยใหม่",
     "typewriterModeClassic": "คลาสสิกมินิมอล",
     "typewriterSoundLabel": "เอฟเฟกต์เสียงการพิมพ์",
-    "typewriterSoundDesc": "เล่นและส่งออกเสียงพิมพ์ดีดเครื่องกลที่สมจริง"
+    "typewriterSoundDesc": "เล่นและส่งออกเสียงพิมพ์ดีดเครื่องกลที่สมจริง",
+    "typewriterModeCode": "ตัวแก้ไขโค้ด"
   },
   "hi": {
     "loginGoogle": "Google से लॉगिन करें",
@@ -4269,7 +4280,8 @@ export const strings = {
     "typewriterModeTerminal": "मॉडर्न टर्मिनल",
     "typewriterModeClassic": "क्लासिक मिनिमल",
     "typewriterSoundLabel": "टाइपिंग साउंड इफेक्ट्स",
-    "typewriterSoundDesc": "मैकेनिकल टाइपराइटर की आवाज जोड़ें"
+    "typewriterSoundDesc": "मैकेनिकल टाइपराइटर की आवाज जोड़ें",
+    "typewriterModeCode": "कोड एडिटर"
   },
   "ru": {
     "loginGoogle": "Войти через Google",
@@ -4625,7 +4637,8 @@ export const strings = {
     "typewriterModeTerminal": "Современный терминал",
     "typewriterModeClassic": "Классический минимал",
     "typewriterSoundLabel": "Звук нажатия клавиш",
-    "typewriterSoundDesc": "Воспроизведение звуков печатной машинки"
+    "typewriterSoundDesc": "Воспроизведение звуков печатной машинки",
+    "typewriterModeCode": "Редактор кода"
   },
   "pt": {
     "loginGoogle": "Entrar com o Google",
@@ -4981,7 +4994,8 @@ export const strings = {
     "typewriterModeTerminal": "Terminal Moderno",
     "typewriterModeClassic": "Clássico Minimalista",
     "typewriterSoundLabel": "Efeitos Sonoros de Digitação",
-    "typewriterSoundDesc": "Tocar e exportar sons de máquina de escrever"
+    "typewriterSoundDesc": "Tocar e exportar sons de máquina de escrever",
+    "typewriterModeCode": "Editor de Código"
   }
 };
 
