@@ -88,9 +88,18 @@ export const useAuthStore = create((set, get) => ({
       set({ subscriptionInterval: interval });
 
     } catch (error) {
-      console.error("Kullanıcı verisi alınırken/yazılırken hata:", error);
-      alert("Giriş başarılı oldu ancak veritabanına ulaşılamadı. Lütfen internet bağlantınızı kontrol edin veya sayfayı yenileyin.");
-      set({ user: null, loading: false });
+      console.warn("Kullanıcı verisi alınırken/yazılırken hata (offline fallback):", error);
+      set({ 
+        user: {
+          uid: authUser.uid,
+          email: authUser.email,
+          displayName: authUser.displayName,
+          photoURL: authUser.photoURL,
+          subscriptionPlan: 'free',
+          adRewardPoints: 0,
+        }, 
+        loading: false 
+      });
     }
   },
 
@@ -125,7 +134,6 @@ export const useAuthStore = create((set, get) => ({
     set({ projectsLoading: true });
     const q = query(collection(db, 'users', uid, 'projects'), orderBy('updatedAt', 'desc'));
     
-    // Unsubscribe fonksiyonunu döndürelim, isterseniz cleanup için tutabilirsiniz
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const projectsList = [];
       snapshot.forEach((docSnap) => {
@@ -133,11 +141,33 @@ export const useAuthStore = create((set, get) => ({
       });
       set({ projects: projectsList, projectsLoading: false });
     }, (error) => {
-      console.error("Projeler dinlenirken hata:", error);
+      console.warn("Projeler dinlenirken uyarı:", error);
       set({ projectsLoading: false });
     });
 
     set({ projectsUnsubscribe: unsubscribe });
+  },
+
+  fetchProjectDoc: async (projectId) => {
+    if (!projectId) return null;
+    const { projects, user } = get();
+    // 1. Önce bellekteki projelerden ara
+    const inMem = projects.find(p => p.id === projectId);
+    if (inMem) return inMem;
+
+    // 2. Giriş yapmışsa doğrudan Firestore'dan çek
+    if (user && user.uid && !projectId.startsWith('local_')) {
+      try {
+        const docRef = doc(db, 'users', user.uid, 'projects', projectId);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          return { id: snap.id, ...snap.data() };
+        }
+      } catch (err) {
+        console.warn("Direct project fetch warning:", err);
+      }
+    }
+    return null;
   },
 
   // Polar'dan canlı abonelik kontrolü yapan JIT (Just-In-Time) Sync
@@ -155,21 +185,31 @@ export const useAuthStore = create((set, get) => ({
       });
       if (response.ok) {
         const data = await response.json();
-        // Sadece durum değişmişse yerel durumu güncelle
         if (data.isPro !== undefined && data.isPro !== user.isPro) {
           set({ user: { ...user, isPro: data.isPro } });
           console.log("[JIT Sync] Subscription status updated to:", data.isPro);
         }
       }
     } catch (error) {
-      console.error("JIT subscription sync failed:", error);
+      console.warn("JIT subscription sync warning:", error);
     }
   },
 
   // Araç içinden Auto-save veya manuel kaydetme için kullanılacak
   saveProject: async (toolId, settings, existingProjectId = null) => {
     const { user } = get();
-    if (!user) return null;
+    const localKey = 'draft_project_' + toolId;
+    
+    // Misafir kullanıcı için yerel taslak oluştur
+    if (!user) {
+      const guestId = existingProjectId || ('local_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5));
+      try {
+        localStorage.setItem(localKey, JSON.stringify({ id: guestId, toolId, settings }));
+      } catch (e) {
+        console.warn("Local storage write error:", e);
+      }
+      return guestId;
+    }
 
     try {
       const projectsRef = collection(db, 'users', user.uid, 'projects');
@@ -179,18 +219,31 @@ export const useAuthStore = create((set, get) => ({
         updatedAt: serverTimestamp(),
       };
 
-      if (existingProjectId) {
+      let finalId = existingProjectId;
+      if (existingProjectId && !existingProjectId.startsWith('local_')) {
         const docRef = doc(db, 'users', user.uid, 'projects', existingProjectId);
         await setDoc(docRef, projectData, { merge: true });
-        return existingProjectId;
       } else {
         projectData.createdAt = serverTimestamp();
         const newDoc = await addDoc(projectsRef, projectData);
-        return newDoc.id;
+        finalId = newDoc.id;
       }
+
+      try {
+        localStorage.setItem(localKey, JSON.stringify({ id: finalId, toolId, settings }));
+      } catch (e) {
+        console.warn("Local storage write error:", e);
+      }
+      return finalId;
     } catch (error) {
-      console.error("Proje kaydedilirken hata:", error);
-      return null;
+      console.warn("Proje kaydedilirken hata (local fallback):", error);
+      const fallbackId = existingProjectId || ('local_' + Date.now().toString(36));
+      try {
+        localStorage.setItem(localKey, JSON.stringify({ id: fallbackId, toolId, settings }));
+      } catch (e) {
+        console.warn("Local storage write error:", e);
+      }
+      return fallbackId;
     }
   },
 

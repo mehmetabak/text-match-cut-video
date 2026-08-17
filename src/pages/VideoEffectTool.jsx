@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
@@ -252,7 +252,11 @@ export default function VideoEffectTool() {
     searchTheme
   });
 
+  const loadedDraftIdRef = useRef(null);
+  const isAutoSavingRef = useRef(false);
+
   const resetToDefaults = () => {
+    loadedDraftIdRef.current = null;
     setSearchParams({}, { replace: true });
     setProjectId(null);
     setProjectName('');
@@ -298,122 +302,133 @@ export default function VideoEffectTool() {
     lastSavedSnapshotRef.current = null;
   };
 
+  const applyDraftSettings = useCallback((s, draftId) => {
+    if (!s) return;
+    setProjectId(draftId);
+    loadedDraftIdRef.current = draftId;
+    
+    if (s.projectName) setProjectName(s.projectName);
+    if (s.formatPreset) setFormatPreset(s.formatPreset);
+    if (s.hdOutput !== undefined) {
+      setHdOutput(Boolean(s.hdOutput));
+      if (s.hdOutput) {
+        setFastRender(false);
+      } else if (s.fastRender !== undefined) {
+        setFastRender(Boolean(s.fastRender));
+      }
+    } else if (s.fastRender !== undefined) {
+      setFastRender(Boolean(s.fastRender));
+    }
+    if (s.duration) setDuration(s.duration);
+    if (s.audioFxEnabled !== undefined) {
+      setAudioFxEnabled(Boolean(s.audioFxEnabled));
+      audioFxEnabledRef.current = Boolean(s.audioFxEnabled);
+    }
+    if (s.zoomRate !== undefined) setZoomRate(s.zoomRate);
+    if (s.zoomDirection) setZoomDirection(s.zoomDirection);
+    if (s.panStyle) setPanStyle(s.panStyle);
+    if (s.aberrationStrength !== undefined) setAberrationStrength(s.aberrationStrength);
+    if (s.trackingNoise) setTrackingNoise(s.trackingNoise);
+    if (s.scanlineFlicker !== undefined) setScanlineFlicker(s.scanlineFlicker);
+    if (s.vhsTimestamp !== undefined) setVhsTimestamp(s.vhsTimestamp);
+    if (s.glitchIntensity !== undefined) setGlitchIntensity(s.glitchIntensity);
+    if (s.rgbShift !== undefined) setRgbShift(s.rgbShift);
+    if (s.sliceRate !== undefined) setSliceRate(s.sliceRate);
+    if (s.typewriterText !== undefined) setTypewriterText(s.typewriterText);
+    if (s.typingSpeed !== undefined) setTypingSpeed(s.typingSpeed);
+    if (s.cursorStyle) setCursorStyle(s.cursorStyle);
+    if (s.typewriterMode) setTypewriterMode(s.typewriterMode);
+    if (s.fontColor) setFontColor(s.fontColor);
+    if (s.scanlineDensity !== undefined) setScanlineDensity(s.scanlineDensity);
+    if (s.phosphorGlow !== undefined) setPhosphorGlow(s.phosphorGlow);
+    if (s.asciiTheme) setAsciiTheme(s.asciiTheme);
+    if (s.asciiResolution !== undefined) setAsciiResolution(s.asciiResolution);
+    if (s.echoCount !== undefined) setEchoCount(s.echoCount);
+    if (s.echoDecay !== undefined) setEchoDecay(s.echoDecay);
+    if (s.searchQuery) setSearchQuery(s.searchQuery);
+    if (s.searchUrl) setSearchUrl(s.searchUrl);
+    if (s.searchHeadline) setSearchHeadline(s.searchHeadline);
+    if (s.searchSnippet) setSearchSnippet(s.searchSnippet);
+    if (s.searchTheme) setSearchTheme(s.searchTheme);
+  }, []);
+
   // 1. Load Draft / Restore Project (from query param or localStorage or cloud projects)
   useEffect(() => {
     const draftId = searchParams.get('draft');
 
     if (!draftId) {
-      if (!hasInitialized.current || projectId) {
+      if (loadedDraftIdRef.current !== null || !hasInitialized.current) {
         hasInitialized.current = true;
-        resetToDefaults();
+        loadedDraftIdRef.current = null;
+        setProjectId(null);
+        setProjectName('');
+        if (!projectId) {
+          resetToDefaults();
+        }
       }
       return;
     }
 
-    if (draftId && draftId !== projectId) {
-      hasInitialized.current = true;
-      const savedDraft = localStorage.getItem('draft_project');
-      if (savedDraft) {
-        try {
-          const draftData = JSON.parse(savedDraft);
-          if (draftData.id === draftId) {
-            setProjectId(draftData.id);
-            if (draftData.projectName) setProjectName(draftData.projectName);
-            if (draftData.formatPreset) setFormatPreset(draftData.formatPreset);
-            if (draftData.hdOutput !== undefined) setHdOutput(draftData.hdOutput);
-            if (draftData.fastRender !== undefined) setFastRender(draftData.fastRender);
-            if (draftData.duration) setDuration(draftData.duration);
-            if (draftData.audioFxEnabled !== undefined) setAudioFxEnabled(draftData.audioFxEnabled);
-            if (draftData.zoomRate) setZoomRate(draftData.zoomRate);
-            if (draftData.zoomDirection) setZoomDirection(draftData.zoomDirection);
-            if (draftData.panStyle) setPanStyle(draftData.panStyle);
-            if (draftData.aberrationStrength) setAberrationStrength(draftData.aberrationStrength);
-            if (draftData.trackingNoise) setTrackingNoise(draftData.trackingNoise);
-            if (draftData.scanlineFlicker !== undefined) setScanlineFlicker(draftData.scanlineFlicker);
-            if (draftData.vhsTimestamp !== undefined) setVhsTimestamp(draftData.vhsTimestamp);
-            if (draftData.glitchIntensity) setGlitchIntensity(draftData.glitchIntensity);
-            if (draftData.rgbShift) setRgbShift(draftData.rgbShift);
-            if (draftData.sliceRate) setSliceRate(draftData.sliceRate);
-            if (draftData.typewriterText) setTypewriterText(draftData.typewriterText);
-            if (draftData.typingSpeed) setTypingSpeed(draftData.typingSpeed);
-            if (draftData.cursorStyle) setCursorStyle(draftData.cursorStyle);
-            if (draftData.typewriterMode) setTypewriterMode(draftData.typewriterMode);
-            if (draftData.fontColor) setFontColor(draftData.fontColor);
-            if (draftData.scanlineDensity) setScanlineDensity(draftData.scanlineDensity);
-            if (draftData.phosphorGlow) setPhosphorGlow(draftData.phosphorGlow);
-            if (draftData.asciiTheme) setAsciiTheme(draftData.asciiTheme);
-            if (draftData.asciiResolution) setAsciiResolution(draftData.asciiResolution);
-            if (draftData.echoCount) setEchoCount(draftData.echoCount);
-            if (draftData.echoDecay) setEchoDecay(draftData.echoDecay);
-            if (draftData.searchQuery) setSearchQuery(draftData.searchQuery);
-            if (draftData.searchUrl) setSearchUrl(draftData.searchUrl);
-            if (draftData.searchHeadline) setSearchHeadline(draftData.searchHeadline);
-            if (draftData.searchSnippet) setSearchSnippet(draftData.searchSnippet);
-            if (draftData.searchTheme) setSearchTheme(draftData.searchTheme);
-            localStorage.removeItem('draft_project');
-            lastSavedSnapshotRef.current = JSON.stringify(draftData);
-            return;
-          }
-        } catch (e) {
-          console.error("Draft parsing error", e);
-        }
-      }
+    // Eğer bu taslak zaten belleğe yüklenmiş ve aktif düzenleniyorsa tekrar üzerine yazma!
+    if (draftId === loadedDraftIdRef.current) {
+      return;
+    }
 
-      if (projects && projects.length > 0) {
-        const cloudDraft = projects.find(p => p.id === draftId);
-        if (cloudDraft && cloudDraft.settings) {
-          const s = cloudDraft.settings;
-          setProjectId(cloudDraft.id);
-          if (s.projectName) setProjectName(s.projectName);
-          if (s.formatPreset) setFormatPreset(s.formatPreset);
-          if (s.hdOutput !== undefined) {
-            setHdOutput(Boolean(s.hdOutput));
-            if (s.hdOutput) {
-              setFastRender(false);
-            } else if (s.fastRender !== undefined) {
-              setFastRender(Boolean(s.fastRender));
-            }
-          } else if (s.fastRender !== undefined) {
-            setFastRender(Boolean(s.fastRender));
-          }
-          if (s.duration) setDuration(s.duration);
-          if (s.audioFxEnabled !== undefined) setAudioFxEnabled(s.audioFxEnabled);
-          if (s.zoomRate) setZoomRate(s.zoomRate);
-          if (s.zoomDirection) setZoomDirection(s.zoomDirection);
-          if (s.panStyle) setPanStyle(s.panStyle);
-          if (s.aberrationStrength) setAberrationStrength(s.aberrationStrength);
-          if (s.trackingNoise) setTrackingNoise(s.trackingNoise);
-          if (s.scanlineFlicker !== undefined) setScanlineFlicker(s.scanlineFlicker);
-          if (s.vhsTimestamp !== undefined) setVhsTimestamp(s.vhsTimestamp);
-          if (s.glitchIntensity) setGlitchIntensity(s.glitchIntensity);
-          if (s.rgbShift) setRgbShift(s.rgbShift);
-          if (s.sliceRate) setSliceRate(s.sliceRate);
-          if (s.typewriterText) setTypewriterText(s.typewriterText);
-          if (s.typingSpeed) setTypingSpeed(s.typingSpeed);
-          if (s.cursorStyle) setCursorStyle(s.cursorStyle);
-          if (s.typewriterMode) setTypewriterMode(s.typewriterMode);
-          if (s.fontColor) setFontColor(s.fontColor);
-          if (s.scanlineDensity) setScanlineDensity(s.scanlineDensity);
-          if (s.phosphorGlow) setPhosphorGlow(s.phosphorGlow);
-          if (s.asciiTheme) setAsciiTheme(s.asciiTheme);
-          if (s.asciiResolution) setAsciiResolution(s.asciiResolution);
-          if (s.echoCount) setEchoCount(s.echoCount);
-          if (s.echoDecay) setEchoDecay(s.echoDecay);
-          if (s.searchQuery) setSearchQuery(s.searchQuery);
-          if (s.searchUrl) setSearchUrl(s.searchUrl);
-          if (s.searchHeadline) setSearchHeadline(s.searchHeadline);
-          if (s.searchSnippet) setSearchSnippet(s.searchSnippet);
-          if (s.searchTheme) setSearchTheme(s.searchTheme);
-          lastSavedSnapshotRef.current = JSON.stringify(s);
+    hasInitialized.current = true;
+
+    // 1. Önce localStorage'dan dene (Projects sayfasından tıklandıysa)
+    const savedDraft = localStorage.getItem('draft_project');
+    if (savedDraft) {
+      try {
+        const draftData = JSON.parse(savedDraft);
+        if (draftData.id === draftId) {
+          applyDraftSettings(draftData, draftId);
+          localStorage.removeItem('draft_project');
+          return;
         }
+      } catch (e) {
+        console.warn("Draft parsing error", e);
       }
     }
-  }, [searchParams, projects, projectId]);
+
+    // 2. Araç özelindeki yerel taslaktan dene
+    const toolDraft = localStorage.getItem('draft_project_' + type);
+    if (toolDraft) {
+      try {
+        const draftData = JSON.parse(toolDraft);
+        if (draftData.id === draftId) {
+          applyDraftSettings(draftData.settings || draftData, draftId);
+          return;
+        }
+      } catch (e) {
+        console.warn("Tool draft parse error", e);
+      }
+    }
+
+    // 3. Bellekteki projelerden ara
+    if (projects && projects.length > 0) {
+      const cloudDraft = projects.find(p => p.id === draftId);
+      if (cloudDraft && cloudDraft.settings) {
+        applyDraftSettings(cloudDraft.settings, draftId);
+        return;
+      }
+    }
+
+    // 4. Doğrudan Firestore'dan çekmeyi dene
+    const fetchAuthStoreProject = useAuthStore.getState().fetchProjectDoc;
+    if (fetchAuthStoreProject) {
+      fetchAuthStoreProject(draftId).then((docData) => {
+        if (docData && docData.settings && loadedDraftIdRef.current !== draftId) {
+          applyDraftSettings(docData.settings, draftId);
+        }
+      }).catch(err => {
+        console.warn("Draft direct fetch warning:", err);
+      });
+    }
+  }, [searchParams, projects, type, applyDraftSettings]);
 
   // 2. Debounced Auto-Save to Firestore (1:1 with MatchCutTool)
   useEffect(() => {
-    if (!user) return; // Giriş yapmamışsa kaydetme
-
     const timeoutId = setTimeout(async () => {
       setSaveStatus('Saving...');
       const projectSettings = getCurrentSettings();
@@ -480,16 +495,23 @@ export default function VideoEffectTool() {
       }
 
       try {
+        isAutoSavingRef.current = true;
         const savedId = await saveProject(type, projectSettings, targetProjectId);
-        if (savedId && savedId !== projectId) {
+        if (savedId) {
           setProjectId(savedId);
-          setSearchParams({ draft: savedId }, { replace: true });
+          loadedDraftIdRef.current = savedId;
+          const currentParam = searchParams.get('draft');
+          if (currentParam !== savedId) {
+            setSearchParams({ draft: savedId }, { replace: true });
+          }
         }
         setSaveStatus('Saved to Cloud');
         setTimeout(() => setSaveStatus(''), 2000);
       } catch (err) {
         console.error("Auto-save error:", err);
         setSaveStatus('');
+      } finally {
+        isAutoSavingRef.current = false;
       }
     }, 1500); // 1.5 saniye bekle (Debounce)
 
@@ -971,8 +993,8 @@ export default function VideoEffectTool() {
         className="flex-grow flex flex-col p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full relative z-10 h-full min-h-0"
       >
         {/* Header matching MatchCutTool */}
-        <header className="mb-6 flex-shrink-0 flex justify-between items-start">
-          <div>
+        <header className="mb-4 sm:mb-6 flex-shrink-0 flex flex-col sm:flex-row sm:items-start justify-between gap-3 pr-28 sm:pr-0">
+          <div className="min-w-0 flex-1">
             <AnimatePresence mode="wait">
               {isEditingName ? (
                 <motion.div
@@ -1018,7 +1040,7 @@ export default function VideoEffectTool() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 absolute top-4 right-4 sm:relative sm:top-0 sm:right-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap mt-1 sm:mt-0">
             {user && (
               <button
                 onClick={resetToDefaults}

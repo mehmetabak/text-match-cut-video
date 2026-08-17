@@ -49,8 +49,11 @@ function MatchCutTool() {
   const [isEditingName, setIsEditingName] = useState(false);
   const inputRef = useRef(null);
   const hasInitialized = useRef(false);
+  const loadedDraftIdRef = useRef(null);
+  const isAutoSavingRef = useRef(false);
 
   const handleNewProject = () => {
+    loadedDraftIdRef.current = null;
     setSearchParams({}, { replace: true });
     setProjectId(null);
     setProjectName('');
@@ -68,67 +71,93 @@ function MatchCutTool() {
     setSetting('vignetteEffect', true);
   };
 
+  const applyDraftSettings = useCallback((s, draftId) => {
+    if (!s) return;
+    setProjectId(draftId);
+    loadedDraftIdRef.current = draftId;
+    if (s.projectName) setProjectName(s.projectName);
+    Object.keys(s).forEach(key => {
+      if (key !== 'id' && key !== 'projectName') {
+        setSetting(key, s[key]);
+      }
+    });
+  }, [setSetting]);
+
   // 1. Taslak Projeyi Yükle veya Yeni Proje İçin Sıfırla
   useEffect(() => {
     const draftId = searchParams.get('draft');
     
     // Eğer linkte draft yoksa (Yeni Proje tıklanmışsa veya temiz açılmışsa)
     if (!draftId) {
-      if (!hasInitialized.current || projectId) {
+      if (loadedDraftIdRef.current !== null || !hasInitialized.current) {
         hasInitialized.current = true;
+        loadedDraftIdRef.current = null;
         setProjectId(null);
         setProjectName('');
-        setSetting('phrase', 'match cut');
-        setSetting('format', 'horizontal');
-        setSetting('videoLength', 'Medium');
-        setSetting('speed', 2.5);
-        setSetting('darkTheme', true);
-        setSetting('textHighlight', true);
-        setSetting('blurIntensity', 'Medium');
-        setSetting('fontFamily', "'Times New Roman', Times, serif");
-        setSetting('highQuality', false);
-        setSetting('fastRender', false);
-        setSetting('renderMode', 'classic');
-        setSetting('vignetteEffect', true);
+        if (!projectId) {
+          handleNewProject();
+        }
       }
       return;
     }
 
-    // Eğer linkte draft varsa ve henüz bu projeyi yüklemediysek
-    if (draftId && draftId !== projectId) {
-      hasInitialized.current = true;
-      // Önce localStorage'dan dene (Projects.jsx'ten geldiyse)
-      const savedDraft = localStorage.getItem('draft_project');
-      if (savedDraft) {
-        try {
-          const draftData = JSON.parse(savedDraft);
-          if (draftData.id === draftId) {
-            setProjectId(draftData.id);
-            if (draftData.projectName) setProjectName(draftData.projectName);
-            Object.keys(draftData).forEach(key => {
-              if (key !== 'id') setSetting(key, draftData[key]);
-            });
-            localStorage.removeItem('draft_project');
-            return;
-          }
-        } catch (e) {
-          console.error("Draft error", e);
-        }
-      }
+    // Eğer bu taslak zaten belleğe yüklenmiş ve aktif düzenleniyorsa tekrar üzerine yazma!
+    if (draftId === loadedDraftIdRef.current) {
+      return;
+    }
 
-      // LocalStorage'da yoksa, Bulut projelerinden (projects) bul
-      if (projects && projects.length > 0) {
-        const cloudDraft = projects.find(p => p.id === draftId);
-        if (cloudDraft) {
-          setProjectId(cloudDraft.id);
-          if (cloudDraft.settings?.projectName) setProjectName(cloudDraft.settings.projectName);
-          Object.keys(cloudDraft.settings || {}).forEach(key => {
-            setSetting(key, cloudDraft.settings[key]);
-          });
+    hasInitialized.current = true;
+
+    // 1. Önce localStorage'dan dene (Projects.jsx'ten geldiyse)
+    const savedDraft = localStorage.getItem('draft_project');
+    if (savedDraft) {
+      try {
+        const draftData = JSON.parse(savedDraft);
+        if (draftData.id === draftId) {
+          applyDraftSettings(draftData, draftId);
+          localStorage.removeItem('draft_project');
+          return;
         }
+      } catch (e) {
+        console.warn("Draft error", e);
       }
     }
-  }, [searchParams, setSetting, projects, projectId]);
+
+    // 2. Araç özelindeki yerel taslaktan dene
+    const toolDraft = localStorage.getItem('draft_project_match-cut');
+    if (toolDraft) {
+      try {
+        const draftData = JSON.parse(toolDraft);
+        if (draftData.id === draftId) {
+          applyDraftSettings(draftData.settings || draftData, draftId);
+          return;
+        }
+      } catch (e) {
+        console.warn("Tool draft error", e);
+      }
+    }
+
+    // 3. Bulut projelerinden (projects) bul
+    if (projects && projects.length > 0) {
+      const cloudDraft = projects.find(p => p.id === draftId);
+      if (cloudDraft && cloudDraft.settings) {
+        applyDraftSettings(cloudDraft.settings, draftId);
+        return;
+      }
+    }
+
+    // 4. Doğrudan Firestore'dan çekmeyi dene
+    const fetchAuthStoreProject = useAuthStore.getState().fetchProjectDoc;
+    if (fetchAuthStoreProject) {
+      fetchAuthStoreProject(draftId).then((docData) => {
+        if (docData && docData.settings && loadedDraftIdRef.current !== draftId) {
+          applyDraftSettings(docData.settings, draftId);
+        }
+      }).catch(err => {
+        console.warn("MatchCut draft fetch error:", err);
+      });
+    }
+  }, [searchParams, projects, applyDraftSettings]);
 
   // 2. Auto-save (Debounced)
   useEffect(() => {
@@ -182,16 +211,23 @@ function MatchCutTool() {
       }
 
       try {
+        isAutoSavingRef.current = true;
         const savedId = await saveProject('match-cut', projectSettings, targetProjectId);
-        if (savedId && savedId !== projectId) {
+        if (savedId) {
           setProjectId(savedId);
-          setSearchParams({ draft: savedId }, { replace: true });
+          loadedDraftIdRef.current = savedId;
+          const currentParam = searchParams.get('draft');
+          if (currentParam !== savedId) {
+            setSearchParams({ draft: savedId }, { replace: true });
+          }
         }
         setSaveStatus('Saved to Cloud');
         setTimeout(() => setSaveStatus(''), 2000);
       } catch (err) {
         console.error("MatchCut auto-save error:", err);
         setSaveStatus('');
+      } finally {
+        isAutoSavingRef.current = false;
       }
     }, 1500); // 1.5 saniye bekle (Debounce)
 
@@ -252,7 +288,7 @@ function MatchCutTool() {
               "price": "0",
               "priceCurrency": "USD"
             },
-            "description": "Create dynamic match cut kinetic typography video animations synchronized with your chosen keywords.",
+            "description": "Create dynamic match cut typography video animations.",
             "url": "https://animationmaker.m0s.space/match-cut",
             "publisher": {
               "@type": "Organization",
@@ -270,8 +306,8 @@ function MatchCutTool() {
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="flex-grow flex flex-col p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full relative z-10 h-full min-h-0"
       >
-        <header className="mb-6 flex-shrink-0 flex justify-between items-start">
-          <div>
+        <header className="mb-4 sm:mb-6 flex-shrink-0 flex flex-col sm:flex-row sm:items-start justify-between gap-3 pr-28 sm:pr-0">
+          <div className="min-w-0 flex-1">
             <AnimatePresence mode="wait">
               {isEditingName ? (
                 <motion.div 
@@ -316,7 +352,7 @@ function MatchCutTool() {
               {t('matchCutToolDesc', lang)}
             </p>
           </div>
-          <div className="flex items-center gap-3 absolute top-4 right-4 sm:relative sm:top-0 sm:right-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap mt-1 sm:mt-0">
             {user && (
               <button
                 onClick={handleNewProject}
