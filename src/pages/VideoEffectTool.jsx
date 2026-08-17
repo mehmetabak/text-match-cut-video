@@ -273,7 +273,13 @@ export default function VideoEffectTool() {
     setGlitchIntensity(0.6);
     setRgbShift(14);
     setSliceRate(8);
-    setTypewriterText(t('typewriterDefaultText', lang));
+    setTypewriterText(
+      t('typewriterDefaultText', lang) || (
+        lang === 'tr'
+          ? "Her hikaye tek bir kelimeyle başlar.\nAnimationMaker büyüleyici videolar üretir."
+          : "Every story begins with a single word.\nAnimationMaker creates the magic."
+      )
+    );
     setTypingSpeed(18);
     setCursorStyle('block');
     setTypewriterMode('classic');
@@ -412,16 +418,41 @@ export default function VideoEffectTool() {
       setSaveStatus('Saving...');
       const projectSettings = getCurrentSettings();
 
-      // Varsayılan ayarlardan sapma olup olmadığını kontrol et
-      const isDefault = 
+      // Check if current settings match the initial defaults for this effect type
+      let isDefault = 
         !projectName.trim() && 
         !projectId && 
         duration === 5 && 
         formatPreset === '16:9' && 
-        !hdOutput &&
-        !fastRender;
+        !hdOutput && 
+        !fastRender && 
+        !audioFxEnabled;
 
-      // Boş proje kaydetmeyi engelle (İsim yok, proje ID yok ve her şey varsayılan)
+      if (isDefault) {
+        if (type === 'typewriter') {
+          const defaultTr = "Her hikaye tek bir kelimeyle başlar.\nAnimationMaker büyüleyici videolar üretir.";
+          const defaultEn = "Every story begins with a single word.\nAnimationMaker creates the magic.";
+          const currentTextTrimmed = typewriterText?.trim();
+          const isTextDefault = currentTextTrimmed === defaultTr.trim() || currentTextTrimmed === defaultEn.trim() || currentTextTrimmed === t('typewriterDefaultText', lang)?.trim();
+          isDefault = isTextDefault && typingSpeed === 18 && cursorStyle === 'block' && typewriterMode === 'classic' && fontColor === '#FFFFFF';
+        } else if (type === 'ken-burns') {
+          isDefault = zoomRate === 0.04 && zoomDirection === 'in' && panStyle === 'center';
+        } else if (type === 'vhs-tape') {
+          isDefault = aberrationStrength === 1.2 && trackingNoise === 'medium' && scanlineFlicker === true && vhsTimestamp === true;
+        } else if (type === 'glitch-master') {
+          isDefault = glitchIntensity === 0.6 && rgbShift === 14 && sliceRate === 8;
+        } else if (type === 'scanline') {
+          isDefault = scanlineDensity === 4 && phosphorGlow === 0.5;
+        } else if (type === 'ascii') {
+          isDefault = asciiTheme === 'matrixGreen' && asciiResolution === 12;
+        } else if (type === 'echo') {
+          isDefault = echoCount === 5 && echoDecay === 0.7;
+        } else if (type === 'gsearch') {
+          isDefault = searchQuery === t('gsearchQueryDefault', lang) && searchHeadline === t('gsearchHeadlineDefault', lang);
+        }
+      }
+
+      // Boş ve değiştirilmemiş varsayılan projeyi kaydetmeyi engelle
       if (isDefault) {
         setSaveStatus('');
         return;
@@ -1225,7 +1256,7 @@ export default function VideoEffectTool() {
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-400 mb-1">
-                          {lang === 'tr' ? 'Metin İçeriği' : 'Story Content'}
+                          {t('typewriterTextLabel', lang) || (lang === 'tr' ? 'Metin İçeriği' : 'Story Content')}
                         </label>
                         <textarea
                           rows="4"
@@ -1236,7 +1267,7 @@ export default function VideoEffectTool() {
                       </div>
 
                       <SegmentedControl
-                        label={lang === 'tr' ? 'İmleç Stili' : 'Cursor Style'}
+                        label={t('cursorStyleLabel', lang) || (lang === 'tr' ? 'İmleç Stili' : 'Cursor Style')}
                         options={[
                           { value: 'block', label: '█ Block' },
                           { value: 'line', label: '| Line' },
@@ -1276,7 +1307,7 @@ export default function VideoEffectTool() {
 
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>{lang === 'tr' ? 'Yazım Hızı' : 'Typing Speed'}</span>
+                          <span>{t('typingSpeedLabel', lang) || (lang === 'tr' ? 'Yazım Hızı' : 'Typing Speed')}</span>
                           <span className="text-yellow-400 font-mono">{typingSpeed} cps</span>
                         </div>
                         <input

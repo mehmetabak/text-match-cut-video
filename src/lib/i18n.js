@@ -354,7 +354,8 @@ export const strings = {
     "typewriterModeClassic": "Classic Minimal",
     "typewriterSoundLabel": "Keystroke Sound Effects",
     "typewriterSoundDesc": "Play and export realistic mechanical typing sounds",
-    "typewriterModeCode": "Code Editor"
+    "typewriterModeCode": "Code Editor",
+    "typewriterDefaultText": "Every story begins with a single word.\nAnimationMaker creates the magic."
   },
   "tr": {
     "untitledProject": "İsimsiz Proje",
@@ -711,7 +712,8 @@ export const strings = {
     "typewriterModeClassic": "Klasik Tipografi",
     "typewriterSoundLabel": "Tuş Vuruş Sesleri",
     "typewriterSoundDesc": "Yazım sırasında mekanik daktilo tuş sesleri ekle",
-    "typewriterModeCode": "Kod Editörü"
+    "typewriterModeCode": "Kod Editörü",
+    "typewriterDefaultText": "Her hikaye tek bir kelimeyle başlar.\nAnimationMaker büyüleyici videolar üretir."
   },
   "de": {
     "loginGoogle": "Mit Google anmelden",
@@ -1068,7 +1070,8 @@ export const strings = {
     "typewriterModeClassic": "Klassisch Minimal",
     "typewriterSoundLabel": "Tastatur-Soundeffekte",
     "typewriterSoundDesc": "Realistische Schreibmaschinengeräusche abspielen",
-    "typewriterModeCode": "Code-Editor"
+    "typewriterModeCode": "Code-Editor",
+    "typewriterDefaultText": "Jede Geschichte beginnt mit einem einzigen Wort.\nAnimationMaker erschafft die Magie."
   },
   "fr": {
     "loginGoogle": "Se connecter avec Google",
@@ -1425,7 +1428,8 @@ export const strings = {
     "typewriterModeClassic": "Classique Minimal",
     "typewriterSoundLabel": "Effets Sonores de Frappe",
     "typewriterSoundDesc": "Ajouter des sons réalistes de machine à écrire",
-    "typewriterModeCode": "Éditeur de Code"
+    "typewriterModeCode": "Éditeur de Code",
+    "typewriterDefaultText": "Chaque histoire commence par un seul mot.\nAnimationMaker crée la magie."
   },
   "es": {
     "loginGoogle": "Iniciar sesión con Google",
@@ -1782,7 +1786,8 @@ export const strings = {
     "typewriterModeClassic": "Clásico Minimalista",
     "typewriterSoundLabel": "Sonidos de Pulsación",
     "typewriterSoundDesc": "Añadir efectos de sonido de máquina de escribir",
-    "typewriterModeCode": "Editor de Código"
+    "typewriterModeCode": "Editor de Código",
+    "typewriterDefaultText": "Cada historia comienza con una sola palabra.\nAnimationMaker crea la magia."
   },
   "zh": {
     "loginGoogle": "使用 Google 登录",
@@ -2139,7 +2144,8 @@ export const strings = {
     "typewriterModeClassic": "经典极简",
     "typewriterSoundLabel": "打字机音效",
     "typewriterSoundDesc": "播放与导出真实的机械按键音效",
-    "typewriterModeCode": "代码编辑器"
+    "typewriterModeCode": "代码编辑器",
+    "typewriterDefaultText": "每个故事都始于一个词句。\nAnimationMaker 创造视觉魔法。"
   },
   "ar": {
     "loginGoogle": "تسجيل الدخول عبر Google",
@@ -2496,7 +2502,8 @@ export const strings = {
     "typewriterModeClassic": "كلاسيكي بسيط",
     "typewriterSoundLabel": "مؤثرات صوت النقر",
     "typewriterSoundDesc": "تشغيل وتصدير أصوات الآلة الكاتبة الميكانيكية",
-    "typewriterModeCode": "محرر الكود"
+    "typewriterModeCode": "محرر الكود",
+    "typewriterDefaultText": "كل قصة تبدأ بكلمة واحدة.\nAnimationMaker يصنع السحر."
   },
   "ko": {
     "loginGoogle": "Google 계정으로 로그인",
@@ -2853,7 +2860,8 @@ export const strings = {
     "typewriterModeClassic": "클래식 미니멀",
     "typewriterSoundLabel": "타자기 타건 효과음",
     "typewriterSoundDesc": "리얼한 기계식 타자기 소리 추가 및 내보내기",
-    "typewriterModeCode": "코드 에디터"
+    "typewriterModeCode": "코드 에디터",
+    "typewriterDefaultText": "모든 이야기는 한 단어에서 시작됩니다.\nAnimationMaker가 마법을 만듭니다."
   },
   "ja": {
     "loginGoogle": "Googleでログイン",
@@ -3210,7 +3218,8 @@ export const strings = {
     "typewriterModeClassic": "クラシック・ミニマル",
     "typewriterSoundLabel": "タイピング効果音",
     "typewriterSoundDesc": "リアルな機械式タイプライター音を追加",
-    "typewriterModeCode": "コードエディタ"
+    "typewriterModeCode": "コードエディタ",
+    "typewriterDefaultText": "すべての物語は一つの言葉から始まります。\nAnimationMakerが魔法を生み出します。"
   },
   "id": {
     "loginGoogle": "Masuk dengan Google",
@@ -3567,7 +3576,8 @@ export const strings = {
     "typewriterModeClassic": "Klasik Minimal",
     "typewriterSoundLabel": "Efek Suara Ketikan",
     "typewriterSoundDesc": "Putar dan ekspor suara mesin tik mekanik",
-    "typewriterModeCode": "Editor Kode"
+    "typewriterModeCode": "Editor Kode",
+    "typewriterDefaultText": "Setiap cerita dimulai dengan satu kata.\nAnimationMaker menciptakan keajaiban."
   },
   "th": {
     "loginGoogle": "เข้าสู่ระบบด้วย Google",
@@ -3924,7 +3934,8 @@ export const strings = {
     "typewriterModeClassic": "คลาสสิกมินิมอล",
     "typewriterSoundLabel": "เอฟเฟกต์เสียงการพิมพ์",
     "typewriterSoundDesc": "เล่นและส่งออกเสียงพิมพ์ดีดเครื่องกลที่สมจริง",
-    "typewriterModeCode": "ตัวแก้ไขโค้ด"
+    "typewriterModeCode": "ตัวแก้ไขโค้ด",
+    "typewriterDefaultText": "ทุกเรื่องราวเริ่มต้นด้วยคำเพียงคำเดียว\nAnimationMaker สร้างความมหัศจรรย์"
   },
   "hi": {
     "loginGoogle": "Google से लॉगिन करें",
@@ -4281,7 +4292,8 @@ export const strings = {
     "typewriterModeClassic": "क्लासिक मिनिमल",
     "typewriterSoundLabel": "टाइपिंग साउंड इफेक्ट्स",
     "typewriterSoundDesc": "मैकेनिकल टाइपराइटर की आवाज जोड़ें",
-    "typewriterModeCode": "कोड एडिटर"
+    "typewriterModeCode": "कोड एडिटर",
+    "typewriterDefaultText": "हर कहानी एक शब्द से शुरू होती है।\nAnimationMaker जादू पैदा करता है।"
   },
   "ru": {
     "loginGoogle": "Войти через Google",
@@ -4638,7 +4650,8 @@ export const strings = {
     "typewriterModeClassic": "Классический минимал",
     "typewriterSoundLabel": "Звук нажатия клавиш",
     "typewriterSoundDesc": "Воспроизведение звуков печатной машинки",
-    "typewriterModeCode": "Редактор кода"
+    "typewriterModeCode": "Редактор кода",
+    "typewriterDefaultText": "Каждая история начинается с одного слова.\nAnimationMaker создаёт магию."
   },
   "pt": {
     "loginGoogle": "Entrar com o Google",
@@ -4995,7 +5008,8 @@ export const strings = {
     "typewriterModeClassic": "Clássico Minimalista",
     "typewriterSoundLabel": "Efeitos Sonoros de Digitação",
     "typewriterSoundDesc": "Tocar e exportar sons de máquina de escrever",
-    "typewriterModeCode": "Editor de Código"
+    "typewriterModeCode": "Editor de Código",
+    "typewriterDefaultText": "Toda história começa com uma única palavra.\nAnimationMaker cria a magia."
   }
 };
 
