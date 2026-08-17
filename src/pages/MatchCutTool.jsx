@@ -52,8 +52,11 @@ function MatchCutTool() {
   const loadedDraftIdRef = useRef(null);
   const isAutoSavingRef = useRef(false);
 
+  const lastSavedSnapshotRef = useRef(null);
+
   const handleNewProject = () => {
     loadedDraftIdRef.current = null;
+    lastSavedSnapshotRef.current = null;
     setSearchParams({}, { replace: true });
     setProjectId(null);
     setProjectName('');
@@ -75,6 +78,7 @@ function MatchCutTool() {
     if (!s) return;
     setProjectId(draftId);
     loadedDraftIdRef.current = draftId;
+    lastSavedSnapshotRef.current = JSON.stringify(s);
     if (s.projectName) setProjectName(s.projectName);
     Object.keys(s).forEach(key => {
       if (key !== 'id' && key !== 'projectName') {
@@ -161,33 +165,13 @@ function MatchCutTool() {
 
   // 2. Auto-save (Debounced)
   useEffect(() => {
-    if (!user) return; // Giriş yapmamışsa kaydetme
-
     const timeoutId = setTimeout(async () => {
-      setSaveStatus('Saving...');
       const projectSettings = { 
         phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps,
         format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender,
         renderMode: renderMode || 'newspaper',
         vignetteEffect: vignetteEffect ?? true
       };
-      
-      // Varsayılan ayarlardan sapma olup olmadığını kontrol et
-      const isDefault = 
-        phrase === 'match cut' && 
-        speed === 2.5 && 
-        format === 'horizontal' && 
-        videoLength === 'Medium' && 
-        darkTheme === true && 
-        textHighlight === true && 
-        (renderMode === 'newspaper' || !renderMode) &&
-        blurIntensity === 'Medium';
-
-      // Boş proje kaydetmeyi engelle (İsim yok, proje ID yok ve her şey varsayılan)
-      if (!projectName.trim() && !projectId && isDefault) {
-        setSaveStatus('');
-        return; 
-      }
 
       // Firestore undefined değerleri kabul etmez, temizle
       Object.keys(projectSettings).forEach(key => {
@@ -200,6 +184,34 @@ function MatchCutTool() {
       if (projectName.trim()) {
         projectSettings.projectName = projectName.trim();
       }
+
+      const currentSnapshot = JSON.stringify(projectSettings);
+
+      // Değişiklik yoksa kaydetme! (Sürekli kaydetme döngüsünü engeller)
+      if (currentSnapshot === lastSavedSnapshotRef.current) {
+        return;
+      }
+      
+      // Varsayılan ayarlardan sapma olup olmadığını kontrol et
+      const isDefault = 
+        phrase === 'match cut' && 
+        speed === 2.5 && 
+        format === 'horizontal' && 
+        videoLength === 'Medium' && 
+        darkTheme === true && 
+        textHighlight === true && 
+        (renderMode === 'newspaper' || !renderMode) &&
+        blurIntensity === 'Medium' &&
+        !highQuality &&
+        !fastRender &&
+        !projectName.trim();
+
+      // Boş ve değiştirilmemiş varsayılan projeyi kaydetmeyi engelle
+      if (!projectId && isDefault) {
+        return; 
+      }
+
+      setSaveStatus('Saving...');
 
       // Aynı isimde bir proje varsa, yeni oluşturmak yerine onun ID'sini kullan (üzerine yaz)
       let targetProjectId = projectId;
@@ -216,6 +228,7 @@ function MatchCutTool() {
         if (savedId) {
           setProjectId(savedId);
           loadedDraftIdRef.current = savedId;
+          lastSavedSnapshotRef.current = currentSnapshot;
           const currentParam = searchParams.get('draft');
           if (currentParam !== savedId) {
             setSearchParams({ draft: savedId }, { replace: true });
@@ -232,7 +245,11 @@ function MatchCutTool() {
     }, 1500); // 1.5 saniye bekle (Debounce)
 
     return () => clearTimeout(timeoutId);
-  }, [phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps, format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender, renderMode, vignetteEffect, user, projectId, projectName, saveProject, setSearchParams]);
+  }, [
+    phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps,
+    format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender,
+    renderMode, vignetteEffect, projectName, user
+  ]);
 
   const handleGenerate = useCallback(async () => {
     if (!phrase.trim()) {

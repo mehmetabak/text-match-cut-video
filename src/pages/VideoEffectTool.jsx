@@ -307,6 +307,9 @@ export default function VideoEffectTool() {
     setProjectId(draftId);
     loadedDraftIdRef.current = draftId;
     
+    // Yüklenen taslağın snapshot'ını kaydet ki hemen tekrar gereksiz auto-save tetiklenmesin
+    lastSavedSnapshotRef.current = JSON.stringify(s);
+
     if (s.projectName) setProjectName(s.projectName);
     if (s.formatPreset) setFormatPreset(s.formatPreset);
     if (s.hdOutput !== undefined) {
@@ -430,8 +433,26 @@ export default function VideoEffectTool() {
   // 2. Debounced Auto-Save to Firestore (1:1 with MatchCutTool)
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
-      setSaveStatus('Saving...');
       const projectSettings = getCurrentSettings();
+
+      // Firestore undefined değerleri kabul etmez, temizle
+      Object.keys(projectSettings).forEach(key => {
+        if (projectSettings[key] === undefined) {
+          delete projectSettings[key];
+        }
+      });
+
+      // İsmi de ayarlara ekle ki Firestore'a gitsin
+      if (projectName.trim()) {
+        projectSettings.projectName = projectName.trim();
+      }
+
+      const currentSnapshot = JSON.stringify(projectSettings);
+
+      // Değişiklik yoksa kaydetme! (Sürekli kaydetme döngüsünü engeller)
+      if (currentSnapshot === lastSavedSnapshotRef.current) {
+        return;
+      }
 
       // Check if current settings match the initial defaults for this effect type
       let isDefault = 
@@ -469,21 +490,10 @@ export default function VideoEffectTool() {
 
       // Boş ve değiştirilmemiş varsayılan projeyi kaydetmeyi engelle
       if (isDefault) {
-        setSaveStatus('');
         return;
       }
 
-      // Firestore undefined değerleri kabul etmez, temizle
-      Object.keys(projectSettings).forEach(key => {
-        if (projectSettings[key] === undefined) {
-          delete projectSettings[key];
-        }
-      });
-
-      // İsmi de ayarlara ekle ki Firestore'a gitsin
-      if (projectName.trim()) {
-        projectSettings.projectName = projectName.trim();
-      }
+      setSaveStatus('Saving...');
 
       // Aynı isimde bir proje varsa, yeni oluşturmak yerine onun ID'sini kullan (üzerine yaz)
       let targetProjectId = projectId;
@@ -500,6 +510,7 @@ export default function VideoEffectTool() {
         if (savedId) {
           setProjectId(savedId);
           loadedDraftIdRef.current = savedId;
+          lastSavedSnapshotRef.current = currentSnapshot;
           const currentParam = searchParams.get('draft');
           if (currentParam !== savedId) {
             setSearchParams({ draft: savedId }, { replace: true });
@@ -523,7 +534,7 @@ export default function VideoEffectTool() {
     typewriterText, typingSpeed, cursorStyle, typewriterMode, fontColor, scanlineDensity,
     phosphorGlow, asciiTheme, asciiResolution, echoCount, echoDecay,
     searchQuery, searchUrl, searchHeadline, searchSnippet, searchTheme,
-    projectId, saveProject, type, projects, setSearchParams
+    type
   ]);
 
   // Handle Media Upload
