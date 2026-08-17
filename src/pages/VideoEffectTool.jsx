@@ -135,6 +135,22 @@ export default function VideoEffectTool() {
     }
   };
 
+  const handleToggleHdOutput = (val) => {
+    const isChecked = typeof val === 'boolean' ? val : Boolean(val?.target?.checked ?? val);
+    setHdOutput(isChecked);
+    if (isChecked) {
+      setFastRender(false);
+    }
+  };
+
+  const handleToggleFastRender = (val) => {
+    const isChecked = typeof val === 'boolean' ? val : Boolean(val?.target?.checked ?? val);
+    setFastRender(isChecked);
+    if (isChecked) {
+      setHdOutput(false);
+    }
+  };
+
   useEffect(() => {
     audioFxEnabledRef.current = audioFxEnabled;
   }, [audioFxEnabled]);
@@ -344,8 +360,16 @@ export default function VideoEffectTool() {
           setProjectId(cloudDraft.id);
           if (s.projectName) setProjectName(s.projectName);
           if (s.formatPreset) setFormatPreset(s.formatPreset);
-          if (s.hdOutput !== undefined) setHdOutput(s.hdOutput);
-          if (s.fastRender !== undefined) setFastRender(s.fastRender);
+          if (s.hdOutput !== undefined) {
+            setHdOutput(Boolean(s.hdOutput));
+            if (s.hdOutput) {
+              setFastRender(false);
+            } else if (s.fastRender !== undefined) {
+              setFastRender(Boolean(s.fastRender));
+            }
+          } else if (s.fastRender !== undefined) {
+            setFastRender(Boolean(s.fastRender));
+          }
           if (s.duration) setDuration(s.duration);
           if (s.audioFxEnabled !== undefined) setAudioFxEnabled(s.audioFxEnabled);
           if (s.zoomRate) setZoomRate(s.zoomRate);
@@ -1454,14 +1478,14 @@ export default function VideoEffectTool() {
                   <Switch
                     label={t('highQualityLabel', lang) || 'Yüksek Kalite (1080p)'}
                     checked={hdOutput}
-                    onChange={(e) => setHdOutput(Boolean(e?.target ? e.target.checked : e))}
+                    onChange={handleToggleHdOutput}
                   />
 
                   {/* Turbo Fast Render Switch */}
                   <Switch
                     label={t('fastRenderLabel', lang) || 'Hızlı Render (Turbo Mod)'}
                     checked={fastRender}
-                    onChange={(e) => setFastRender(Boolean(e?.target ? e.target.checked : e))}
+                    onChange={handleToggleFastRender}
                   />
 
                 </div>

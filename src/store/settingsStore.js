@@ -35,7 +35,15 @@ export const useSettingsStore = create(
       statusText: '', // Yeni durum metni
 
       // Fonksiyonlar
-      setSetting: (key, value) => set({ [key]: value }),
+      setSetting: (key, value) => set((state) => {
+        if (key === 'highQuality' && value) {
+          return { [key]: value, fastRender: false };
+        }
+        if (key === 'fastRender' && value) {
+          return { [key]: value, highQuality: false };
+        }
+        return { [key]: value };
+      }),
       setGenerationState: (state) => set(state),
     }),
     {
