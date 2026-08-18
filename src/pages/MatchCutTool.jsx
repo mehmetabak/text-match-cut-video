@@ -211,7 +211,7 @@ function MatchCutTool() {
         return; 
       }
 
-      setSaveStatus('Saving...');
+      setSaveStatus(t('saving', lang) || (lang === 'tr' ? 'Kaydediliyor...' : 'Saving...'));
 
       // Aynı isimde bir proje varsa, yeni oluşturmak yerine onun ID'sini kullan (üzerine yaz)
       let targetProjectId = projectId;
@@ -234,8 +234,8 @@ function MatchCutTool() {
             setSearchParams({ draft: savedId }, { replace: true });
           }
         }
-        setSaveStatus('Saved to Cloud');
-        setTimeout(() => setSaveStatus(''), 2000);
+        setSaveStatus(user ? (t('savedToCloud', lang) || (lang === 'tr' ? 'Buluta Kaydedildi' : 'Saved to Cloud')) : (lang === 'tr' ? 'Taslak Kaydedildi' : 'Draft Saved'));
+        setTimeout(() => setSaveStatus(''), 2500);
       } catch (err) {
         console.error("MatchCut auto-save error:", err);
         setSaveStatus('');

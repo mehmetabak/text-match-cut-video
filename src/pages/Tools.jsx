@@ -32,24 +32,253 @@ const TOOLS = [
     isFree: true,
     bgClass: 'from-zinc-800 to-zinc-900',
     effect: (isHovered) => (
-      <div className="absolute inset-0 overflow-hidden flex items-center justify-center opacity-40">
-        <motion.div
-          initial={false}
-          animate={{ scale: isHovered ? 1.1 : 1, opacity: isHovered ? 0.6 : 0.3 }}
-          transition={{ duration: 0.5 }}
-          className="w-[150%] h-[150%] flex flex-col justify-center gap-4 rotate-[-15deg]"
-        >
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-6 w-full bg-white/10 rounded-full" />
-          ))}
+      <div className="absolute inset-0 overflow-hidden flex flex-col items-center justify-center p-6 opacity-90">
+        <div className="text-[9px] font-mono text-[#F5B301] font-bold tracking-widest uppercase mb-1">
+          KINETIC TYPOGRAPHY
+        </div>
+        <div className="relative flex items-center justify-center px-4 py-2 bg-zinc-900/90 border border-yellow-500/50 rounded-lg shadow-xl overflow-hidden">
+          {isHovered ? (
+            <motion.div
+              animate={{ opacity: [1, 0.2, 1], scale: [1, 1.06, 1] }}
+              transition={{ duration: 0.6, repeat: Infinity }}
+              className="text-xl sm:text-2xl font-black text-white tracking-wider uppercase font-serif"
+            >
+              MATCH <span className="text-[#F5B301] shadow-[0_0_12px_#F5B301]">CUT</span>
+            </motion.div>
+          ) : (
+            <div className="text-xl sm:text-2xl font-black text-white tracking-wider uppercase font-serif">
+              MATCH <span className="text-[#F5B301]">CUT</span>
+            </div>
+          )}
           {isHovered && (
             <motion.div
-              animate={{ x: ['-20%', '20%', '-20%'] }}
-              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-              className="absolute w-32 h-64 bg-[#F5B301]/20 blur-3xl rotate-12"
+              animate={{ x: ['-100%', '200%'] }}
+              transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"
             />
           )}
-        </motion.div>
+        </div>
+        <div className="flex gap-1.5 mt-2 opacity-50">
+          <div className="h-1 w-12 bg-[#F5B301] rounded-full" />
+          <div className="h-1 w-8 bg-zinc-600 rounded-full" />
+          <div className="h-1 w-14 bg-zinc-700 rounded-full" />
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'spotlight',
+    titleKey: 'tool_spotlight_title',
+    descKey: 'tool_spotlight_desc',
+    path: '/effects/spotlight',
+    isPro: false,
+    isSoon: false,
+    isFree: true,
+    bgClass: 'from-amber-600/30 via-yellow-600/10 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 overflow-hidden flex flex-col justify-center px-6 opacity-85">
+        <div className="w-16 h-3.5 bg-amber-500/20 rounded text-[8px] text-amber-300 font-bold px-1.5 mb-2 flex items-center">
+          NATURE
+        </div>
+        <div className="space-y-1.5 font-serif text-[11px] text-zinc-300">
+          <div>Quantum coherence discovered in room temperature...</div>
+          <div className="relative inline-block">
+            <span className="relative z-10 font-bold text-white">ambient conditions sustained</span>
+            {isHovered ? (
+              <motion.div
+                animate={{ width: ['0%', '100%'] }}
+                transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 0.5, ease: 'easeInOut' }}
+                className="absolute inset-0 bg-yellow-400/50 rounded h-full -z-0"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-yellow-400/50 rounded h-full -z-0 w-[85%]" />
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'formula',
+    titleKey: 'tool_formula_title',
+    descKey: 'tool_formula_desc',
+    path: '/effects/formula',
+    isPro: false,
+    isSoon: false,
+    isFree: true,
+    bgClass: 'from-cyan-600/30 via-blue-600/10 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 overflow-hidden flex flex-col items-center justify-center p-4 opacity-85">
+        <div className="text-[9px] font-mono text-cyan-400/80 mb-1 tracking-widest uppercase">
+          EULER'S THEOREM
+        </div>
+        <div className="font-serif text-lg font-bold text-white tracking-wider flex items-center gap-1">
+          <span>e</span>
+          <sup className="text-xs text-cyan-300">iπ</sup>
+          <span className="text-zinc-400">+</span>
+          <span>1</span>
+          <span className="text-zinc-400">=</span>
+          {isHovered ? (
+            <motion.span
+              animate={{ opacity: [0.3, 1, 0.3], scale: [1, 1.15, 1], textShadow: ['0 0 8px #38BDF8', '0 0 20px #38BDF8', '0 0 8px #38BDF8'] }}
+              transition={{ duration: 1.0, repeat: Infinity }}
+              className="text-cyan-300"
+            >
+              0
+            </motion.span>
+          ) : (
+            <span className="text-cyan-300">0</span>
+          )}
+        </div>
+        <div className="text-[9px] font-sans text-zinc-400 mt-1 italic">
+          3Blue1Brown LaTeX equation
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'timeline',
+    titleKey: 'tool_timeline_title',
+    descKey: 'tool_timeline_desc',
+    path: '/effects/timeline',
+    isPro: false,
+    isSoon: false,
+    isFree: true,
+    bgClass: 'from-amber-600/30 via-yellow-600/10 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 overflow-hidden flex flex-col justify-center px-5 opacity-85">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-[9px] font-mono text-amber-400 font-bold tracking-wider">CHRONICLES</div>
+          <div className="text-[8px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded">1969 → 2024</div>
+        </div>
+        <div className="relative flex items-center w-full py-2">
+          {/* Axis Track */}
+          <div className="w-full h-0.5 bg-zinc-700 relative">
+            {isHovered ? (
+              <motion.div
+                animate={{ width: ['0%', '100%'] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                className="h-full bg-amber-400 shadow-[0_0_8px_#F59E0B]"
+              />
+            ) : (
+              <div className="h-full w-[65%] bg-amber-400 shadow-[0_0_8px_#F59E0B]" />
+            )}
+          </div>
+          {/* Active Node Pin */}
+          <div className={`absolute left-[60%] -top-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-zinc-900 ${isHovered ? 'shadow-[0_0_14px_#F59E0B] scale-110' : 'shadow-[0_0_6px_#F59E0B]'} transition-all`} />
+        </div>
+        <div className="flex justify-between items-center text-[10px] text-zinc-300 font-semibold mt-1">
+          <span>Apollo 11</span>
+          <span className="text-amber-400 font-mono">AI Age</span>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'tree',
+    titleKey: 'tool_tree_title',
+    descKey: 'tool_tree_desc',
+    path: '/effects/tree',
+    isPro: false,
+    isSoon: false,
+    isFree: true,
+    bgClass: 'from-yellow-600/30 via-amber-600/10 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 overflow-hidden flex items-center justify-between px-5 opacity-85">
+        {/* Root Card */}
+        <div className="w-20 p-1.5 bg-zinc-800/90 border border-yellow-500/50 rounded flex flex-col justify-center shadow-lg">
+          <div className="text-[7px] text-yellow-400 font-mono font-bold">ROOT EVENT</div>
+          <div className="text-[9px] text-white font-bold truncate">Revolution</div>
+        </div>
+        {/* Connecting Lines */}
+        <div className="flex-1 flex flex-col justify-center gap-2 px-1 relative">
+          <div className="h-0.5 w-full bg-yellow-500/40 relative overflow-hidden">
+            {isHovered && (
+              <motion.div
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="h-full w-1/2 bg-yellow-300 shadow-[0_0_8px_#F5B301]"
+              />
+            )}
+          </div>
+          <div className="h-0.5 w-full bg-yellow-500/40 relative overflow-hidden">
+            {isHovered && (
+              <motion.div
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear", delay: 0.3 }}
+                className="h-full w-1/2 bg-yellow-300 shadow-[0_0_8px_#F5B301]"
+              />
+            )}
+          </div>
+        </div>
+        {/* Branch Cards */}
+        <div className="flex flex-col gap-1.5">
+          <motion.div
+            animate={isHovered ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+            transition={{ duration: 1.2, repeat: isHovered ? Infinity : 0 }}
+            className="w-24 p-1 bg-zinc-800/90 border border-yellow-500/40 rounded flex items-center justify-between shadow"
+          >
+            <span className="text-[8px] text-zinc-200 truncate">Automation</span>
+            <span className="text-[7px] bg-yellow-500 text-black font-bold px-1 rounded">85%</span>
+          </motion.div>
+          <motion.div
+            animate={isHovered ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+            transition={{ duration: 1.2, repeat: isHovered ? Infinity : 0, delay: 0.4 }}
+            className="w-24 p-1 bg-zinc-800/90 border border-yellow-500/40 rounded flex items-center justify-between shadow"
+          >
+            <span className="text-[8px] text-zinc-200 truncate">Urban Shift</span>
+            <span className="text-[7px] bg-yellow-500 text-black font-bold px-1 rounded">+340%</span>
+          </motion.div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'counter',
+    titleKey: 'tool_counter_title',
+    descKey: 'tool_counter_desc',
+    path: '/effects/counter',
+    isPro: false,
+    isSoon: false,
+    isFree: true,
+    bgClass: 'from-emerald-600/30 via-teal-600/10 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 overflow-hidden flex flex-col justify-center px-6 opacity-85">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-[8px] font-mono text-emerald-400 font-bold uppercase tracking-wider">CAPACITY (GW)</span>
+          <span className="text-[8px] bg-emerald-500/20 text-emerald-300 font-bold px-1 rounded">+394% ↗</span>
+        </div>
+        <div className="font-sans text-xl font-black text-white tracking-tight flex items-baseline gap-1">
+          {isHovered ? (
+            <motion.span
+              animate={{ opacity: [0.8, 1, 0.8], scale: [1, 1.03, 1] }}
+              transition={{ duration: 0.8, repeat: Infinity }}
+              className="text-emerald-400 shadow-[0_0_12px_#10B981]"
+            >
+              4,200
+            </motion.span>
+          ) : (
+            <span className="text-emerald-400">4,200</span>
+          )}
+          <span className="text-xs text-zinc-400 font-medium">GW</span>
+        </div>
+        {/* Dual Progress Gauges */}
+        <div className="space-y-1 mt-1.5">
+          <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            {isHovered ? (
+              <motion.div
+                animate={{ width: ['20%', '85%', '20%'] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                className="h-full bg-emerald-400 shadow-[0_0_6px_#10B981]"
+              />
+            ) : (
+              <div className="h-full w-[85%] bg-emerald-400 shadow-[0_0_6px_#10B981]" />
+            )}
+          </div>
+          <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+            <div className="w-[35%] h-full bg-zinc-600" />
+          </div>
+        </div>
       </div>
     )
   },
@@ -63,7 +292,7 @@ const TOOLS = [
     isFree: true,
     bgClass: 'from-blue-600/30 via-red-600/10 to-zinc-900',
     effect: (isHovered) => (
-      <div className="absolute inset-0 flex flex-col items-center justify-center p-6 opacity-75 overflow-hidden">
+      <div className="absolute inset-0 flex flex-col items-center justify-center p-6 opacity-85 overflow-hidden">
         <div className="flex font-semibold text-lg mb-2 tracking-normal items-center justify-center select-none">
           <span className="text-[#4285F4]">G</span>
           <span className="text-[#EA4335]">o</span>
@@ -74,13 +303,19 @@ const TOOLS = [
         </div>
         <div className="w-full max-w-[200px] h-7 bg-zinc-800/90 border border-zinc-600/60 rounded-full flex items-center px-2.5 gap-1.5 shadow-inner">
           <span className="text-xs text-zinc-400">🔍</span>
-          <motion.span
-            animate={{ width: isHovered ? ['0%', '100%'] : '70%' }}
-            transition={{ duration: 1.5, repeat: isHovered ? Infinity : 0 }}
-            className="text-[11px] font-medium text-white truncate whitespace-nowrap overflow-hidden"
-          >
-            viral video maker...
-          </motion.span>
+          {isHovered ? (
+            <motion.span
+              animate={{ width: ['0%', '100%', '100%', '0%'] }}
+              transition={{ duration: 2.2, repeat: Infinity, times: [0, 0.55, 0.85, 1], ease: 'linear' }}
+              className="text-[11px] font-medium text-white truncate whitespace-nowrap overflow-hidden inline-block"
+            >
+              viral video maker...
+            </motion.span>
+          ) : (
+            <span className="text-[11px] font-medium text-zinc-400 truncate">
+              viral video maker...
+            </span>
+          )}
         </div>
       </div>
     )
@@ -128,6 +363,29 @@ const TOOLS = [
     )
   },
   {
+    id: 'stage-light',
+    titleKey: 'tool_stage_light_title',
+    descKey: 'tool_stage_light_desc',
+    path: '#',
+    isPro: true,
+    isSoon: true,
+    bgClass: 'from-blue-900 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 overflow-hidden opacity-40">
+        {isHovered && (
+          <motion.div
+            animate={{
+              x: ['0%', '100%', '0%'],
+              y: ['0%', '100%', '0%'],
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="w-64 h-64 bg-blue-500/30 rounded-full blur-[50px] absolute -top-10 -left-10"
+          />
+        )}
+      </div>
+    )
+  },
+  {
     id: 'logo-match-cut',
     titleKey: 'tool_logo_title',
     descKey: 'tool_logo_desc',
@@ -146,29 +404,6 @@ const TOOLS = [
             <path d="M12 2L2 22h20L12 2z" />
           </svg>
         </motion.div>
-      </div>
-    )
-  },
-  {
-    id: 'spotlight',
-    titleKey: 'tool_spotlight_title',
-    descKey: 'tool_spotlight_desc',
-    path: '#',
-    isPro: true,
-    isSoon: true,
-    bgClass: 'from-blue-900 to-zinc-900',
-    effect: (isHovered) => (
-      <div className="absolute inset-0 overflow-hidden opacity-40">
-        {isHovered && (
-          <motion.div
-            animate={{
-              x: ['0%', '100%', '0%'],
-              y: ['0%', '100%', '0%'],
-            }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="w-64 h-64 bg-blue-500/30 rounded-full blur-[50px] absolute -top-10 -left-10"
-          />
-        )}
       </div>
     )
   },

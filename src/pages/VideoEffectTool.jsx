@@ -29,6 +29,11 @@ import {
   drawScanlineEffect,
   drawAsciiEffect,
   drawGoogleSearchEffect,
+  drawSpotlightFrame,
+  drawFormulaFrame,
+  drawTimelineFrame,
+  drawEventTreeFrame,
+  drawCounterFrame,
   drawImageCover,
   drawVignette
 } from '../renderer/effects';
@@ -95,7 +100,10 @@ export default function VideoEffectTool() {
   );
   const [typingSpeed, setTypingSpeed] = useState(18); // chars per sec
   const [cursorStyle, setCursorStyle] = useState('block'); // 'block' | 'line' | 'underscore'
-  const [typewriterMode, setTypewriterMode] = useState('classic'); // 'classic' | 'terminal' | 'vintage'
+  const [typewriterMode, setTypewriterMode] = useState('classic'); // 'classic' | 'terminal' | 'code' | 'vintage'
+  const [paperSize, setPaperSize] = useState('normal'); // 'normal' | 'large'
+  const [typewriterFontSize, setTypewriterFontSize] = useState('medium'); // 'small' | 'medium' | 'large' | 'xlarge'
+  const [codeFileName, setCodeFileName] = useState('main.js');
   const [fontColor, setFontColor] = useState('#FFFFFF');
 
   // 5. Scanline CRT Settings
@@ -116,6 +124,91 @@ export default function VideoEffectTool() {
   const [searchHeadline, setSearchHeadline] = useState(t('gsearchHeadlineDefault', lang));
   const [searchSnippet, setSearchSnippet] = useState(t('gsearchSnippetDefault', lang));
   const [searchTheme, setSearchTheme] = useState('dark'); // 'dark' | 'light'
+
+  // 9. Document Spotlight Settings
+  const [spotlightSource, setSpotlightSource] = useState("NATURE • Research Article");
+  const [spotlightDate, setSpotlightDate] = useState("OCTOBER 2024 • ISSUE 8192");
+  const [spotlightHeadline, setSpotlightHeadline] = useState(
+    lang === 'tr'
+      ? "Oda Sıcaklığında Kuantum Uyumluluğu Keşfedildi"
+      : "Quantum Coherence Discovered in Room Temperature Macromolecules"
+  );
+  const [spotlightSnippet, setSpotlightSnippet] = useState(
+    lang === 'tr'
+      ? "Yapılan son laboratuvar deneyleri, kuantum uyumluluğunun oda sıcaklığında korunduğunu gösterdi. Bu temel buluş, biyolojik enerji transferini ve yeni nesil kuantum teknolojilerini kökten değiştirebilir."
+      : "Recent laboratory experiments demonstrate macroscopic quantum coherence sustained under ambient room temperatures. This fundamental discovery transforms our understanding of biological energy transfer and next-generation quantum computing."
+  );
+  const [spotlightHighlight, setSpotlightHighlight] = useState(
+    lang === 'tr'
+      ? "kuantum uyumluluğunun oda sıcaklığında korunduğunu"
+      : "macroscopic quantum coherence sustained under ambient room temperatures"
+  );
+  const [spotlightColor, setSpotlightColor] = useState("yellow"); // 'yellow' | 'cyan' | 'green' | 'pink'
+  const [spotlightTheme, setSpotlightTheme] = useState("archival"); // 'archival' | 'modern' | 'dark'
+  const [spotlightPaperFormat, setSpotlightPaperFormat] = useState("standard"); // 'standard' | 'a4' | 'expanded'
+  const [spotlightFontSize, setSpotlightFontSize] = useState(20); // 12px to 38px (default 20)
+
+  // 10. LaTeX Math & Science Formula Settings
+  const [formulaTitle, setFormulaTitle] = useState("EULER'S IDENTITY");
+  const [formulaLatex, setFormulaLatex] = useState("e^{i\\pi} + 1 = 0");
+  const [formulaDesc, setFormulaDesc] = useState(
+    lang === 'tr'
+      ? "Matematiğin en zarif ve temel denklemi"
+      : "The most beautiful equation in mathematics"
+  );
+  const [formulaTheme, setFormulaTheme] = useState("blackboard"); // 'blackboard' | 'blueprint' | 'quantum' | 'clean'
+  const [formulaGlow, setFormulaGlow] = useState("cyan"); // 'cyan' | 'gold' | 'purple' | 'emerald'
+
+  // 11. Storytelling Timeline Settings
+  const [timelineTitle, setTimelineTitle] = useState(
+    lang === 'tr' ? "MODERN ÇAĞIN KRONOLOJİSİ" : "THE CHRONICLES OF MODERN AGE"
+  );
+  const [timelineEvents, setTimelineEvents] = useState(
+    lang === 'tr'
+      ? "1969 | Ay İnişi | Apollo 11 görevi başarıyla tamamlandı\n1989 | Berlin Duvarı | Soğuk Savaşın Sonu\n2000 | İnternet Devrimi | Dijital Çağ Başladı\n2024 | Yapay Zeka | Generative AI Dönemi"
+      : "1969 | Moon Landing | Apollo 11 mission succeeded\n1989 | Berlin Wall | End of the Cold War\n2000 | Internet Age | Global digital revolution\n2024 | Artificial Intelligence | Generative AI transformation"
+  );
+  const [timelineTheme, setTimelineTheme] = useState("cyberDark"); // 'cyberDark' | 'documentary' | 'minimalWhite' | 'emeraldBio'
+  const [timelineStyle, setTimelineStyle] = useState("ruler"); // 'ruler' | 'minimal' | 'neonPulse' | 'documentary'
+  const [timelineStartMilestone, setTimelineStartMilestone] = useState(0);
+  const [timelineEndMilestone, setTimelineEndMilestone] = useState(3);
+  const [timelineZoom, setTimelineZoom] = useState(1.0);
+
+  // 12. Vox Event & Plan Tree Settings
+  const [treeRootTitle, setTreeRootTitle] = useState(
+    lang === 'tr' ? "SANAYİ DEVRİMİ" : "INDUSTRIAL REVOLUTION"
+  );
+  const [treeRootSubtitle, setTreeRootSubtitle] = useState(
+    lang === 'tr' ? "TARİHİ DÖNÜM NOKTASI • 18. YÜZYIL" : "KEY TURNING POINT • 18TH CENTURY"
+  );
+  const [treeBranches, setTreeBranches] = useState(
+    lang === 'tr'
+      ? "Hızlı Otomasyon | Makineler insan emeğinin yerini aldı | %85 Verim\nKentleşme Dalgası | Nüfus sanayi şehirlerine göç etti | +%340 Büyüme\nKüresel Ticaret | Yeni deniz ve demiryolu hatları açıldı | $4.2B Hacim"
+      : "Rapid Automation | Machines replace manual labor | 85% Efficiency\nUrban Shift | Population migrates to industrial cities | +340% Growth\nNew Global Trade | Maritime routes expand worldwide | $4.2B Volume"
+  );
+  const [treeTheme, setTreeTheme] = useState("voxGold"); // 'voxGold' | 'neonCyber' | 'cleanSlate'
+  const [treeConnectorStyle, setTreeConnectorStyle] = useState("bezierCurve"); // 'bezierCurve' | 'circuit' | 'straightLaser'
+
+  // 13. Kinetic Stat Counter & Metric Bar Settings
+  const [counterHeadline, setCounterHeadline] = useState(
+    lang === 'tr' ? "KÜRESEL TEMİZ ENERJİ KAPASİTESİ" : "GLOBAL CLEAN ENERGY CAPACITY"
+  );
+  const [counterSubtitle, setCounterSubtitle] = useState(
+    lang === 'tr' ? "ULUSLARARASI ENERJİ AJANSI (IEA) • 1990 - 2024" : "INTERNATIONAL ENERGY AGENCY • 1990 - 2024"
+  );
+  const [counterVal1, setCounterVal1] = useState(4200);
+  const [counterLabel1, setCounterLabel1] = useState(
+    lang === 'tr' ? "2024 Güncel Kapasite" : "2024 Current Capacity"
+  );
+  const [counterVal2, setCounterVal2] = useState(850);
+  const [counterLabel2, setCounterLabel2] = useState(
+    lang === 'tr' ? "1990 Başlangıç Seviyesi" : "1990 Baseline Level"
+  );
+  const [counterPrefix, setCounterPrefix] = useState("");
+  const [counterSuffix, setCounterSuffix] = useState(" GW");
+  const [counterTrendTag, setCounterTrendTag] = useState("+394% SURGE ↗");
+  const [counterTheme, setCounterTheme] = useState("financial"); // 'financial' | 'cyberMetric' | 'warningRed' | 'slateClean'
+  const [counterShowGauges, setCounterShowGauges] = useState(true);
 
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
@@ -155,8 +248,8 @@ export default function VideoEffectTool() {
     audioFxEnabledRef.current = audioFxEnabled;
   }, [audioFxEnabled]);
 
-  const validTypes = ['ken-burns', 'vhs-tape', 'glitch-master', 'typewriter', 'scanline', 'ascii', 'echo', 'gsearch'];
-  const isProTool = type !== 'gsearch';
+  const validTypes = ['ken-burns', 'vhs-tape', 'glitch-master', 'typewriter', 'scanline', 'ascii', 'echo', 'gsearch', 'spotlight', 'formula', 'timeline', 'tree', 'counter'];
+  const isProTool = !['gsearch', 'spotlight', 'formula', 'timeline', 'tree', 'counter'].includes(type);
 
   // Route & Pro Access Protection
   useEffect(() => {
@@ -211,6 +304,31 @@ export default function VideoEffectTool() {
       title1: 'Google',
       title2: 'Search',
       desc: lang === 'tr' ? 'Sinematik Google arama çubuğu yazma efekti ve anlık arama sonucu video animasyonu.' : 'Cinematic Google search bar typing and instant results video animation.'
+    },
+    'spotlight': {
+      title1: 'Document',
+      title2: lang === 'tr' ? 'Vurgulayıcı' : 'Spotlight',
+      desc: lang === 'tr' ? 'Bilimsel makale ve haber metinlerinde Vox tarzı neon fosforlu kalem animasyonu.' : 'Vox-style animated fluorescent highlighter on articles and research papers.'
+    },
+    'formula': {
+      title1: 'LaTeX',
+      title2: lang === 'tr' ? 'Formül' : 'Formula',
+      desc: lang === 'tr' ? '3Blue1Brown tarzı kinetik LaTeX matematik ve bilimsel denklem animasyonu.' : '3Blue1Brown-style kinetic LaTeX math equation and scientific derivations.'
+    },
+    'timeline': {
+      title1: 'Story',
+      title2: lang === 'tr' ? 'Çizelge' : 'Timeline',
+      desc: lang === 'tr' ? 'Video essayler için otomatik kamera kaydırmalı akıcı kronolojik zaman çizelgesi.' : 'Cinematic auto-scrolling timeline for video essays with milestone cards.'
+    },
+    'tree': {
+      title1: 'Event',
+      title2: lang === 'tr' ? 'Ağacı' : 'Tree',
+      desc: lang === 'tr' ? 'Vox tarzı dallanan sebep-sonuç ağacı ve karar grafiği animasyonu.' : 'Vox-style branching causal network and decision flowchart animation.'
+    },
+    'counter': {
+      title1: 'Stat',
+      title2: lang === 'tr' ? 'Sayacı' : 'Counter',
+      desc: lang === 'tr' ? 'Dönen kinetik dev sayılar ve karşılaştırmalı veri barları animasyonu.' : 'Kinetic rolling numbers with dual comparative metric bars animation.'
     }
   };
 
@@ -238,6 +356,9 @@ export default function VideoEffectTool() {
     typingSpeed: Number(typingSpeed) || 18,
     cursorStyle,
     typewriterMode,
+    paperSize,
+    typewriterFontSize,
+    codeFileName,
     fontColor,
     scanlineDensity: Number(scanlineDensity) || 4,
     phosphorGlow: Number(phosphorGlow) || 0.5,
@@ -249,7 +370,44 @@ export default function VideoEffectTool() {
     searchUrl,
     searchHeadline,
     searchSnippet,
-    searchTheme
+    searchTheme,
+    spotlightSource,
+    spotlightDate,
+    spotlightHeadline,
+    spotlightSnippet,
+    spotlightHighlight,
+    spotlightColor,
+    spotlightTheme,
+    spotlightPaperFormat,
+    spotlightFontSize,
+    formulaTitle,
+    formulaLatex,
+    formulaDesc,
+    formulaTheme,
+    formulaGlow,
+    timelineTitle,
+    timelineEvents,
+    timelineTheme,
+    timelineStyle,
+    timelineStartMilestone: Number(timelineStartMilestone) || 0,
+    timelineEndMilestone: Number(timelineEndMilestone) || 0,
+    timelineZoom: Number(timelineZoom) || 1.0,
+    treeRootTitle,
+    treeRootSubtitle,
+    treeBranches,
+    treeTheme,
+    treeConnectorStyle,
+    counterHeadline,
+    counterSubtitle,
+    counterVal1: Number(counterVal1) || 0,
+    counterLabel1,
+    counterVal2: Number(counterVal2) || 0,
+    counterLabel2,
+    counterPrefix,
+    counterSuffix,
+    counterTrendTag,
+    counterTheme,
+    counterShowGauges: Boolean(counterShowGauges)
   });
 
   const loadedDraftIdRef = useRef(null);
@@ -287,6 +445,9 @@ export default function VideoEffectTool() {
     setTypingSpeed(18);
     setCursorStyle('block');
     setTypewriterMode('classic');
+    setPaperSize('normal');
+    setTypewriterFontSize('medium');
+    setCodeFileName('main.js');
     setFontColor('#FFFFFF');
     setScanlineDensity(4);
     setPhosphorGlow(0.5);
@@ -299,6 +460,67 @@ export default function VideoEffectTool() {
     setSearchHeadline(t('gsearchHeadlineDefault', lang));
     setSearchSnippet(t('gsearchSnippetDefault', lang));
     setSearchTheme('dark');
+    setSpotlightSource("NATURE • Research Article");
+    setSpotlightDate("OCTOBER 2024 • ISSUE 8192");
+    setSpotlightHeadline(
+      lang === 'tr'
+        ? "Oda Sıcaklığında Kuantum Uyumluluğu Keşfedildi"
+        : "Quantum Coherence Discovered in Room Temperature Macromolecules"
+    );
+    setSpotlightSnippet(
+      lang === 'tr'
+        ? "Yapılan son laboratuvar deneyleri, kuantum uyumluluğunun oda sıcaklığında korunduğunu gösterdi. Bu temel buluş, biyolojik enerji transferini ve yeni nesil kuantum teknolojilerini kökten değiştirebilir."
+        : "Recent laboratory experiments demonstrate macroscopic quantum coherence sustained under ambient room temperatures. This fundamental discovery transforms our understanding of biological energy transfer and next-generation quantum computing."
+    );
+    setSpotlightHighlight(
+      lang === 'tr'
+        ? "kuantum uyumluluğunun oda sıcaklığında korunduğunu"
+        : "macroscopic quantum coherence sustained under ambient room temperatures"
+    );
+    setSpotlightColor("yellow");
+    setSpotlightTheme("archival");
+    setSpotlightPaperFormat("standard");
+    setSpotlightFontSize(20);
+    setFormulaTitle("EULER'S IDENTITY");
+    setFormulaLatex("e^{i\\pi} + 1 = 0");
+    setFormulaDesc(
+      lang === 'tr'
+        ? "Matematiğin en zarif ve temel denklemi"
+        : "The most beautiful equation in mathematics"
+    );
+    setFormulaTheme("blackboard");
+    setFormulaGlow("cyan");
+    setTimelineTitle(lang === 'tr' ? "MODERN ÇAĞIN KRONOLOJİSİ" : "THE CHRONICLES OF MODERN AGE");
+    setTimelineEvents(
+      lang === 'tr'
+        ? "1969 | Ay İnişi | Apollo 11 görevi başarıyla tamamlandı\n1989 | Berlin Duvarı | Soğuk Savaşın Sonu\n2000 | İnternet Devrimi | Dijital Çağ Başladı\n2024 | Yapay Zeka | Generative AI Dönemi"
+        : "1969 | Moon Landing | Apollo 11 mission succeeded\n1989 | Berlin Wall | End of the Cold War\n2000 | Internet Age | Global digital revolution\n2024 | Artificial Intelligence | Generative AI transformation"
+    );
+    setTimelineTheme("cyberDark");
+    setTimelineStyle("ruler");
+    setTimelineStartMilestone(0);
+    setTimelineEndMilestone(3);
+    setTimelineZoom(1.0);
+    setTreeRootTitle(lang === 'tr' ? "SANAYİ DEVRİMİ" : "INDUSTRIAL REVOLUTION");
+    setTreeRootSubtitle(lang === 'tr' ? "TARİHİ DÖNÜM NOKTASI • 18. YÜZYIL" : "KEY TURNING POINT • 18TH CENTURY");
+    setTreeBranches(
+      lang === 'tr'
+        ? "Hızlı Otomasyon | Makineler insan emeğinin yerini aldı | %85 Verim\nKentleşme Dalgası | Nüfus sanayi şehirlerine göç etti | +%340 Büyüme\nKüresel Ticaret | Yeni deniz ve demiryolu hatları açıldı | $4.2B Hacim"
+        : "Rapid Automation | Machines replace manual labor | 85% Efficiency\nUrban Shift | Population migrates to industrial cities | +340% Growth\nNew Global Trade | Maritime routes expand worldwide | $4.2B Volume"
+    );
+    setTreeTheme("voxGold");
+    setTreeConnectorStyle("bezierCurve");
+    setCounterHeadline(lang === 'tr' ? "KÜRESEL TEMİZ ENERJİ KAPASİTESİ" : "GLOBAL CLEAN ENERGY CAPACITY");
+    setCounterSubtitle(lang === 'tr' ? "ULUSLARARASI ENERJİ AJANSI (IEA) • 1990 - 2024" : "INTERNATIONAL ENERGY AGENCY • 1990 - 2024");
+    setCounterVal1(4200);
+    setCounterLabel1(lang === 'tr' ? "2024 Güncel Kapasite" : "2024 Current Capacity");
+    setCounterVal2(850);
+    setCounterLabel2(lang === 'tr' ? "1990 Başlangıç Seviyesi" : "1990 Baseline Level");
+    setCounterPrefix("");
+    setCounterSuffix(" GW");
+    setCounterTrendTag("+394% SURGE ↗");
+    setCounterTheme("financial");
+    setCounterShowGauges(true);
     lastSavedSnapshotRef.current = null;
   };
 
@@ -341,6 +563,9 @@ export default function VideoEffectTool() {
     if (s.typingSpeed !== undefined) setTypingSpeed(s.typingSpeed);
     if (s.cursorStyle) setCursorStyle(s.cursorStyle);
     if (s.typewriterMode) setTypewriterMode(s.typewriterMode);
+    if (s.paperSize) setPaperSize(s.paperSize);
+    if (s.typewriterFontSize) setTypewriterFontSize(s.typewriterFontSize);
+    if (s.codeFileName) setCodeFileName(s.codeFileName);
     if (s.fontColor) setFontColor(s.fontColor);
     if (s.scanlineDensity !== undefined) setScanlineDensity(s.scanlineDensity);
     if (s.phosphorGlow !== undefined) setPhosphorGlow(s.phosphorGlow);
@@ -353,6 +578,50 @@ export default function VideoEffectTool() {
     if (s.searchHeadline) setSearchHeadline(s.searchHeadline);
     if (s.searchSnippet) setSearchSnippet(s.searchSnippet);
     if (s.searchTheme) setSearchTheme(s.searchTheme);
+    if (s.spotlightSource) setSpotlightSource(s.spotlightSource);
+    if (s.spotlightDate) setSpotlightDate(s.spotlightDate);
+    if (s.spotlightHeadline) setSpotlightHeadline(s.spotlightHeadline);
+    if (s.spotlightSnippet) setSpotlightSnippet(s.spotlightSnippet);
+    if (s.spotlightHighlight) setSpotlightHighlight(s.spotlightHighlight);
+    if (s.spotlightColor) setSpotlightColor(s.spotlightColor);
+    if (s.spotlightTheme) setSpotlightTheme(s.spotlightTheme);
+    if (s.spotlightPaperFormat) setSpotlightPaperFormat(s.spotlightPaperFormat);
+    if (s.spotlightFontSize !== undefined) {
+      if (typeof s.spotlightFontSize === 'string') {
+        const sizeMap = { small: 15, medium: 20, large: 26, xlarge: 34 };
+        setSpotlightFontSize(sizeMap[s.spotlightFontSize] || 20);
+      } else {
+        setSpotlightFontSize(Number(s.spotlightFontSize) || 20);
+      }
+    }
+    if (s.formulaTitle) setFormulaTitle(s.formulaTitle);
+    if (s.formulaLatex) setFormulaLatex(s.formulaLatex);
+    if (s.formulaDesc) setFormulaDesc(s.formulaDesc);
+    if (s.formulaTheme) setFormulaTheme(s.formulaTheme);
+    if (s.formulaGlow) setFormulaGlow(s.formulaGlow);
+    if (s.timelineTitle) setTimelineTitle(s.timelineTitle);
+    if (s.timelineEvents) setTimelineEvents(s.timelineEvents);
+    if (s.timelineTheme) setTimelineTheme(s.timelineTheme);
+    if (s.timelineStyle) setTimelineStyle(s.timelineStyle);
+    if (s.timelineStartMilestone !== undefined) setTimelineStartMilestone(Number(s.timelineStartMilestone));
+    if (s.timelineEndMilestone !== undefined) setTimelineEndMilestone(Number(s.timelineEndMilestone));
+    if (s.timelineZoom !== undefined) setTimelineZoom(Number(s.timelineZoom));
+    if (s.treeRootTitle) setTreeRootTitle(s.treeRootTitle);
+    if (s.treeRootSubtitle) setTreeRootSubtitle(s.treeRootSubtitle);
+    if (s.treeBranches) setTreeBranches(s.treeBranches);
+    if (s.treeTheme) setTreeTheme(s.treeTheme);
+    if (s.treeConnectorStyle) setTreeConnectorStyle(s.treeConnectorStyle);
+    if (s.counterHeadline) setCounterHeadline(s.counterHeadline);
+    if (s.counterSubtitle) setCounterSubtitle(s.counterSubtitle);
+    if (s.counterVal1 !== undefined) setCounterVal1(Number(s.counterVal1));
+    if (s.counterLabel1) setCounterLabel1(s.counterLabel1);
+    if (s.counterVal2 !== undefined) setCounterVal2(Number(s.counterVal2));
+    if (s.counterLabel2) setCounterLabel2(s.counterLabel2);
+    if (s.counterPrefix !== undefined) setCounterPrefix(s.counterPrefix);
+    if (s.counterSuffix !== undefined) setCounterSuffix(s.counterSuffix);
+    if (s.counterTrendTag !== undefined) setCounterTrendTag(s.counterTrendTag);
+    if (s.counterTheme) setCounterTheme(s.counterTheme);
+    if (s.counterShowGauges !== undefined) setCounterShowGauges(Boolean(s.counterShowGauges));
   }, []);
 
   // 1. Load Draft / Restore Project (from query param or localStorage or cloud projects)
@@ -470,7 +739,7 @@ export default function VideoEffectTool() {
           const defaultEn = "Every story begins with a single word.\nAnimationMaker creates the magic.";
           const currentTextTrimmed = typewriterText?.trim();
           const isTextDefault = currentTextTrimmed === defaultTr.trim() || currentTextTrimmed === defaultEn.trim() || currentTextTrimmed === t('typewriterDefaultText', lang)?.trim();
-          isDefault = isTextDefault && typingSpeed === 18 && cursorStyle === 'block' && typewriterMode === 'classic' && fontColor === '#FFFFFF';
+          isDefault = isTextDefault && typingSpeed === 18 && cursorStyle === 'block' && typewriterMode === 'classic' && (!paperSize || paperSize === 'normal') && (!typewriterFontSize || typewriterFontSize === 'medium') && (!codeFileName || codeFileName === 'main.js') && fontColor === '#FFFFFF';
         } else if (type === 'ken-burns') {
           isDefault = zoomRate === 0.04 && zoomDirection === 'in' && panStyle === 'center';
         } else if (type === 'vhs-tape') {
@@ -485,6 +754,16 @@ export default function VideoEffectTool() {
           isDefault = echoCount === 5 && echoDecay === 0.7;
         } else if (type === 'gsearch') {
           isDefault = searchQuery === t('gsearchQueryDefault', lang) && searchHeadline === t('gsearchHeadlineDefault', lang);
+        } else if (type === 'spotlight') {
+          isDefault = spotlightTheme === 'archival' && spotlightColor === 'yellow' && spotlightPaperFormat === 'standard';
+        } else if (type === 'formula') {
+          isDefault = formulaTheme === 'blackboard' && formulaGlow === 'cyan' && formulaLatex === 'e^{i\\pi} + 1 = 0';
+        } else if (type === 'timeline') {
+          isDefault = timelineTheme === 'cyberDark' && timelineStyle === 'ruler' && timelineStartMilestone === 0 && timelineZoom === 1.0;
+        } else if (type === 'tree') {
+          isDefault = treeTheme === 'voxGold' && treeConnectorStyle === 'bezierCurve';
+        } else if (type === 'counter') {
+          isDefault = counterTheme === 'financial' && counterVal1 === 4200 && counterVal2 === 850 && counterShowGauges === true;
         }
       }
 
@@ -493,7 +772,7 @@ export default function VideoEffectTool() {
         return;
       }
 
-      setSaveStatus('Saving...');
+      setSaveStatus(t('saving', lang) || (lang === 'tr' ? 'Kaydediliyor...' : 'Saving...'));
 
       // Aynı isimde bir proje varsa, yeni oluşturmak yerine onun ID'sini kullan (üzerine yaz)
       let targetProjectId = projectId;
@@ -516,8 +795,8 @@ export default function VideoEffectTool() {
             setSearchParams({ draft: savedId }, { replace: true });
           }
         }
-        setSaveStatus('Saved to Cloud');
-        setTimeout(() => setSaveStatus(''), 2000);
+        setSaveStatus(user ? (t('savedToCloud', lang) || (lang === 'tr' ? 'Buluta Kaydedildi' : 'Saved to Cloud')) : (lang === 'tr' ? 'Taslak Kaydedildi' : 'Draft Saved'));
+        setTimeout(() => setSaveStatus(''), 2500);
       } catch (err) {
         console.error("Auto-save error:", err);
         setSaveStatus('');
@@ -531,10 +810,15 @@ export default function VideoEffectTool() {
     user, projectName, formatPreset, hdOutput, fastRender, duration, audioFxEnabled,
     zoomRate, zoomDirection, panStyle, aberrationStrength, trackingNoise,
     scanlineFlicker, vhsTimestamp, glitchIntensity, rgbShift, sliceRate,
-    typewriterText, typingSpeed, cursorStyle, typewriterMode, fontColor, scanlineDensity,
+    typewriterText, typingSpeed, cursorStyle, typewriterMode, paperSize, typewriterFontSize, codeFileName, fontColor, scanlineDensity,
     phosphorGlow, asciiTheme, asciiResolution, echoCount, echoDecay,
     searchQuery, searchUrl, searchHeadline, searchSnippet, searchTheme,
-    type
+    spotlightSource, spotlightDate, spotlightHeadline, spotlightSnippet, spotlightHighlight, spotlightColor, spotlightTheme, spotlightPaperFormat, spotlightFontSize,
+    formulaTitle, formulaLatex, formulaDesc, formulaTheme, formulaGlow,
+    timelineTitle, timelineEvents, timelineTheme, timelineStyle, timelineStartMilestone, timelineEndMilestone, timelineZoom,
+    treeRootTitle, treeRootSubtitle, treeBranches, treeTheme, treeConnectorStyle,
+    counterHeadline, counterSubtitle, counterVal1, counterLabel1, counterVal2, counterLabel2, counterPrefix, counterSuffix, counterTrendTag, counterTheme, counterShowGauges,
+    type, lang, saveProject, projects, projectId, searchParams, setSearchParams
   ]);
 
   // Handle Media Upload
@@ -631,6 +915,9 @@ export default function VideoEffectTool() {
             fontColor,
             cursorStyle,
             typewriterMode,
+            paperSize,
+            typewriterFontSize,
+            codeFileName,
             darkTheme: true
           });
         } else if (type === 'ken-burns') {
@@ -681,6 +968,58 @@ export default function VideoEffectTool() {
             theme: searchTheme,
             lang
           });
+        } else if (type === 'spotlight') {
+          drawSpotlightFrame(ctx, width, height, progressVal, {
+            sourceName: spotlightSource,
+            articleDate: spotlightDate,
+            headline: spotlightHeadline,
+            snippet: spotlightSnippet,
+            highlightKeywords: spotlightHighlight,
+            highlightColor: spotlightColor,
+            documentTheme: spotlightTheme,
+            paperFormat: spotlightPaperFormat,
+            fontSize: spotlightFontSize
+          });
+        } else if (type === 'formula') {
+          drawFormulaFrame(ctx, width, height, progressVal, {
+            title: formulaTitle,
+            latex: formulaLatex,
+            description: formulaDesc,
+            theme: formulaTheme,
+            glowColor: formulaGlow
+          });
+        } else if (type === 'timeline') {
+          drawTimelineFrame(ctx, width, height, progressVal, {
+            title: timelineTitle,
+            events: timelineEvents,
+            theme: timelineTheme,
+            style: timelineStyle,
+            startMilestone: timelineStartMilestone,
+            endMilestone: timelineEndMilestone,
+            zoom: timelineZoom
+          });
+        } else if (type === 'tree') {
+          drawEventTreeFrame(ctx, width, height, progressVal, {
+            rootTitle: treeRootTitle,
+            rootSubtitle: treeRootSubtitle,
+            branches: treeBranches,
+            theme: treeTheme,
+            connectorStyle: treeConnectorStyle
+          });
+        } else if (type === 'counter') {
+          drawCounterFrame(ctx, width, height, progressVal, {
+            headline: counterHeadline,
+            subtitle: counterSubtitle,
+            val1: counterVal1,
+            label1: counterLabel1,
+            val2: counterVal2,
+            label2: counterLabel2,
+            prefix: counterPrefix,
+            suffix: counterSuffix,
+            trendTag: counterTrendTag,
+            theme: counterTheme,
+            showGauges: counterShowGauges
+          });
         }
       }
       animFrameRef.current = requestAnimationFrame(renderLoop);
@@ -693,11 +1032,19 @@ export default function VideoEffectTool() {
     };
   }, [
     type, duration, typewriterText, fontColor, cursorStyle, typewriterMode, audioFxEnabled,
+    paperSize, typewriterFontSize, codeFileName,
     zoomRate, zoomDirection, panStyle,
     aberrationStrength, trackingNoise, scanlineFlicker, vhsTimestamp,
     glitchIntensity, rgbShift, sliceRate,
     scanlineDensity, phosphorGlow, asciiTheme, asciiResolution,
-    echoCount, echoDecay, searchQuery, searchUrl, searchHeadline, searchSnippet, searchTheme
+    echoCount, echoDecay, searchQuery, searchUrl, searchHeadline, searchSnippet, searchTheme,
+    spotlightSource, spotlightDate, spotlightHeadline, spotlightSnippet, spotlightHighlight, spotlightColor, spotlightTheme,
+    spotlightPaperFormat, spotlightFontSize,
+    formulaTitle, formulaLatex, formulaDesc, formulaTheme, formulaGlow,
+    timelineTitle, timelineEvents, timelineTheme, timelineStyle, timelineStartMilestone, timelineEndMilestone, timelineZoom,
+    treeRootTitle, treeRootSubtitle, treeBranches, treeTheme, treeConnectorStyle,
+    counterHeadline, counterSubtitle, counterVal1, counterLabel1, counterVal2, counterLabel2, counterPrefix, counterSuffix, counterTrendTag, counterTheme, counterShowGauges,
+    lang
   ]);
 
   // Client-Side Device Render (FFmpeg WASM & Canvas Frames with Audio Preservation)
@@ -781,6 +1128,9 @@ export default function VideoEffectTool() {
             fontColor,
             cursorStyle,
             typewriterMode,
+            paperSize,
+            typewriterFontSize,
+            codeFileName,
             darkTheme: true
           });
         } else if (type === 'ken-burns') {
@@ -829,6 +1179,58 @@ export default function VideoEffectTool() {
             theme: searchTheme,
             lang
           });
+        } else if (type === 'spotlight') {
+          drawSpotlightFrame(ctx, canvas.width, canvas.height, frameProgress, {
+            sourceName: spotlightSource,
+            articleDate: spotlightDate,
+            headline: spotlightHeadline,
+            snippet: spotlightSnippet,
+            highlightKeywords: spotlightHighlight,
+            highlightColor: spotlightColor,
+            documentTheme: spotlightTheme,
+            paperFormat: spotlightPaperFormat,
+            fontSize: spotlightFontSize
+          });
+        } else if (type === 'formula') {
+          drawFormulaFrame(ctx, canvas.width, canvas.height, frameProgress, {
+            title: formulaTitle,
+            latex: formulaLatex,
+            description: formulaDesc,
+            theme: formulaTheme,
+            glowColor: formulaGlow
+          });
+        } else if (type === 'timeline') {
+          drawTimelineFrame(ctx, canvas.width, canvas.height, frameProgress, {
+            title: timelineTitle,
+            events: timelineEvents,
+            theme: timelineTheme,
+            style: timelineStyle,
+            startMilestone: timelineStartMilestone,
+            endMilestone: timelineEndMilestone,
+            zoom: timelineZoom
+          });
+        } else if (type === 'tree') {
+          drawEventTreeFrame(ctx, canvas.width, canvas.height, frameProgress, {
+            rootTitle: treeRootTitle,
+            rootSubtitle: treeRootSubtitle,
+            branches: treeBranches,
+            theme: treeTheme,
+            connectorStyle: treeConnectorStyle
+          });
+        } else if (type === 'counter') {
+          drawCounterFrame(ctx, canvas.width, canvas.height, frameProgress, {
+            headline: counterHeadline,
+            subtitle: counterSubtitle,
+            val1: counterVal1,
+            label1: counterLabel1,
+            val2: counterVal2,
+            label2: counterLabel2,
+            prefix: counterPrefix,
+            suffix: counterSuffix,
+            trendTag: counterTrendTag,
+            theme: counterTheme,
+            showGauges: counterShowGauges
+          });
         } else {
           ctx.fillStyle = '#0F1015';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -855,52 +1257,59 @@ export default function VideoEffectTool() {
 
       setResultUrl(videoUrl);
       setStatus('completed');
+      setProgress(100);
     } catch (err) {
-      console.error("Device render error:", err);
-      setErrorMsg(err.message || 'Render failed on device.');
+      console.error("Render processing error:", err);
+      setErrorMsg(err.message || 'Error occurred during rendering.');
       setStatus('error');
     }
   };
 
-  // Cloud Processing (Firebase render_jobs Queue -> Render Worker API)
-  const startCloudProcessing = async () => {
-    if (!file && type !== 'typewriter') {
-      setErrorMsg(lang === 'tr' ? 'Lütfen bir resim veya video dosyası seçin.' : 'Please select an image or video file.');
+  // Cloud Render Queue Submission (Echo Motion only)
+  const startCloudRender = async () => {
+    if (isProTool && !user?.isPro) {
+      navigate('/pricing', { replace: true });
       return;
     }
-    if (!auth.currentUser) {
-      setErrorMsg(lang === 'tr' ? 'Bulut render için lütfen giriş yapın.' : 'Please log in to use cloud render.');
+
+    if (!file) {
+      setErrorMsg(t('chooseFile', lang));
+      setStatus('error');
       return;
     }
 
     try {
       setStatus('uploading');
-      setProgress(5);
-      setErrorMsg('');
+      setProgress(10);
 
-      const formData = new FormData();
-      if (file) formData.append('file', file);
+      // Upload source media to Firebase Storage
+      const storageRef = ref(storage, `effects/${auth.currentUser.uid}/${Date.now()}_${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
 
-      const apiUrl = import.meta.env.VITE_RENDER_API_URL || 'https://matchcut-api-1e38.onrender.com';
-      const uploadRes = await fetch(`${apiUrl}/upload`, {
-        method: 'POST',
-        body: formData
+      await new Promise((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 40;
+            setProgress(Math.round(10 + pct));
+          },
+          (error) => reject(error),
+          () => resolve()
+        );
       });
 
-      if (!uploadRes.ok) {
-        throw new Error(`Upload failed (Code: ${uploadRes.status}).`);
-      }
-
-      const uploadData = await uploadRes.json();
-      const jobId = uploadData.job_id;
-
+      const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+      setProgress(55);
       setStatus('processing');
-      setProgress(15);
-      const jobRef = doc(db, 'render_jobs', jobId);
+
+      // Create Cloud Render Task in Firestore
+      const jobRef = doc(collection(db, 'render_jobs'));
       const params = {
-        format_preset: formatPreset,
-        hd_output: hdOutput,
+        media_url: downloadUrl,
+        media_type: file.type.startsWith('video/') ? 'video' : 'image',
         duration: duration,
+        format: formatPreset,
+        hd_output: hdOutput,
         echo_count: echoCount,
         echo_decay: echoDecay,
         zoom_rate: zoomRate,
@@ -909,7 +1318,6 @@ export default function VideoEffectTool() {
         aberration_strength: aberrationStrength
       };
 
-      // Security Rules Match: uid == request.auth.uid and status == 'pending'
       await setDoc(jobRef, {
         uid: auth.currentUser.uid,
         status: 'pending',
@@ -918,26 +1326,20 @@ export default function VideoEffectTool() {
         created_at: serverTimestamp()
       });
 
-      // Ping worker to immediately process queue without waiting
-      fetch(`${apiUrl}/jobs/ping`).catch(() => {});
-
+      // Listen for Render Completion
       const unsubscribe = onSnapshot(jobRef, (docSnap) => {
         if (!docSnap.exists()) return;
         const data = docSnap.data();
 
-        if (data.status === 'processing') {
-          setProgress((prev) => Math.max(prev, 40));
-        }
-
-        if (data.status === 'completed') {
-          const finalUrl = data.result_url?.startsWith('http')
-            ? data.result_url
-            : `${apiUrl}${data.result_url}`;
-          setResultUrl(finalUrl);
+        if (data.status === 'processing' && data.progress) {
+          setProgress(Math.round(55 + data.progress * 0.4));
+        } else if (data.status === 'completed' && data.output_url) {
+          setResultUrl(data.output_url);
           setStatus('completed');
+          setProgress(100);
           unsubscribe();
         } else if (data.status === 'failed') {
-          setErrorMsg(data.error_message || data.error || 'Server render failed.');
+          setErrorMsg(data.error || 'Server render failed.');
           setStatus('error');
           unsubscribe();
         }
@@ -954,6 +1356,8 @@ export default function VideoEffectTool() {
   };
 
   const isServerTool = type === 'echo';
+  const isGenerativeTool = ['typewriter', 'spotlight', 'formula', 'timeline', 'tree', 'counter'].includes(type);
+  const isOptionalMediaTool = type === 'gsearch';
 
   return (
     <div className="w-full flex-grow flex flex-col h-full">
@@ -1322,6 +1726,46 @@ export default function VideoEffectTool() {
                         onChange={setTypewriterMode}
                       />
 
+                      {/* Paper / Screen Size */}
+                      <SegmentedControl
+                        label={t('typewriterPaperSizeLabel', lang)}
+                        options={[
+                          { value: 'normal', label: t('typewriterPaperSizeNormal', lang) },
+                          { value: 'large', label: t('typewriterPaperSizeLarge', lang) }
+                        ]}
+                        value={paperSize}
+                        onChange={setPaperSize}
+                      />
+
+                      {/* Font Size Scaling */}
+                      <SegmentedControl
+                        label={t('typewriterFontSizeLabel', lang)}
+                        options={[
+                          { value: 'small', label: t('typewriterFontSizeSmall', lang) },
+                          { value: 'medium', label: t('typewriterFontSizeMedium', lang) },
+                          { value: 'large', label: t('typewriterFontSizeLarge', lang) },
+                          { value: 'xlarge', label: t('typewriterFontSizeXLarge', lang) }
+                        ]}
+                        value={typewriterFontSize}
+                        onChange={setTypewriterFontSize}
+                      />
+
+                      {/* Code File / Tab Name if in Code Mode */}
+                      {typewriterMode === 'code' && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-400 mb-1">
+                            {t('typewriterCodeFileNameLabel', lang)}
+                          </label>
+                          <input
+                            type="text"
+                            value={codeFileName}
+                            onChange={(e) => setCodeFileName(e.target.value)}
+                            placeholder="main.js"
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm font-mono"
+                          />
+                        </div>
+                      )}
+
                       <div className="flex items-center justify-between p-3 bg-zinc-800/80 border border-zinc-700/60 rounded-xl">
                         <div className="flex flex-col pr-2">
                           <span className="text-sm font-medium text-white flex items-center gap-2">
@@ -1529,6 +1973,547 @@ export default function VideoEffectTool() {
                     </>
                   )}
 
+                  {/* 9. DOCUMENT SPOTLIGHT CONTROLS */}
+                  {type === 'spotlight' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('spotlightSourceLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={spotlightSource}
+                          onChange={(e) => setSpotlightSource(e.target.value)}
+                          placeholder="e.g. NATURE • Research Article"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('spotlightDateLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={spotlightDate}
+                          onChange={(e) => setSpotlightDate(e.target.value)}
+                          placeholder="e.g. OCTOBER 2024 • ISSUE 8192"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('spotlightHeadlineLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={spotlightHeadline}
+                          onChange={(e) => setSpotlightHeadline(e.target.value)}
+                          placeholder="e.g. Quantum Coherence Discovered in Room Temperature Macromolecules"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('spotlightSnippetLabel', lang)}
+                        </label>
+                        <textarea
+                          rows="4"
+                          value={spotlightSnippet}
+                          onChange={(e) => setSpotlightSnippet(e.target.value)}
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm resize-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('spotlightHighlightLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={spotlightHighlight}
+                          onChange={(e) => setSpotlightHighlight(e.target.value)}
+                          placeholder="Exact words or phrase to highlight"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <SegmentedControl
+                        label={t('spotlightFormatLabel', lang)}
+                        options={[
+                          { value: 'standard', label: t('spotlightFormatStandard', lang) },
+                          { value: 'a4', label: '📄 ' + t('spotlightFormatA4', lang) },
+                          { value: 'expanded', label: t('spotlightFormatExpanded', lang) }
+                        ]}
+                        value={spotlightPaperFormat}
+                        onChange={setSpotlightPaperFormat}
+                      />
+
+                      <div>
+                        <div className="flex justify-between items-center mb-1.5">
+                          <label className="text-sm font-medium text-gray-400">
+                            {t('spotlightFontSizeLabel', lang)}
+                          </label>
+                          <span className="text-xs font-mono text-[#F5B301] bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700 font-bold">
+                            {spotlightFontSize}px
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="12"
+                          max="38"
+                          step="1"
+                          value={spotlightFontSize}
+                          onChange={(e) => setSpotlightFontSize(Number(e.target.value))}
+                          className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#F5B301]"
+                        />
+                      </div>
+
+                      <SegmentedControl
+                        label={t('spotlightColorLabel', lang)}
+                        options={[
+                          { value: 'yellow', label: '🟡 ' + t('spotlightColorYellow', lang) },
+                          { value: 'cyan', label: '🔵 ' + t('spotlightColorCyan', lang) },
+                          { value: 'green', label: '🟢 ' + t('spotlightColorGreen', lang) },
+                          { value: 'pink', label: '🔴 ' + t('spotlightColorPink', lang) }
+                        ]}
+                        value={spotlightColor}
+                        onChange={setSpotlightColor}
+                      />
+
+                      <SegmentedControl
+                        label={t('spotlightThemeLabel', lang)}
+                        options={[
+                          { value: 'archival', label: t('spotlightThemeArchival', lang) },
+                          { value: 'modern', label: t('spotlightThemeModern', lang) },
+                          { value: 'dark', label: t('spotlightThemeDark', lang) }
+                        ]}
+                        value={spotlightTheme}
+                        onChange={setSpotlightTheme}
+                      />
+                    </>
+                  )}
+
+                  {/* 10. LATEX MATH & SCIENCE FORMULA CONTROLS */}
+                  {type === 'formula' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-2">
+                          {t('formulaPresetLabel', lang)}
+                        </label>
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                          {[
+                            { name: "Euler's Identity", latex: "e^{i\\pi} + 1 = 0", desc: "The most beautiful theorem in mathematics" },
+                            { name: "Einstein Mass-Energy", latex: "E = \\gamma m c^2 = \\frac{m c^2}{\\sqrt{1 - v^2/c^2}}", desc: "Equivalence of mass and energy" },
+                            { name: "Gaussian Integral", latex: "\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}", desc: "Fundamental probability distribution" },
+                            { name: "Schrödinger Wave", latex: "i\\hbar \\frac{\\partial}{\\partial t}\\Psi = \\hat{H}\\Psi", desc: "Quantum wave function equation" },
+                            { name: "Maxwell-Faraday", latex: "\\nabla \\times \\mathbf{E} = -\\frac{\\partial \\mathbf{B}}{\\partial t}", desc: "Electromagnetic induction law" },
+                            { name: "Bayes' Theorem", latex: "P(A|B) = \\frac{P(B|A)P(A)}{P(B)}", desc: "Conditional probability inference" }
+                          ].map((preset, pIdx) => (
+                            <button
+                              key={pIdx}
+                              type="button"
+                              onClick={() => {
+                                setFormulaTitle(preset.name.toUpperCase());
+                                setFormulaLatex(preset.latex);
+                                setFormulaDesc(preset.desc);
+                              }}
+                              className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded text-xs font-mono text-cyan-300 text-left truncate transition-colors"
+                            >
+                              {preset.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('formulaTitleLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={formulaTitle}
+                          onChange={(e) => setFormulaTitle(e.target.value)}
+                          placeholder="e.g. EULER'S IDENTITY"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('formulaLatexLabel', lang)}
+                        </label>
+                        <textarea
+                          rows="3"
+                          value={formulaLatex}
+                          onChange={(e) => setFormulaLatex(e.target.value)}
+                          placeholder="e.g. \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-cyan-300 font-mono text-sm resize-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('formulaDescLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={formulaDesc}
+                          onChange={(e) => setFormulaDesc(e.target.value)}
+                          placeholder="e.g. The most beautiful equation in mathematics"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <SegmentedControl
+                        label={t('formulaThemeLabel', lang)}
+                        options={[
+                          { value: 'blackboard', label: t('formulaThemeBlackboard', lang) },
+                          { value: 'blueprint', label: t('formulaThemeBlueprint', lang) },
+                          { value: 'quantum', label: t('formulaThemeQuantum', lang) },
+                          { value: 'clean', label: t('formulaThemeClean', lang) }
+                        ]}
+                        value={formulaTheme}
+                        onChange={setFormulaTheme}
+                      />
+
+                      <SegmentedControl
+                        label={t('formulaGlowLabel', lang)}
+                        options={[
+                          { value: 'cyan', label: 'Cyan' },
+                          { value: 'gold', label: 'Gold' },
+                          { value: 'purple', label: 'Purple' },
+                          { value: 'emerald', label: 'Emerald' }
+                        ]}
+                        value={formulaGlow}
+                        onChange={setFormulaGlow}
+                      />
+                    </>
+                  )}
+
+                  {/* 11. TIMELINE CONTROLS */}
+                  {type === 'timeline' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('timelineTitleLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={timelineTitle}
+                          onChange={(e) => setTimelineTitle(e.target.value)}
+                          placeholder="e.g. THE CHRONICLES OF MODERN AGE"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('timelineEventsLabel', lang)}
+                        </label>
+                        <textarea
+                          rows="5"
+                          value={timelineEvents}
+                          onChange={(e) => setTimelineEvents(e.target.value)}
+                          placeholder="1969 | Moon Landing | Description..."
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white font-mono text-xs resize-none leading-relaxed"
+                        />
+                        <p className="text-[11px] text-gray-500 mt-1">
+                          {lang === 'tr' ? 'Format: Yıl / Tarih | Başlık | Açıklama (Her satıra 1 olay)' : 'Format: Year / Date | Title | Description (1 event per line)'}
+                        </p>
+                      </div>
+
+                      {/* Milestone Start and End Range Selection */}
+                      <div className="grid grid-cols-2 gap-3 p-3 bg-zinc-800/60 border border-zinc-700/60 rounded-lg">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            {t('timelineStartMilestoneLabel', lang)}
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="20"
+                            value={timelineStartMilestone}
+                            onChange={(e) => setTimelineStartMilestone(Math.max(0, parseInt(e.target.value) || 0))}
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm font-bold text-center"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            {t('timelineEndMilestoneLabel', lang)}
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="20"
+                            value={timelineEndMilestone}
+                            onChange={(e) => setTimelineEndMilestone(Math.max(0, parseInt(e.target.value) || 0))}
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm font-bold text-center"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Visual Line Style */}
+                      <SegmentedControl
+                        label={t('timelineStyleLabel', lang)}
+                        options={[
+                          { value: 'ruler', label: t('timelineStyleRuler', lang) },
+                          { value: 'minimal', label: t('timelineStyleMinimal', lang) },
+                          { value: 'neonPulse', label: t('timelineStyleNeonPulse', lang) },
+                          { value: 'documentary', label: t('timelineStyleDoc', lang) }
+                        ]}
+                        value={timelineStyle}
+                        onChange={setTimelineStyle}
+                      />
+
+                      {/* Camera Zoom Scale */}
+                      <div>
+                        <div className="flex justify-between text-xs font-medium text-gray-400 mb-1">
+                          <span>{t('timelineZoomLabel', lang)}</span>
+                          <span className="text-yellow-400 font-mono">{timelineZoom.toFixed(2)}x</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.80"
+                          max="1.30"
+                          step="0.05"
+                          value={timelineZoom}
+                          onChange={(e) => setTimelineZoom(parseFloat(e.target.value))}
+                          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                      </div>
+
+                      <SegmentedControl
+                        label={t('timelineThemeLabel', lang)}
+                        options={[
+                          { value: 'cyberDark', label: t('timelineThemeCyberDark', lang) },
+                          { value: 'documentary', label: t('timelineThemeDocumentary', lang) },
+                          { value: 'minimalWhite', label: t('timelineThemeMinimalWhite', lang) },
+                          { value: 'emeraldBio', label: t('timelineThemeEmeraldBio', lang) }
+                        ]}
+                        value={timelineTheme}
+                        onChange={setTimelineTheme}
+                      />
+                    </>
+                  )}
+
+                  {/* 12. EVENT TREE CONTROLS */}
+                  {type === 'tree' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('treeRootTitleLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={treeRootTitle}
+                          onChange={(e) => setTreeRootTitle(e.target.value)}
+                          placeholder="e.g. INDUSTRIAL REVOLUTION"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('treeRootSubtitleLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={treeRootSubtitle}
+                          onChange={(e) => setTreeRootSubtitle(e.target.value)}
+                          placeholder="e.g. KEY TURNING POINT • 18TH CENTURY"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="block text-sm font-medium text-gray-400">
+                            {t('treeBranchesLabel', lang)}
+                          </label>
+                        </div>
+                        <textarea
+                          rows="5"
+                          value={treeBranches}
+                          onChange={(e) => setTreeBranches(e.target.value)}
+                          placeholder="Branch Title | Consequence Description | Metric Badge"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white font-mono text-xs resize-none leading-relaxed"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setTreeBranches(prev => prev + (prev.endsWith('\n') ? '' : '\n\n') + (lang === 'tr' ? "=== 2. DİJİTAL ÇAĞ | 20. YÜZYIL ===\nMikroçipler | Silikon Vadisi hesaplama gücü | 100M+ İşlemci\nİnternet Ağı | Küresel bilgi ağı | 5B+ Kullanıcı" : "=== 2. DIGITAL AGE | 20TH CENTURY ===\nMicrochips | Silicon Valley computing surge | 100M+ CPUs\nWorld Wide Web | Global internet connectivity | 5B+ Users"))}
+                          className="text-xs text-yellow-400 hover:text-yellow-300 font-semibold flex items-center gap-1 mt-1.5 transition-colors cursor-pointer"
+                        >
+                          {t('addMultiRoot', lang)}
+                        </button>
+                      </div>
+
+                      <SegmentedControl
+                        label={t('treeConnectorStyleLabel', lang)}
+                        options={[
+                          { value: 'bezierCurve', label: t('treeConnectorBezier', lang) },
+                          { value: 'circuit', label: t('treeConnectorCircuit', lang) },
+                          { value: 'straightLaser', label: t('treeConnectorLaser', lang) }
+                        ]}
+                        value={treeConnectorStyle}
+                        onChange={setTreeConnectorStyle}
+                      />
+
+                      <SegmentedControl
+                        label={t('treeThemeLabel', lang)}
+                        options={[
+                          { value: 'voxGold', label: t('treeThemeVoxGold', lang) },
+                          { value: 'neonCyber', label: t('treeThemeNeonCyber', lang) },
+                          { value: 'cleanSlate', label: t('treeThemeCleanSlate', lang) }
+                        ]}
+                        value={treeTheme}
+                        onChange={setTreeTheme}
+                      />
+                    </>
+                  )}
+
+                  {/* 13. STAT COUNTER CONTROLS */}
+                  {type === 'counter' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('counterHeadlineLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={counterHeadline}
+                          onChange={(e) => setCounterHeadline(e.target.value)}
+                          placeholder="e.g. GLOBAL CLEAN ENERGY CAPACITY"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('counterSubtitleLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={counterSubtitle}
+                          onChange={(e) => setCounterSubtitle(e.target.value)}
+                          placeholder="e.g. INTERNATIONAL ENERGY AGENCY • 1990 - 2024"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            {t('counterVal1Label', lang)}
+                          </label>
+                          <input
+                            type="number"
+                            value={counterVal1}
+                            onChange={(e) => setCounterVal1(Number(e.target.value))}
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm font-bold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            {t('counterLabel1Label', lang)}
+                          </label>
+                          <input
+                            type="text"
+                            value={counterLabel1}
+                            onChange={(e) => setCounterLabel1(e.target.value)}
+                            placeholder="Current Label"
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            {t('counterVal2Label', lang)}
+                          </label>
+                          <input
+                            type="number"
+                            value={counterVal2}
+                            onChange={(e) => setCounterVal2(Number(e.target.value))}
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm font-bold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            {t('counterLabel2Label', lang)}
+                          </label>
+                          <input
+                            type="text"
+                            value={counterLabel2}
+                            onChange={(e) => setCounterLabel2(e.target.value)}
+                            placeholder="Baseline Label"
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className="block text-[11px] font-medium text-gray-400 mb-1">
+                            {t('counterPrefixLabel', lang)}
+                          </label>
+                          <input
+                            type="text"
+                            value={counterPrefix}
+                            onChange={(e) => setCounterPrefix(e.target.value)}
+                            placeholder="$ / €"
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-xs text-center"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-medium text-gray-400 mb-1">
+                            {t('counterSuffixLabel', lang)}
+                          </label>
+                          <input
+                            type="text"
+                            value={counterSuffix}
+                            onChange={(e) => setCounterSuffix(e.target.value)}
+                            placeholder="GW / % / B"
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-xs text-center font-bold text-accent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-medium text-gray-400 mb-1">
+                            {t('counterTrendLabel', lang)}
+                          </label>
+                          <input
+                            type="text"
+                            value={counterTrendTag}
+                            onChange={(e) => setCounterTrendTag(e.target.value)}
+                            placeholder="+340% ↗"
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-xs text-center"
+                          />
+                        </div>
+                      </div>
+
+                      <Switch
+                        label={t('counterShowGaugesLabel', lang)}
+                        checked={counterShowGauges}
+                        onChange={(e) => setCounterShowGauges(Boolean(e?.target ? e.target.checked : e))}
+                      />
+
+                      <SegmentedControl
+                        label={t('counterThemeLabel', lang)}
+                        options={[
+                          { value: 'financial', label: t('counterThemeFinancial', lang) },
+                          { value: 'cyberMetric', label: t('counterThemeCyberMetric', lang) },
+                          { value: 'warningRed', label: t('counterThemeWarningRed', lang) },
+                          { value: 'slateClean', label: t('counterThemeSlateClean', lang) }
+                        ]}
+                        value={counterTheme}
+                        onChange={setCounterTheme}
+                      />
+                    </>
+                  )}
+
                   {/* Thematic Audio FX Switch (VHS, Scanline, Glitch) */}
                   {['vhs-tape', 'scanline', 'glitch-master'].includes(type) && (
                     <Switch
@@ -1658,14 +2643,18 @@ export default function VideoEffectTool() {
                   </div>
 
                   {/* Media Uploader Controls (docked at preview bottom) */}
-                  {type !== 'typewriter' && (
+                  {!isGenerativeTool && (
                     <div className="w-full max-w-md mt-4 flex flex-col items-center gap-1.5 flex-shrink-0">
                       <button
                         onClick={() => fileInputRef.current?.click()}
                         className="w-full py-2.5 px-4 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 rounded-md text-sm font-semibold transition-colors text-zinc-200 flex items-center justify-center gap-2 truncate shadow"
                       >
                         <Upload size={16} />
-                        {file ? file.name : (lang === 'tr' ? 'Medyayı Değiştir (Görsel/Video)' : 'Upload Media (Photo/Video)')}
+                        {file ? file.name : (
+                          type === 'gsearch'
+                            ? (lang === 'tr' ? '🖼️ Bilgi Paneli / Küçük Resim Yükle (İsteğe Bağlı)' : '🖼️ Upload Knowledge Panel Image (Optional)')
+                            : (lang === 'tr' ? 'Medyayı Değiştir (Görsel/Video)' : 'Upload Media (Photo/Video)')
+                        )}
                       </button>
                       <input
                         type="file"

@@ -27,6 +27,26 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/@ffmpeg')) {
+            return 'ffmpeg-vendor';
+          }
+          if (id.includes('node_modules/firebase')) {
+            return 'firebase-vendor';
+          }
+          if (id.includes('node_modules/framer-motion')) {
+            return 'framer-motion-vendor';
+          }
+          if (id.includes('node_modules/lucide-react')) {
+            return 'lucide-vendor';
+          }
+        }
+      }
+    }
+  },
   server: {
     proxy: {
       '/__/auth': {

@@ -94,7 +94,7 @@ const Projects = () => {
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      const confirmText = lang === 'tr' ? "Bu projeyi silmek istediğinize emin misiniz?" : "Are you sure you want to delete this project?";
+                      const confirmText = t('deleteProjectConfirm', lang) || (lang === 'tr' ? "Bu projeyi silmek istediğinize emin misiniz?" : "Are you sure you want to delete this project?");
                       if (window.confirm(confirmText)) {
                         setDeletingId(proj.id);
                         deleteProject(proj.id).finally(() => setDeletingId(null));
@@ -102,7 +102,7 @@ const Projects = () => {
                     }}
                     disabled={deletingId === proj.id}
                     className="ml-auto p-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                    title={lang === 'tr' ? "Projeyi Sil" : "Delete Project"}
+                    title={t('deleteProject', lang) || (lang === 'tr' ? "Projeyi Sil" : "Delete Project")}
                   >
                     {deletingId === proj.id ? (
                       <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
@@ -117,7 +117,7 @@ const Projects = () => {
                     {proj.toolId === 'match-cut' || !proj.toolId ? 'Match Cut' : proj.toolId.replace('-', ' ')}
                   </span>
                   <div className="flex items-center gap-1 text-accent-gold font-bold opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0">
-                    {lang === 'tr' ? 'Düzenle' : 'Open'} <ArrowRight size={16} />
+                    {t('openProject', lang) || (lang === 'tr' ? 'Düzenle' : 'Open')} <ArrowRight size={16} />
                   </div>
                 </div>
               </motion.div>
