@@ -4708,7 +4708,7 @@ export function drawPaperCutoutFrame(ctx, a, b, c, d, e) {
     ctx.stroke();
     curY += 14;
 
-    // Body Snippet with Animated Yellow / Neon Highlighter
+    // Body Snippet with Animated Yellow / Neon Highlighter (Word-Accurate Marker)
     ctx.fillStyle = textBodyCol;
     const bodyFontSize = Math.max(12, Math.round((isVertical ? 13 : 15) * mScale));
     ctx.font = `500 ${bodyFontSize}px 'Georgia', serif`;
@@ -4717,20 +4717,71 @@ export function drawPaperCutoutFrame(ctx, a, b, c, d, e) {
     let bodyLine = '';
     const highlightProg = Math.max(0, Math.min(1.0, (progress - 0.25) / 0.50));
 
+    const drawLineWithPreciseHighlight = (lineText, lineX, lineY) => {
+        if (!lineText) return;
+        
+        // Draw exact word/phrase highlight behind matching text
+        if (highlightKeyword && highlightProg > 0) {
+            const lowerLine = lineText.toLowerCase();
+            const lowerKw = highlightKeyword.toLowerCase().trim();
+
+            if (lowerKw) {
+                let startIndex = lowerLine.indexOf(lowerKw);
+
+                if (startIndex !== -1) {
+                    // Full phrase match on this line
+                    const beforeText = lineText.substring(0, startIndex);
+                    const matchText = lineText.substring(startIndex, startIndex + lowerKw.length);
+
+                    const beforeW = ctx.measureText(beforeText).width;
+                    const matchW = ctx.measureText(matchText).width;
+
+                    const hlX = lineX + beforeW - 2;
+                    const hlW = (matchW + 4) * highlightProg;
+
+                    ctx.save();
+                    ctx.fillStyle = highlightCol;
+                    ctx.fillRect(hlX, lineY - 2, hlW, bodyFontSize + 6);
+                    ctx.restore();
+                } else {
+                    // If multi-word phrase is split across line breaks, highlight individual matching words
+                    const kwWords = lowerKw.split(/\s+/).filter(w => w.length > 1);
+                    for (const kw of kwWords) {
+                        let kwIdx = lowerLine.indexOf(kw);
+                        while (kwIdx !== -1) {
+                            const isStartBoundary = kwIdx === 0 || /\s|[.,!?;:"'(\[]/.test(lowerLine[kwIdx - 1]);
+                            const isEndBoundary = (kwIdx + kw.length === lowerLine.length) || /\s|[.,!?;:"')\]]/.test(lowerLine[kwIdx + kw.length]);
+
+                            if (isStartBoundary && isEndBoundary) {
+                                const beforeText = lineText.substring(0, kwIdx);
+                                const matchText = lineText.substring(kwIdx, kwIdx + kw.length);
+
+                                const beforeW = ctx.measureText(beforeText).width;
+                                const matchW = ctx.measureText(matchText).width;
+
+                                const hlX = lineX + beforeW - 2;
+                                const hlW = (matchW + 4) * highlightProg;
+
+                                ctx.save();
+                                ctx.fillStyle = highlightCol;
+                                ctx.fillRect(hlX, lineY - 2, hlW, bodyFontSize + 6);
+                                ctx.restore();
+                            }
+                            kwIdx = lowerLine.indexOf(kw, kwIdx + 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        ctx.fillStyle = textBodyCol;
+        ctx.fillText(lineText, lineX, lineY);
+    };
+
     for (const bw of bodyWords) {
         const testBody = bodyLine ? `${bodyLine} ${bw}` : bw;
         if (ctx.measureText(testBody).width > maxTextW) {
-            // Draw Highlight behind line if it contains the keyword
-            if (highlightKeyword && bodyLine.toLowerCase().includes(highlightKeyword.toLowerCase()) && highlightProg > 0) {
-                const lineW = ctx.measureText(bodyLine).width;
-                ctx.save();
-                ctx.fillStyle = highlightCol;
-                ctx.fillRect(cardX + 24, curY - 1, lineW * highlightProg, bodyFontSize + 4);
-                ctx.restore();
-            }
-
-            ctx.fillStyle = textBodyCol;
-            ctx.fillText(bodyLine, cardX + 24, curY);
+            drawLineWithPreciseHighlight(bodyLine, cardX + 24, curY);
             bodyLine = bw;
             curY += bodyFontSize * 1.45;
         } else {
@@ -4738,15 +4789,7 @@ export function drawPaperCutoutFrame(ctx, a, b, c, d, e) {
         }
     }
     if (bodyLine) {
-        if (highlightKeyword && bodyLine.toLowerCase().includes(highlightKeyword.toLowerCase()) && highlightProg > 0) {
-            const lineW = ctx.measureText(bodyLine).width;
-            ctx.save();
-            ctx.fillStyle = highlightCol;
-            ctx.fillRect(cardX + 24, curY - 1, lineW * highlightProg, bodyFontSize + 4);
-            ctx.restore();
-        }
-        ctx.fillStyle = textBodyCol;
-        ctx.fillText(bodyLine, cardX + 24, curY);
+        drawLineWithPreciseHighlight(bodyLine, cardX + 24, curY);
     }
 
     ctx.restore(); // Exit card clipping / rotation
