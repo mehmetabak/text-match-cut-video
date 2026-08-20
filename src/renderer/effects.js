@@ -4823,6 +4823,7 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
     const isVertical = height > width;
     const mScale = Math.min(width, height) / 720;
 
+    // Parameters
     const targetLabel = options.targetLabel || options.trackingTargetLabel || "[CONFIRMED ID: SUBJECT 09]";
     const category = (options.category || options.trackingCategory || "FACIAL BIOMETRICS • 4K SENSOR").toUpperCase();
     const confidenceVal = Number(options.confidence !== undefined ? options.confidence : options.trackingConfidence) || 99.4;
@@ -4831,6 +4832,16 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
     const reticleStyle = options.reticleStyle || options.trackingReticleStyle || "cornerBrackets"; // 'cornerBrackets' | 'circularSniper' | 'fullHud'
     const scanBeam = (options.scanBeam !== undefined ? options.scanBeam : options.trackingScanBeam) !== false;
     const lockAnim = (options.lockAnimation !== undefined ? options.lockAnimation : options.trackingLockAnimation) !== false;
+
+    // Advanced Face / Object Framing & Crop Parameters
+    const imageScale = Math.max(0.6, Math.min(4.5, Number(options.imageScale ?? options.trackingImageScale ?? 1.0)));
+    const imagePanX = Math.max(-1.0, Math.min(1.0, Number(options.imagePanX ?? options.trackingImagePanX ?? 0)));
+    const imagePanY = Math.max(-1.0, Math.min(1.0, Number(options.imagePanY ?? options.trackingImagePanY ?? 0)));
+    const boxPreset = options.boxPreset || options.trackingBoxPreset || "face"; // 'face' | 'object' | 'square' | 'wide'
+    const boxScale = Math.max(0.5, Math.min(2.2, Number(options.boxScale ?? options.trackingBoxScale ?? 1.0)));
+    const boxOffsetX = Number(options.boxOffsetX ?? options.trackingBoxOffsetX ?? 0);
+    const boxOffsetY = Number(options.boxOffsetY ?? options.trackingBoxOffsetY ?? 0);
+    const sensorFilter = options.sensorFilter || options.trackingSensorFilter || "standard"; // 'standard' | 'nightVision' | 'thermal' | 'monochrome'
 
     ctx.save();
 
@@ -4863,26 +4874,45 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
         gridCol = 'rgba(0, 229, 255, 0.08)';
     }
 
-    // Background Canvas / Media
+    // 2. Render Source Media (with advanced aspect-ratio cover, zoom, and pan positioning)
     if (mediaSource) {
         try {
-            const { width: srcW, height: srcH } = getSourceDimensions(mediaSource);
-            const scale = Math.max(width / srcW, height / srcH);
-            const sw = srcW * scale;
-            const sh = srcH * scale;
-            const sx = (width - sw) / 2;
-            const sy = (height - sh) / 2;
-            ctx.drawImage(mediaSource, sx, sy, sw, sh);
+            drawImageCover(ctx, mediaSource, 0, 0, width, height, imageScale, imagePanX, imagePanY);
 
-            // Darkening surveillance tinted veil
-            ctx.fillStyle = 'rgba(5, 10, 20, 0.65)';
-            ctx.fillRect(0, 0, width, height);
+            // Sensor Overlay Filters
+            if (sensorFilter === 'nightVision') {
+                // Tactical Night Vision (Phosphor Green tint + scanlines)
+                ctx.fillStyle = 'rgba(6, 78, 30, 0.48)';
+                ctx.fillRect(0, 0, width, height);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+                for (let y = 0; y < height; y += 4) {
+                    ctx.fillRect(0, y, width, 1.5);
+                }
+            } else if (sensorFilter === 'thermal') {
+                // FLIR Thermal Camera Heat Simulation
+                ctx.fillStyle = 'rgba(180, 20, 80, 0.35)';
+                ctx.fillRect(0, 0, width, height);
+                const thermGrad = ctx.createLinearGradient(0, 0, width, height);
+                thermGrad.addColorStop(0, 'rgba(0, 50, 200, 0.35)');
+                thermGrad.addColorStop(0.5, 'rgba(255, 120, 0, 0.35)');
+                thermGrad.addColorStop(1, 'rgba(255, 230, 0, 0.35)');
+                ctx.fillStyle = thermGrad;
+                ctx.fillRect(0, 0, width, height);
+            } else if (sensorFilter === 'monochrome') {
+                // CCTV Security B&W High-Contrast
+                ctx.fillStyle = 'rgba(10, 15, 25, 0.65)';
+                ctx.fillRect(0, 0, width, height);
+            } else {
+                // Standard Cinematic Cyber Surveillance
+                ctx.fillStyle = 'rgba(5, 10, 20, 0.58)';
+                ctx.fillRect(0, 0, width, height);
+            }
         } catch (e) {
             ctx.fillStyle = '#050B14';
             ctx.fillRect(0, 0, width, height);
         }
     } else {
-        // Deep Surveillance Grid Background
+        // Deep Surveillance Radial Space
         const bgGrad = ctx.createRadialGradient(width / 2, height / 2, width * 0.1, width / 2, height / 2, width * 0.85);
         bgGrad.addColorStop(0, '#091522');
         bgGrad.addColorStop(1, '#02060C');
@@ -4890,7 +4920,7 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
         ctx.fillRect(0, 0, width, height);
     }
 
-    // Top-Level Surveillance Grid Mesh
+    // 3. Top-Level Surveillance Grid Mesh
     ctx.strokeStyle = gridCol;
     ctx.lineWidth = 1;
     const gridStep = Math.round(48 * mScale);
@@ -4907,7 +4937,7 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
         ctx.stroke();
     }
 
-    // Top Status Header Bar
+    // 4. Top Status Header Bar
     ctx.fillStyle = hudMain;
     ctx.font = `800 ${Math.max(10, Math.round(11 * mScale))}px 'Courier New', monospace`;
     ctx.fillText(`● REC [AI SURVEILLANCE FEED]`, 28, 34);
@@ -4917,19 +4947,38 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
     ctx.fillText(`SYS.LOCK // ${timeCode}`, width - 28, 34);
     ctx.textAlign = 'left';
 
-    // Target Box Placement
-    const boxW = Math.round(isVertical ? width * 0.72 : width * 0.42);
-    const boxH = Math.round(isVertical ? height * 0.42 : height * 0.52);
-    
-    // Dynamic Tracking Lock Animation (Zooms from 1.35x down to 1.0x with slight bounce)
-    let lockScale = 1.0;
-    if (lockAnim) {
-        const lockProg = Math.min(1.0, progress / 0.20);
-        lockScale = 1.35 - (0.35 * Math.sin(lockProg * Math.PI / 2));
+    // 5. Target Box Dimensions & Positioning based on Preset & Offsets
+    let baseW, baseH;
+    if (boxPreset === 'face') {
+        // Portrait / Face Proportions (Square to slightly vertical 4:5)
+        baseW = Math.round(isVertical ? width * 0.62 : width * 0.26);
+        baseH = Math.round(baseW * 1.25);
+    } else if (boxPreset === 'object') {
+        // Vehicle / Wide Object Landscape (16:10)
+        baseW = Math.round(isVertical ? width * 0.78 : width * 0.44);
+        baseH = Math.round(baseW * 0.62);
+    } else if (boxPreset === 'square') {
+        // 1:1 Symmetrical Precision Reticle
+        baseW = Math.round(isVertical ? width * 0.65 : width * 0.32);
+        baseH = baseW;
+    } else {
+        // Wide Surveillance Inset (2:1)
+        baseW = Math.round(isVertical ? width * 0.84 : width * 0.50);
+        baseH = Math.round(baseW * 0.50);
     }
 
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const boxW = Math.round(baseW * boxScale);
+    const boxH = Math.round(baseH * boxScale);
+    
+    // Dynamic Tracking Lock Animation (Zooms from 1.30x down to 1.0x with slight bounce)
+    let lockScale = 1.0;
+    if (lockAnim) {
+        const lockProg = Math.min(1.0, progress / 0.18);
+        lockScale = 1.30 - (0.30 * Math.sin(lockProg * Math.PI / 2));
+    }
+
+    const centerX = (width / 2) + (boxOffsetX * mScale);
+    const centerY = (height / 2) + (boxOffsetY * mScale);
     const curW = boxW * lockScale;
     const curH = boxH * lockScale;
     const left = centerX - (curW / 2);
@@ -4937,7 +4986,25 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
     const right = left + curW;
     const bottom = top + curH;
 
-    // Sweeping Radar Scan Laser Line
+    // 6. Target Box Inset Spotlight / Clear View Highlight
+    if (mediaSource) {
+        ctx.save();
+        ctx.beginPath();
+        if (ctx.roundRect) {
+            ctx.roundRect(left, top, curW, curH, 4);
+        } else {
+            ctx.rect(left, top, curW, curH);
+        }
+        ctx.clip();
+        // Redraw un-dimmed region inside bounding box for crystal clear AI focus
+        drawImageCover(ctx, mediaSource, 0, 0, width, height, imageScale, imagePanX, imagePanY);
+        // Soft optical highlight glow
+        ctx.fillStyle = hudBgDim;
+        ctx.fillRect(left, top, curW, curH);
+        ctx.restore();
+    }
+
+    // 7. Sweeping Radar Scan Laser Line
     if (scanBeam) {
         const scanY = top + (curH * ((progress * 1.6) % 1.0));
         ctx.save();
@@ -4956,7 +5023,7 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
         ctx.restore();
     }
 
-    // Reticle Center Crosshair
+    // 8. Reticle Center Crosshair
     ctx.save();
     ctx.strokeStyle = hudMain;
     ctx.lineWidth = 1.5;
@@ -4974,7 +5041,7 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
     ctx.stroke();
     ctx.restore();
 
-    // 4 Corner Brackets (Target Lock-On)
+    // 9. 4 Corner Brackets (Target Lock-On)
     const bracketLen = Math.round(28 * mScale);
     ctx.save();
     ctx.strokeStyle = hudMain;
@@ -5011,7 +5078,7 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
     ctx.stroke();
     ctx.restore();
 
-    // Circular Sniper Radar Ring (If selected)
+    // 10. Circular Sniper Radar Ring (If selected)
     if (reticleStyle === 'circularSniper' || reticleStyle === 'fullHud') {
         ctx.save();
         ctx.strokeStyle = hudBgDim;
@@ -5033,26 +5100,28 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
         ctx.restore();
     }
 
-    // Top Identifier Badge on Bounding Box
+    // 11. Top Identifier Badge on Bounding Box
     ctx.fillStyle = hudMain;
+    const badgeW = Math.round(180 * mScale);
+    const badgeH = Math.round(22 * mScale);
     if (ctx.roundRect) {
         ctx.beginPath();
-        ctx.roundRect(left, top - 26, 170 * mScale, 22, 2);
+        ctx.roundRect(left, top - badgeH - 4, badgeW, badgeH, 2);
         ctx.fill();
     } else {
-        ctx.fillRect(left, top - 26, 170 * mScale, 22);
+        ctx.fillRect(left, top - badgeH - 4, badgeW, badgeH);
     }
 
     ctx.fillStyle = '#000000';
     ctx.font = `900 ${Math.max(10, Math.round(11 * mScale))}px 'Courier New', monospace`;
     ctx.textBaseline = 'middle';
-    ctx.fillText(`TARGET LOCKED [99.4%]`, left + 8, top - 15);
+    ctx.fillText(`TARGET LOCKED [99.4%]`, left + 8, top - (badgeH / 2) - 4);
 
-    // Target Label & Category Underneath Box
+    // 12. Target Label & Category Underneath Box
     ctx.fillStyle = '#FFFFFF';
     ctx.font = `800 ${Math.max(14, Math.round(17 * mScale))}px 'Inter', sans-serif`;
     ctx.textBaseline = 'top';
-    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowColor = 'rgba(0,0,0,0.85)';
     ctx.shadowBlur = 8;
     ctx.fillText(targetLabel, left, bottom + 12);
 
@@ -5060,7 +5129,7 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
     ctx.font = `700 ${Math.max(10, Math.round(12 * mScale))}px 'Courier New', monospace`;
     ctx.fillText(`CATEGORY // ${category}`, left, bottom + 38);
 
-    // Confidence Level Meter (Live Counting Progression)
+    // 13. Confidence Level Meter (Live Counting Progression)
     const currentConf = Math.min(confidenceVal, (progress * 1.5) * confidenceVal).toFixed(1);
     ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
     ctx.font = `700 ${Math.max(10, Math.round(11 * mScale))}px 'Courier New', monospace`;
@@ -5078,7 +5147,7 @@ export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
     ctx.fillRect(left, bottom + 74, (Number(currentConf) / 100) * barW, barH);
     ctx.shadowColor = 'transparent';
 
-    // Bottom Telemetry Coordinates
+    // 14. Bottom Telemetry Coordinates
     ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
     ctx.font = `600 ${Math.max(9, Math.round(11 * mScale))}px 'Courier New', monospace`;
     ctx.fillText(coordinates, left, bottom + 88);

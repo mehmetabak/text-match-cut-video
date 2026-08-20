@@ -246,6 +246,14 @@ export default function VideoEffectTool() {
   const [trackingReticleStyle, setTrackingReticleStyle] = useState("cornerBrackets"); // 'cornerBrackets' | 'circularSniper' | 'fullHud'
   const [trackingScanBeam, setTrackingScanBeam] = useState(true);
   const [trackingLockAnimation, setTrackingLockAnimation] = useState(true);
+  const [trackingImageScale, setTrackingImageScale] = useState(1.0);
+  const [trackingImagePanX, setTrackingImagePanX] = useState(0);
+  const [trackingImagePanY, setTrackingImagePanY] = useState(0);
+  const [trackingBoxPreset, setTrackingBoxPreset] = useState("face"); // 'face' | 'object' | 'square' | 'wide'
+  const [trackingBoxScale, setTrackingBoxScale] = useState(1.0);
+  const [trackingBoxOffsetX, setTrackingBoxOffsetX] = useState(0);
+  const [trackingBoxOffsetY, setTrackingBoxOffsetY] = useState(0);
+  const [trackingSensorFilter, setTrackingSensorFilter] = useState("standard"); // 'standard' | 'nightVision' | 'thermal' | 'monochrome'
 
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
@@ -475,7 +483,15 @@ export default function VideoEffectTool() {
     trackingHudTheme,
     trackingReticleStyle,
     trackingScanBeam: Boolean(trackingScanBeam),
-    trackingLockAnimation: Boolean(trackingLockAnimation)
+    trackingLockAnimation: Boolean(trackingLockAnimation),
+    trackingImageScale: Number(trackingImageScale) || 1.0,
+    trackingImagePanX: Number(trackingImagePanX) || 0,
+    trackingImagePanY: Number(trackingImagePanY) || 0,
+    trackingBoxPreset,
+    trackingBoxScale: Number(trackingBoxScale) || 1.0,
+    trackingBoxOffsetX: Number(trackingBoxOffsetX) || 0,
+    trackingBoxOffsetY: Number(trackingBoxOffsetY) || 0,
+    trackingSensorFilter
   });
 
   const loadedDraftIdRef = useRef(null);
@@ -614,6 +630,14 @@ export default function VideoEffectTool() {
     setTrackingReticleStyle("cornerBrackets");
     setTrackingScanBeam(true);
     setTrackingLockAnimation(true);
+    setTrackingImageScale(1.0);
+    setTrackingImagePanX(0);
+    setTrackingImagePanY(0);
+    setTrackingBoxPreset("face");
+    setTrackingBoxScale(1.0);
+    setTrackingBoxOffsetX(0);
+    setTrackingBoxOffsetY(0);
+    setTrackingSensorFilter("standard");
     lastSavedSnapshotRef.current = null;
   };
 
@@ -736,6 +760,14 @@ export default function VideoEffectTool() {
     if (s.trackingReticleStyle) setTrackingReticleStyle(s.trackingReticleStyle);
     if (s.trackingScanBeam !== undefined) setTrackingScanBeam(Boolean(s.trackingScanBeam));
     if (s.trackingLockAnimation !== undefined) setTrackingLockAnimation(Boolean(s.trackingLockAnimation));
+    if (s.trackingImageScale !== undefined) setTrackingImageScale(Number(s.trackingImageScale));
+    if (s.trackingImagePanX !== undefined) setTrackingImagePanX(Number(s.trackingImagePanX));
+    if (s.trackingImagePanY !== undefined) setTrackingImagePanY(Number(s.trackingImagePanY));
+    if (s.trackingBoxPreset) setTrackingBoxPreset(s.trackingBoxPreset);
+    if (s.trackingBoxScale !== undefined) setTrackingBoxScale(Number(s.trackingBoxScale));
+    if (s.trackingBoxOffsetX !== undefined) setTrackingBoxOffsetX(Number(s.trackingBoxOffsetX));
+    if (s.trackingBoxOffsetY !== undefined) setTrackingBoxOffsetY(Number(s.trackingBoxOffsetY));
+    if (s.trackingSensorFilter) setTrackingSensorFilter(s.trackingSensorFilter);
   }, []);
 
   // 1. Load Draft / Restore Project (from query param or localStorage or cloud projects)
@@ -1165,7 +1197,15 @@ export default function VideoEffectTool() {
             theme: trackingHudTheme,
             reticleStyle: trackingReticleStyle,
             scanBeam: trackingScanBeam,
-            lockAnimation: trackingLockAnimation
+            lockAnimation: trackingLockAnimation,
+            imageScale: trackingImageScale,
+            imagePanX: trackingImagePanX,
+            imagePanY: trackingImagePanY,
+            boxPreset: trackingBoxPreset,
+            boxScale: trackingBoxScale,
+            boxOffsetX: trackingBoxOffsetX,
+            boxOffsetY: trackingBoxOffsetY,
+            sensorFilter: trackingSensorFilter
           });
         }
       }
@@ -1405,7 +1445,15 @@ export default function VideoEffectTool() {
             theme: trackingHudTheme,
             reticleStyle: trackingReticleStyle,
             scanBeam: trackingScanBeam,
-            lockAnimation: trackingLockAnimation
+            lockAnimation: trackingLockAnimation,
+            imageScale: trackingImageScale,
+            imagePanX: trackingImagePanX,
+            imagePanY: trackingImagePanY,
+            boxPreset: trackingBoxPreset,
+            boxScale: trackingBoxScale,
+            boxOffsetX: trackingBoxOffsetX,
+            boxOffsetY: trackingBoxOffsetY,
+            sensorFilter: trackingSensorFilter
           });
         } else {
           ctx.fillStyle = '#0F1015';
@@ -2923,6 +2971,156 @@ export default function VideoEffectTool() {
                   {/* 14. AI Target & Subject Tracker HUD Settings Panel */}
                   {type === 'tracking' && (
                     <>
+                      {/* Media Image / Subject Framing Box */}
+                      <div className="p-3 bg-zinc-800/60 border border-cyan-500/40 rounded-xl space-y-3 shadow-inner">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-bold text-cyan-300 flex items-center gap-1.5 uppercase tracking-wider font-mono">
+                            <span>🎯</span>
+                            <span>{t('trackingImageSectionLabel', lang)}</span>
+                          </label>
+                          {file && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFile(null);
+                                if (sourceMediaRef.current) sourceMediaRef.current = null;
+                                if (fileInputRef.current) fileInputRef.current.value = '';
+                              }}
+                              className="text-[11px] text-red-400 hover:text-red-300 font-medium transition-colors cursor-pointer"
+                            >
+                              {t('trackingRemoveMediaLabel', lang)}
+                            </button>
+                          )}
+                        </div>
+
+                        {file ? (
+                          <div className="flex items-center justify-between p-2 bg-zinc-900/80 border border-zinc-700 rounded-lg">
+                            <div className="flex items-center gap-2 min-w-0 pr-2">
+                              <span className="text-xs text-zinc-300 font-medium truncate font-mono">
+                                📷 {file.name}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="text-xs bg-zinc-800 hover:bg-zinc-700 text-cyan-400 font-semibold px-2.5 py-1 rounded border border-zinc-600 transition-colors flex-shrink-0 cursor-pointer"
+                            >
+                              {t('trackingChangeMediaLabel', lang)}
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full py-2.5 px-3 bg-zinc-900/80 hover:bg-zinc-700/60 border border-dashed border-cyan-500/50 hover:border-cyan-400 rounded-lg text-xs font-semibold text-cyan-400 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm font-mono"
+                          >
+                            <Upload size={14} />
+                            <span>{t('trackingUploadMediaLabel', lang)}</span>
+                          </button>
+                        )}
+
+                        {/* Subject Framing Preset */}
+                        <SegmentedControl
+                          label={t('trackingBoxPresetLabel', lang)}
+                          options={[
+                            { value: 'face', label: t('trackingPresetFace', lang) },
+                            { value: 'object', label: t('trackingPresetObject', lang) },
+                            { value: 'square', label: t('trackingPresetSquare', lang) },
+                            { value: 'wide', label: t('trackingPresetWide', lang) }
+                          ]}
+                          value={trackingBoxPreset}
+                          onChange={setTrackingBoxPreset}
+                        />
+
+                        {/* Surveillance Sensor Filter */}
+                        <SegmentedControl
+                          label={t('trackingSensorFilterLabel', lang)}
+                          options={[
+                            { value: 'standard', label: t('sensorFilterStandard', lang) },
+                            { value: 'nightVision', label: t('sensorFilterNightVision', lang) },
+                            { value: 'thermal', label: t('sensorFilterThermal', lang) },
+                            { value: 'monochrome', label: t('sensorFilterMonochrome', lang) }
+                          ]}
+                          value={trackingSensorFilter}
+                          onChange={setTrackingSensorFilter}
+                        />
+
+                        {/* Image Framing & Zoom Sliders */}
+                        <div className="space-y-3 pt-2 border-t border-zinc-700/60">
+                          {/* Subject Zoom */}
+                          <div>
+                            <div className="flex justify-between text-xs font-medium text-gray-400 mb-1">
+                              <span>{t('trackingImageScaleLabel', lang)}</span>
+                              <span className="text-cyan-400 font-mono font-bold">{trackingImageScale.toFixed(2)}x</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0.60"
+                              max="4.00"
+                              step="0.05"
+                              value={trackingImageScale}
+                              onChange={(e) => setTrackingImageScale(parseFloat(e.target.value))}
+                              className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                            />
+                          </div>
+
+                          {/* Horizontal Pan X */}
+                          <div>
+                            <div className="flex justify-between text-xs font-medium text-gray-400 mb-1">
+                              <span>{t('trackingImagePanXLabel', lang)}</span>
+                              <span className="text-cyan-400 font-mono font-bold">
+                                {trackingImagePanX === 0 ? '0' : (trackingImagePanX > 0 ? `+${Math.round(trackingImagePanX * 100)}%` : `${Math.round(trackingImagePanX * 100)}%`)}
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min="-1.0"
+                              max="1.0"
+                              step="0.02"
+                              value={trackingImagePanX}
+                              onChange={(e) => setTrackingImagePanX(parseFloat(e.target.value))}
+                              className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                            />
+                          </div>
+
+                          {/* Vertical Pan Y */}
+                          <div>
+                            <div className="flex justify-between text-xs font-medium text-gray-400 mb-1">
+                              <span>{t('trackingImagePanYLabel', lang)}</span>
+                              <span className="text-cyan-400 font-mono font-bold">
+                                {trackingImagePanY === 0 ? '0' : (trackingImagePanY > 0 ? `+${Math.round(trackingImagePanY * 100)}%` : `${Math.round(trackingImagePanY * 100)}%`)}
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min="-1.0"
+                              max="1.0"
+                              step="0.02"
+                              value={trackingImagePanY}
+                              onChange={(e) => setTrackingImagePanY(parseFloat(e.target.value))}
+                              className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                            />
+                          </div>
+
+                          {/* Reticle Box Scale */}
+                          <div>
+                            <div className="flex justify-between text-xs font-medium text-gray-400 mb-1">
+                              <span>{t('trackingBoxScaleLabel', lang)}</span>
+                              <span className="text-cyan-400 font-mono font-bold">{trackingBoxScale.toFixed(2)}x</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0.50"
+                              max="2.00"
+                              step="0.05"
+                              value={trackingBoxScale}
+                              onChange={(e) => setTrackingBoxScale(parseFloat(e.target.value))}
+                              className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
                       <div>
                         <label className="block text-sm font-medium text-gray-400 mb-1">
                           {t('trackingTargetLabelLabel', lang)}
