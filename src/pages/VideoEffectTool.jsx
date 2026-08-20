@@ -903,9 +903,10 @@ export default function VideoEffectTool() {
         } else if (type === 'counter') {
           isDefault = counterTheme === 'financial' && counterVal1 === 4200 && counterVal2 === 850 && counterShowGauges === true;
         } else if (type === 'paper') {
-          isDefault = paperTheme === 'vintage' && paperTornStyle === 'rippedEdge' && paperTapeColor === 'washiGold';
+          const isDefaultHeadline = paperHeadline === "TOP SECRET // CLASSIFIED DOSSIER" || paperHeadline === "GİZLİ BELGE // DOSYA #741" || !paperHeadline.trim();
+          isDefault = isDefaultHeadline && paperTheme === 'vintage' && paperTornStyle === 'rippedEdge' && paperTapeColor === 'washiGold' && paperImageScale === 1.0 && paperImagePanY === 0 && paperImageHeight === 0.35 && paperImageFit === 'cover' && paperJitter === true;
         } else if (type === 'tracking') {
-          isDefault = trackingHudTheme === 'cyberCyan' && trackingReticleStyle === 'cornerBrackets' && trackingConfidence === 99.4;
+          isDefault = trackingHudTheme === 'cyberCyan' && trackingReticleStyle === 'cornerBrackets' && trackingConfidence === 99.4 && trackingImageScale === 1.0 && trackingImagePanX === 0 && trackingImagePanY === 0 && trackingBoxScale === 1.0 && trackingTargetLabel === "[CONFIRMED ID: SUBJECT 09]" && trackingCategory === "FACIAL BIOMETRICS • 4K SENSOR";
         }
       }
 
