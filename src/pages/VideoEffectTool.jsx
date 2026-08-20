@@ -249,11 +249,9 @@ export default function VideoEffectTool() {
   const [trackingImageScale, setTrackingImageScale] = useState(1.0);
   const [trackingImagePanX, setTrackingImagePanX] = useState(0);
   const [trackingImagePanY, setTrackingImagePanY] = useState(0);
-  const [trackingBoxPreset, setTrackingBoxPreset] = useState("face"); // 'face' | 'object' | 'square' | 'wide'
   const [trackingBoxScale, setTrackingBoxScale] = useState(1.0);
   const [trackingBoxOffsetX, setTrackingBoxOffsetX] = useState(0);
   const [trackingBoxOffsetY, setTrackingBoxOffsetY] = useState(0);
-  const [trackingSensorFilter, setTrackingSensorFilter] = useState("standard"); // 'standard' | 'nightVision' | 'thermal' | 'monochrome'
 
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
@@ -487,11 +485,9 @@ export default function VideoEffectTool() {
     trackingImageScale: Number(trackingImageScale) || 1.0,
     trackingImagePanX: Number(trackingImagePanX) || 0,
     trackingImagePanY: Number(trackingImagePanY) || 0,
-    trackingBoxPreset,
     trackingBoxScale: Number(trackingBoxScale) || 1.0,
     trackingBoxOffsetX: Number(trackingBoxOffsetX) || 0,
-    trackingBoxOffsetY: Number(trackingBoxOffsetY) || 0,
-    trackingSensorFilter
+    trackingBoxOffsetY: Number(trackingBoxOffsetY) || 0
   });
 
   const loadedDraftIdRef = useRef(null);
@@ -633,11 +629,9 @@ export default function VideoEffectTool() {
     setTrackingImageScale(1.0);
     setTrackingImagePanX(0);
     setTrackingImagePanY(0);
-    setTrackingBoxPreset("face");
     setTrackingBoxScale(1.0);
     setTrackingBoxOffsetX(0);
     setTrackingBoxOffsetY(0);
-    setTrackingSensorFilter("standard");
     lastSavedSnapshotRef.current = null;
   };
 
@@ -763,11 +757,9 @@ export default function VideoEffectTool() {
     if (s.trackingImageScale !== undefined) setTrackingImageScale(Number(s.trackingImageScale));
     if (s.trackingImagePanX !== undefined) setTrackingImagePanX(Number(s.trackingImagePanX));
     if (s.trackingImagePanY !== undefined) setTrackingImagePanY(Number(s.trackingImagePanY));
-    if (s.trackingBoxPreset) setTrackingBoxPreset(s.trackingBoxPreset);
     if (s.trackingBoxScale !== undefined) setTrackingBoxScale(Number(s.trackingBoxScale));
     if (s.trackingBoxOffsetX !== undefined) setTrackingBoxOffsetX(Number(s.trackingBoxOffsetX));
     if (s.trackingBoxOffsetY !== undefined) setTrackingBoxOffsetY(Number(s.trackingBoxOffsetY));
-    if (s.trackingSensorFilter) setTrackingSensorFilter(s.trackingSensorFilter);
   }, []);
 
   // 1. Load Draft / Restore Project (from query param or localStorage or cloud projects)
@@ -1201,11 +1193,9 @@ export default function VideoEffectTool() {
             imageScale: trackingImageScale,
             imagePanX: trackingImagePanX,
             imagePanY: trackingImagePanY,
-            boxPreset: trackingBoxPreset,
             boxScale: trackingBoxScale,
             boxOffsetX: trackingBoxOffsetX,
-            boxOffsetY: trackingBoxOffsetY,
-            sensorFilter: trackingSensorFilter
+            boxOffsetY: trackingBoxOffsetY
           });
         }
       }
@@ -1449,11 +1439,9 @@ export default function VideoEffectTool() {
             imageScale: trackingImageScale,
             imagePanX: trackingImagePanX,
             imagePanY: trackingImagePanY,
-            boxPreset: trackingBoxPreset,
             boxScale: trackingBoxScale,
             boxOffsetX: trackingBoxOffsetX,
-            boxOffsetY: trackingBoxOffsetY,
-            sensorFilter: trackingSensorFilter
+            boxOffsetY: trackingBoxOffsetY
           });
         } else {
           ctx.fillStyle = '#0F1015';
@@ -3019,32 +3007,6 @@ export default function VideoEffectTool() {
                           </button>
                         )}
 
-                        {/* Subject Framing Preset */}
-                        <SegmentedControl
-                          label={t('trackingBoxPresetLabel', lang)}
-                          options={[
-                            { value: 'face', label: t('trackingPresetFace', lang) },
-                            { value: 'object', label: t('trackingPresetObject', lang) },
-                            { value: 'square', label: t('trackingPresetSquare', lang) },
-                            { value: 'wide', label: t('trackingPresetWide', lang) }
-                          ]}
-                          value={trackingBoxPreset}
-                          onChange={setTrackingBoxPreset}
-                        />
-
-                        {/* Surveillance Sensor Filter */}
-                        <SegmentedControl
-                          label={t('trackingSensorFilterLabel', lang)}
-                          options={[
-                            { value: 'standard', label: t('sensorFilterStandard', lang) },
-                            { value: 'nightVision', label: t('sensorFilterNightVision', lang) },
-                            { value: 'thermal', label: t('sensorFilterThermal', lang) },
-                            { value: 'monochrome', label: t('sensorFilterMonochrome', lang) }
-                          ]}
-                          value={trackingSensorFilter}
-                          onChange={setTrackingSensorFilter}
-                        />
-
                         {/* Image Framing & Zoom Sliders */}
                         <div className="space-y-3 pt-2 border-t border-zinc-700/60">
                           {/* Subject Zoom */}
@@ -3055,8 +3017,8 @@ export default function VideoEffectTool() {
                             </div>
                             <input
                               type="range"
-                              min="0.60"
-                              max="4.00"
+                              min="0.70"
+                              max="3.00"
                               step="0.05"
                               value={trackingImageScale}
                               onChange={(e) => setTrackingImageScale(parseFloat(e.target.value))}
@@ -3110,8 +3072,8 @@ export default function VideoEffectTool() {
                             </div>
                             <input
                               type="range"
-                              min="0.50"
-                              max="2.00"
+                              min="0.60"
+                              max="1.80"
                               step="0.05"
                               value={trackingBoxScale}
                               onChange={(e) => setTrackingBoxScale(parseFloat(e.target.value))}
