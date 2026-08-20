@@ -1,13 +1,11 @@
 // src/lib/ffmpeg.js
-let ffmpeg;
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { toBlobURL } from '@ffmpeg/util';
+
+let ffmpeg = null;
 
 export async function loadFfmpeg() {
     if (ffmpeg) return ffmpeg;
-
-    const [{ FFmpeg }, { toBlobURL }] = await Promise.all([
-        import('@ffmpeg/ffmpeg'),
-        import('@ffmpeg/util')
-    ]);
 
     ffmpeg = new FFmpeg();
     const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
