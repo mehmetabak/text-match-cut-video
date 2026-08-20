@@ -312,77 +312,77 @@ export default function VideoEffectTool() {
     'ken-burns': {
       title1: 'Ken Burns',
       title2: 'Pro',
-      desc: lang === 'tr' ? 'Sabit fotoğraflarınıza sinematik yakınlaşma ve kamera kaydırma hareketleri verin.' : 'Automated cinematic pan and zoom effects for your static images.'
+      desc: t('tool_kenburns_desc', lang) || t('toolKenBurnsDesc', lang)
     },
     'vhs-tape': {
       title1: 'VHS',
-      title2: lang === 'tr' ? 'Kaset' : 'Tape',
-      desc: lang === 'tr' ? '90’lar analog manyetik kaset gürültüsü, renk ayrışımı ve retro VCR damgası.' : 'Authentic 90s magnetic tape noise, chromatic aberration and VCR timestamp.'
+      title2: 'Tape',
+      desc: t('tool_vhs_desc', lang)
     },
     'glitch-master': {
       title1: 'Glitch',
       title2: 'Master',
-      desc: lang === 'tr' ? 'Siberparazit, RGB kanal kayması ve dinamik dijital dilimlenme bozulmaları.' : 'Cybernetic RGB channel shifting, scanline distortion, and slice artifacts.'
+      desc: t('tool_glitch_desc', lang) || t('toolGlitchDesc', lang)
     },
     'typewriter': {
       title1: 'Typewriter',
-      title2: lang === 'tr' ? 'Daktilo' : 'Effect',
-      desc: lang === 'tr' ? 'Karakter karakter yazılan daktilo animasyonları ve şık tipografi.' : 'Terminal typewriter animation with customizable speed, fonts, and cursors.'
+      title2: 'Terminal',
+      desc: t('tool_typewriter_desc', lang)
     },
     'scanline': {
       title1: 'CRT',
       title2: 'Scanline',
-      desc: lang === 'tr' ? 'Nostaljik tüplü ekran tarama çizgileri, fosfor parıltısı ve CRT kutu tonlaması.' : 'Vintage arcade CRT television scanlines, phosphor glow, and screen curvature.'
+      desc: t('tool_scanline_desc', lang)
     },
     'ascii': {
       title1: 'ASCII',
       title2: 'Matrix',
-      desc: lang === 'tr' ? 'Görsel veya videolarınızı gerçek zamanlı Matrix kodlarına ve ASCII karakter sanatına dönüştürün.' : 'Real-time Matrix code rain and ASCII character density renderer.'
+      desc: t('tool_ascii_desc', lang)
     },
     'echo': {
       title1: 'Echo',
       title2: 'Motion',
-      desc: lang === 'tr' ? 'Görsel ve videolara rüya gibi hareket yankıları ve çoklu hayalet izleri ekleyin.' : 'Multi-layered ghost trails and motion echo effects for images and videos.'
+      desc: t('tool_echo_desc', lang)
     },
     'gsearch': {
       title1: 'Google',
       title2: 'Search',
-      desc: lang === 'tr' ? 'Sinematik Google arama çubuğu yazma efekti ve anlık arama sonucu video animasyonu.' : 'Cinematic Google search bar typing and instant results video animation.'
+      desc: t('tool_gsearch_desc', lang)
     },
     'spotlight': {
       title1: 'Document',
-      title2: lang === 'tr' ? 'Vurgulayıcı' : 'Spotlight',
-      desc: lang === 'tr' ? 'Bilimsel makale ve haber metinlerinde Vox tarzı neon fosforlu kalem animasyonu.' : 'Vox-style animated fluorescent highlighter on articles and research papers.'
+      title2: 'Spotlight',
+      desc: t('tool_spotlight_desc', lang)
     },
     'formula': {
       title1: 'LaTeX',
-      title2: lang === 'tr' ? 'Formül' : 'Formula',
-      desc: lang === 'tr' ? '3Blue1Brown tarzı kinetik LaTeX matematik ve bilimsel denklem animasyonu.' : '3Blue1Brown-style kinetic LaTeX math equation and scientific derivations.'
+      title2: 'Formula',
+      desc: t('tool_formula_desc', lang)
     },
     'timeline': {
       title1: 'Story',
-      title2: lang === 'tr' ? 'Çizelge' : 'Timeline',
-      desc: lang === 'tr' ? 'Video essayler için otomatik kamera kaydırmalı akıcı kronolojik zaman çizelgesi.' : 'Cinematic auto-scrolling timeline for video essays with milestone cards.'
+      title2: 'Timeline',
+      desc: t('tool_timeline_desc', lang)
     },
     'tree': {
       title1: 'Event',
-      title2: lang === 'tr' ? 'Ağacı' : 'Tree',
-      desc: lang === 'tr' ? 'Vox tarzı dallanan sebep-sonuç ağacı ve karar grafiği animasyonu.' : 'Vox-style branching causal network and decision flowchart animation.'
+      title2: 'Tree',
+      desc: t('tool_tree_desc', lang)
     },
     'counter': {
       title1: 'Stat',
-      title2: lang === 'tr' ? 'Sayacı' : 'Counter',
-      desc: lang === 'tr' ? 'Dönen kinetik dev sayılar ve karşılaştırmalı veri barları animasyonu.' : 'Kinetic rolling numbers with dual comparative metric bars animation.'
+      title2: 'Counter',
+      desc: t('tool_counter_desc', lang)
     },
     'paper': {
       title1: 'Paper',
-      title2: lang === 'tr' ? 'Kolaj' : 'Cutout',
-      desc: lang === 'tr' ? 'Vox ve MagnatesMedia tarzı yırtık gazete küpürleri, maskeleme bandı ve stop-motion animasyonu.' : 'Vox and MagnatesMedia style ripped-paper collage with washi tape and stop-motion jitter.'
+      title2: 'Cutout',
+      desc: t('tool_paper_desc', lang)
     },
     'tracking': {
       title1: 'Target',
       title2: 'Tracker HUD',
-      desc: lang === 'tr' ? 'Siber nişangah köşebentleri, biyometrik telemetri ve radar lazer taramalı hedef takip HUD paneli.' : 'Investigative surveillance HUD with locking reticle, biometric telemetry, and radar laser scan.'
+      desc: t('tool_tracking_desc', lang)
     }
   };
 
@@ -916,7 +916,7 @@ export default function VideoEffectTool() {
         return;
       }
 
-      setSaveStatus(t('saving', lang) || (lang === 'tr' ? 'Kaydediliyor...' : 'Saving...'));
+      setSaveStatus(t('saving', lang));
 
       // Aynı isimde bir proje varsa, yeni oluşturmak yerine onun ID'sini kullan (üzerine yaz)
       let targetProjectId = projectId;
@@ -939,7 +939,7 @@ export default function VideoEffectTool() {
             setSearchParams({ draft: savedId }, { replace: true });
           }
         }
-        setSaveStatus(user ? (t('savedToCloud', lang) || (lang === 'tr' ? 'Buluta Kaydedildi' : 'Saved to Cloud')) : (lang === 'tr' ? 'Taslak Kaydedildi' : 'Draft Saved'));
+        setSaveStatus(user ? t('savedToCloud', lang) : t('draftSaved', lang));
         setTimeout(() => setSaveStatus(''), 2500);
       } catch (err) {
         console.error("Auto-save error:", err);
@@ -1681,7 +1681,7 @@ export default function VideoEffectTool() {
                     onChange={(e) => setProjectName(e.target.value)}
                     onBlur={() => setIsEditingName(false)}
                     onKeyDown={(e) => e.key === 'Enter' && setIsEditingName(false)}
-                    placeholder={lang === 'tr' ? "Proje İsmi..." : "Project Name..."}
+                    placeholder={t('projectNamePlaceholder', lang)}
                     className="bg-zinc-900 border border-zinc-700 focus:border-accent-gold text-white text-xl sm:text-2xl font-bold px-3 py-1 rounded-lg outline-none w-full max-w-[300px]"
                     autoFocus
                   />
@@ -1718,10 +1718,10 @@ export default function VideoEffectTool() {
               <button
                 onClick={resetToDefaults}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg border border-zinc-700/80 shadow-md transition-all active:scale-95"
-                title={lang === 'tr' ? "Sıfır yeni bir proje aç" : "Open a fresh blank project"}
+                title={t('freshProjectTitle', lang)}
               >
                 <Plus size={14} className="text-[#F5B301]" />
-                <span>{lang === 'tr' ? 'Yeni Proje' : 'New Project'}</span>
+                <span>{t('newProject', lang)}</span>
               </button>
             )}
             {saveStatus && (
@@ -1752,7 +1752,7 @@ export default function VideoEffectTool() {
                   {/* Video Duration (Max 5 Min) */}
                   <div>
                     <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                      <span>{lang === 'tr' ? 'Video Süresi (Max 5 Dk)' : 'Video Duration (Max 5 Min)'}</span>
+                      <span>{t('videoDurationMax5m', lang)}</span>
                       <span className="text-yellow-400 font-mono font-bold">{formatDuration(duration)}</span>
                     </div>
                     <input
@@ -1794,7 +1794,7 @@ export default function VideoEffectTool() {
                             ? 'bg-accent text-white'
                             : 'bg-zinc-800 text-yellow-400 hover:bg-zinc-700'
                         }`}
-                        title={fileDuration ? (lang === 'tr' ? `Tam Video Süresi (${Math.round(fileDuration)}s)` : `Full Video Duration (${Math.round(fileDuration)}s)`) : 'Max 5m (300s)'}
+                        title={fileDuration ? `${t('fullVideoDuration', lang)} (${Math.round(fileDuration)}s)` : 'Max 5m (300s)'}
                       >
                         MAX
                       </button>
@@ -1805,10 +1805,10 @@ export default function VideoEffectTool() {
                   {type === 'ken-burns' && (
                     <>
                       <SegmentedControl
-                        label={lang === 'tr' ? 'Yakınlaştırma Yönü' : 'Zoom Direction'}
+                        label={t('zoomDirectionLabel', lang)}
                         options={[
-                          { value: 'in', label: lang === 'tr' ? 'Yakınlaş' : 'Zoom In' },
-                          { value: 'out', label: lang === 'tr' ? 'Uzaklaş' : 'Zoom Out' }
+                          { value: 'in', label: t('zoomIn', lang) },
+                          { value: 'out', label: t('zoomOut', lang) }
                         ]}
                         value={zoomDirection}
                         onChange={setZoomDirection}
@@ -1816,24 +1816,24 @@ export default function VideoEffectTool() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-400 mb-1">
-                          {lang === 'tr' ? 'Kamera Kaydırma (Pan)' : 'Camera Pan Style'}
+                          {t('panStyleLabel', lang)}
                         </label>
                         <select
                           value={panStyle}
                           onChange={(e) => setPanStyle(e.target.value)}
                           className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm outline-none"
                         >
-                          <option value="center">{lang === 'tr' ? 'Merkez (Sabit)' : 'Center (No Pan)'}</option>
-                          <option value="left_to_right">{lang === 'tr' ? 'Soldan Sağa' : 'Left to Right'}</option>
-                          <option value="right_to_left">{lang === 'tr' ? 'Sağdan Sola' : 'Right to Left'}</option>
-                          <option value="top_to_bottom">{lang === 'tr' ? 'Yukarıdan Aşağıya' : 'Top to Bottom'}</option>
-                          <option value="bottom_to_top">{lang === 'tr' ? 'Aşağıdan Yukarıya' : 'Bottom to Top'}</option>
+                          <option value="center">{t('panCenter', lang)}</option>
+                          <option value="left_to_right">{t('panLeftToRight', lang)}</option>
+                          <option value="right_to_left">{t('panRightToLeft', lang)}</option>
+                          <option value="top_to_bottom">{t('panTopToBottom', lang)}</option>
+                          <option value="bottom_to_top">{t('panBottomToTop', lang)}</option>
                         </select>
                       </div>
 
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>{lang === 'tr' ? 'Yakınlaştırma Hızı' : 'Zoom Rate'}</span>
+                          <span>{t('zoomRateLabel', lang)}</span>
                           <span className="text-yellow-400 font-mono">{zoomRate}</span>
                         </div>
                         <input
@@ -1854,7 +1854,7 @@ export default function VideoEffectTool() {
                     <>
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>{lang === 'tr' ? 'Renk Ayrışımı (Aberration)' : 'Chromatic Aberration'}</span>
+                          <span>{t('chromaticAberrationLabel', lang)}</span>
                           <span className="text-yellow-400 font-mono">{aberrationStrength}x</span>
                         </div>
                         <input
@@ -1869,7 +1869,7 @@ export default function VideoEffectTool() {
                       </div>
 
                       <SegmentedControl
-                        label={lang === 'tr' ? 'Manyetik Kaset Gürültüsü' : 'Tracking Noise'}
+                        label={t('trackingNoiseLabel', lang)}
                         options={[
                           { value: 'low', label: t('low', lang) || 'Az' },
                           { value: 'medium', label: t('medium', lang) || 'Orta' },
@@ -1880,13 +1880,13 @@ export default function VideoEffectTool() {
                       />
 
                       <Switch
-                        label={lang === 'tr' ? 'CRT Tarama Titremesi' : 'Scanline Flicker'}
+                        label={t('scanlineFlickerLabel', lang)}
                         checked={scanlineFlicker}
                         onChange={(e) => setScanlineFlicker(Boolean(e?.target ? e.target.checked : e))}
                       />
 
                       <Switch
-                        label={lang === 'tr' ? 'VCR Tarih/Saat Damgası' : 'VCR Timestamp OSD'}
+                        label={t('vcrTimestampLabel', lang)}
                         checked={vhsTimestamp}
                         onChange={(e) => setVhsTimestamp(Boolean(e?.target ? e.target.checked : e))}
                       />
@@ -1898,7 +1898,7 @@ export default function VideoEffectTool() {
                     <>
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>{lang === 'tr' ? 'Glitch Şiddeti' : 'Glitch Intensity'}</span>
+                          <span>{t('glitchIntensityLabel', lang)}</span>
                           <span className="text-yellow-400 font-mono">{Math.round(glitchIntensity * 100)}%</span>
                         </div>
                         <input
@@ -1914,7 +1914,7 @@ export default function VideoEffectTool() {
 
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>RGB Shift Offset</span>
+                          <span>{t('rgbShiftLabel', lang)}</span>
                           <span className="text-yellow-400 font-mono">{rgbShift}px</span>
                         </div>
                         <input
@@ -1930,7 +1930,7 @@ export default function VideoEffectTool() {
 
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>{lang === 'tr' ? 'Dilimleme Sıklığı' : 'Slice Rate'}</span>
+                          <span>{t('sliceRateLabel', lang)}</span>
                           <span className="text-yellow-400 font-mono">{sliceRate}</span>
                         </div>
                         <input
@@ -1951,7 +1951,7 @@ export default function VideoEffectTool() {
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-400 mb-1">
-                          {t('typewriterTextLabel', lang) || (lang === 'tr' ? 'Metin İçeriği' : 'Story Content')}
+                          {t('typewriterTextLabel', lang)}
                         </label>
                         <textarea
                           rows="4"
@@ -1962,7 +1962,7 @@ export default function VideoEffectTool() {
                       </div>
 
                       <SegmentedControl
-                        label={t('cursorStyleLabel', lang) || (lang === 'tr' ? 'İmleç Stili' : 'Cursor Style')}
+                        label={t('cursorStyleLabel', lang)}
                         options={[
                           { value: 'block', label: '█ Block' },
                           { value: 'line', label: '| Line' },
@@ -2042,7 +2042,7 @@ export default function VideoEffectTool() {
 
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>{t('typingSpeedLabel', lang) || (lang === 'tr' ? 'Yazım Hızı' : 'Typing Speed')}</span>
+                          <span>{t('typingSpeedLabel', lang)}</span>
                           <span className="text-yellow-400 font-mono">{typingSpeed} cps</span>
                         </div>
                         <input
@@ -2063,7 +2063,7 @@ export default function VideoEffectTool() {
                     <>
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>{lang === 'tr' ? 'Çizgi Sıklığı' : 'Scanline Density'}</span>
+                          <span>{t('scanlineDensityLabel', lang)}</span>
                           <span className="text-yellow-400 font-mono">{scanlineDensity}px</span>
                         </div>
                         <input
@@ -2079,7 +2079,7 @@ export default function VideoEffectTool() {
 
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>{lang === 'tr' ? 'Fosfor Parıltısı' : 'Phosphor Glow'}</span>
+                          <span>{t('phosphorGlowLabel', lang)}</span>
                           <span className="text-yellow-400 font-mono">{Math.round(phosphorGlow * 100)}%</span>
                         </div>
                         <input
@@ -2099,7 +2099,7 @@ export default function VideoEffectTool() {
                   {type === 'ascii' && (
                     <>
                       <SegmentedControl
-                        label={lang === 'tr' ? 'Renk Teması' : 'Color Palette'}
+                        label={t('colorPaletteLabel', lang)}
                         options={[
                           { value: 'matrixGreen', label: 'Matrix' },
                           { value: 'cyberNeon', label: 'Cyber' },
@@ -2112,7 +2112,7 @@ export default function VideoEffectTool() {
 
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>{lang === 'tr' ? 'Karakter Çözünürlüğü' : 'Character Grid Size'}</span>
+                          <span>{t('charGridSizeLabel', lang)}</span>
                           <span className="text-yellow-400 font-mono">{asciiResolution}px</span>
                         </div>
                         <input
@@ -2133,7 +2133,7 @@ export default function VideoEffectTool() {
                     <>
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>{lang === 'tr' ? 'Yankı Katman Sayısı' : 'Echo Ghost Layers'}</span>
+                          <span>{t('echoLayersLabel', lang)}</span>
                           <span className="text-yellow-400 font-mono">{echoCount}</span>
                         </div>
                         <input
@@ -2149,7 +2149,7 @@ export default function VideoEffectTool() {
 
                       <div>
                         <div className="flex justify-between text-sm font-medium text-gray-400 mb-1">
-                          <span>{lang === 'tr' ? 'İz Sönümleme Oranı' : 'Motion Trail Decay'}</span>
+                          <span>{t('motionTrailDecayLabel', lang)}</span>
                           <span className="text-yellow-400 font-mono">{Math.round(echoDecay * 100)}%</span>
                         </div>
                         <input
@@ -2479,7 +2479,7 @@ export default function VideoEffectTool() {
                           className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white font-mono text-xs resize-none leading-relaxed"
                         />
                         <p className="text-[11px] text-gray-500 mt-1">
-                          {lang === 'tr' ? 'Format: Yıl / Tarih | Başlık | Açıklama (Her satıra 1 olay)' : 'Format: Year / Date | Title | Description (1 event per line)'}
+                          {t('timelineFormatHelp', lang)}
                         </p>
                       </div>
 
@@ -3224,7 +3224,7 @@ export default function VideoEffectTool() {
                   {/* Thematic Audio FX Switch (VHS, Scanline, Glitch) */}
                   {['vhs-tape', 'scanline', 'glitch-master'].includes(type) && (
                     <Switch
-                      label={lang === 'tr' ? 'Tematik Ses Efekti (DSP)' : 'Thematic Audio FX (DSP)'}
+                      label={t('thematicAudioLabel', lang)}
                       checked={audioFxEnabled}
                       onChange={(e) => setAudioFxEnabled(Boolean(e?.target ? e.target.checked : e))}
                     />
@@ -3298,7 +3298,7 @@ export default function VideoEffectTool() {
               {(status === 'processing' || status === 'uploading') && (
                 <div className="w-full max-w-md text-center">
                   <h3 className="text-xl font-semibold text-white mb-4">
-                    {status === 'uploading' ? (lang === 'tr' ? 'Buluta Yükleniyor...' : 'Uploading...') : (t('generatingTitle', lang) || 'Video Oluşturuluyor...')}
+                    {status === 'uploading' ? t('uploadingStatus', lang) : (t('generatingTitle', lang) || 'Video Oluşturuluyor...')}
                   </h3>
                   <div className="w-full bg-zinc-800 rounded-full h-2.5">
                     <div
@@ -3329,7 +3329,7 @@ export default function VideoEffectTool() {
                       onClick={() => { setResultUrl(''); setStatus('idle'); }}
                       className="py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold rounded-lg transition-colors text-sm"
                     >
-                      {lang === 'tr' ? 'Yeniden Düzenle' : 'Edit Again'}
+                      {t('editAgain', lang)}
                     </button>
                   </div>
                 </div>
@@ -3358,9 +3358,7 @@ export default function VideoEffectTool() {
                       >
                         <Upload size={16} />
                         {file ? file.name : (
-                          type === 'gsearch'
-                            ? (lang === 'tr' ? '🖼️ Bilgi Paneli / Küçük Resim Yükle (İsteğe Bağlı)' : '🖼️ Upload Knowledge Panel Image (Optional)')
-                            : (lang === 'tr' ? 'Medyayı Değiştir (Görsel/Video)' : 'Upload Media (Photo/Video)')
+                          type === 'gsearch' ? t('uploadKnowledgePanelImage', lang) : t('uploadMediaPrompt', lang)
                         )}
                       </button>
                       <input
@@ -3374,11 +3372,11 @@ export default function VideoEffectTool() {
                         <div className="flex items-center justify-between w-full text-xs font-mono text-emerald-400 px-1 mt-0.5">
                           <span className="flex items-center gap-1.5">
                             <Volume2 size={13} />
-                            {lang === 'tr' ? 'Orijinal Ses Korunuyor' : 'Original Audio Included'}
+                            {t('originalAudioIncluded', lang)}
                           </span>
                           {fileDuration && (
                             <span className="text-zinc-400">
-                              {lang === 'tr' ? 'Video:' : 'Source:'} {formatDuration(Math.round(fileDuration))}
+                              {t('sourceVideoPrefix', lang)} {formatDuration(Math.round(fileDuration))}
                             </span>
                           )}
                         </div>

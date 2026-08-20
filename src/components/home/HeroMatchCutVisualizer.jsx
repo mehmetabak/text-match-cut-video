@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Zap, Sparkles } from 'lucide-react';
 import { useSettingsStore } from '../../store/settingsStore';
+import { t } from '../../lib/i18n';
 
 // 4 Distinct Aesthetic Scenes for Match Cut Transitions
 const SCENES = [
@@ -236,7 +237,7 @@ export default function HeroMatchCutVisualizer({ targetWord = "MATCH CUT" }) {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-gold"></span>
             </span>
             <span className="font-mono font-bold text-white tracking-wider text-[11px] uppercase">
-              {lang === 'tr' ? 'CANLI MATCH CUT SİMÜLASYONU' : 'LIVE MATCH CUT SIMULATOR'}
+              {t('liveMatchCutSim', lang)}
             </span>
           </div>
 
@@ -269,12 +270,12 @@ export default function HeroMatchCutVisualizer({ targetWord = "MATCH CUT" }) {
             {isTurbo ? (
               <>
                 <Zap size={11} className="text-accent-gold animate-bounce" />
-                <span className="text-accent-gold font-bold">{lang === 'tr' ? 'HIZLI KESME AKTİF' : 'TURBO CUT ACTIVE'}</span>
+                <span className="text-accent-gold font-bold">{t('turboCutActive', lang)}</span>
               </>
             ) : (
               <>
                 <Sparkles size={11} className="text-zinc-400" />
-                <span>{lang === 'tr' ? 'Hızlandırmak için üzerine gel' : 'Hover to speed up cuts'}</span>
+                <span>{t('hoverSpeedUp', lang)}</span>
               </>
             )}
           </div>
@@ -283,13 +284,13 @@ export default function HeroMatchCutVisualizer({ targetWord = "MATCH CUT" }) {
         {/* Bottom Interactive Feature Badges */}
         <div className="grid grid-cols-3 gap-2 mt-3 pt-2 text-center text-[11px] font-mono text-text-muted">
           <div className="bg-surface-raised/70 border border-border-color/60 rounded-lg py-1 px-2 flex items-center justify-center gap-1">
-            <span className="text-accent-gold font-bold">120ms</span> {lang === 'tr' ? 'Kesme Hızı' : 'Cut Speed'}
+            <span className="text-accent-gold font-bold">120ms</span> {t('cutSpeed', lang)}
           </div>
           <div className="bg-surface-raised/70 border border-border-color/60 rounded-lg py-1 px-2 flex items-center justify-center gap-1">
-            <span className="text-accent-gold font-bold">60 FPS</span> {lang === 'tr' ? 'WebAssembly' : 'WASM Engine'}
+            <span className="text-accent-gold font-bold">60 FPS</span> WASM Engine
           </div>
           <div className="bg-surface-raised/70 border border-border-color/60 rounded-lg py-1 px-2 flex items-center justify-center gap-1">
-            <span className="text-accent-gold font-bold">100%</span> {lang === 'tr' ? 'Ücretsiz' : 'Free Output'}
+            <span className="text-accent-gold font-bold">100%</span> {t('freeOutput', lang)}
           </div>
         </div>
       </div>

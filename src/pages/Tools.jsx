@@ -1348,7 +1348,7 @@ const Tools = () => {
           >
             <div className="w-2 h-8 bg-gradient-to-b from-[#F5B301] to-[#FF9D00] rounded-full shadow-[0_0_10px_rgba(245,179,1,0.5)]"></div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              {lang === 'tr' ? 'Kullanılabilir Araçlar' : 'Available Tools'}
+              {t('availableTools', lang)}
             </h2>
           </motion.div>
           
@@ -1374,7 +1374,7 @@ const Tools = () => {
           >
             <div className="w-2 h-8 bg-zinc-700 rounded-full"></div>
             <h2 className="text-2xl sm:text-3xl font-bold text-zinc-400 tracking-tight">
-              {lang === 'tr' ? 'Yakında Gelecekler' : 'Coming Soon'}
+              {t('comingSoonTools', lang)}
             </h2>
           </motion.div>
           

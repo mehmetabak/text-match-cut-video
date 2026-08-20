@@ -211,7 +211,7 @@ function MatchCutTool() {
         return; 
       }
 
-      setSaveStatus(t('saving', lang) || (lang === 'tr' ? 'Kaydediliyor...' : 'Saving...'));
+      setSaveStatus(t('saving', lang));
 
       // Aynı isimde bir proje varsa, yeni oluşturmak yerine onun ID'sini kullan (üzerine yaz)
       let targetProjectId = projectId;
@@ -234,7 +234,7 @@ function MatchCutTool() {
             setSearchParams({ draft: savedId }, { replace: true });
           }
         }
-        setSaveStatus(user ? (t('savedToCloud', lang) || (lang === 'tr' ? 'Buluta Kaydedildi' : 'Saved to Cloud')) : (lang === 'tr' ? 'Taslak Kaydedildi' : 'Draft Saved'));
+        setSaveStatus(user ? t('savedToCloud', lang) : t('draftSaved', lang));
         setTimeout(() => setSaveStatus(''), 2500);
       } catch (err) {
         console.error("MatchCut auto-save error:", err);
@@ -338,7 +338,7 @@ function MatchCutTool() {
                     onChange={(e) => setProjectName(e.target.value)}
                     onBlur={() => setIsEditingName(false)}
                     onKeyDown={(e) => e.key === 'Enter' && setIsEditingName(false)}
-                    placeholder="Proje İsmi..."
+                    placeholder={t('projectNamePlaceholder', lang)}
                     className="bg-zinc-900 border border-zinc-700 focus:border-accent-gold text-white text-xl sm:text-2xl font-bold px-3 py-1 rounded-lg outline-none w-full max-w-[300px]"
                     autoFocus
                   />
@@ -374,10 +374,10 @@ function MatchCutTool() {
               <button
                 onClick={handleNewProject}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg border border-zinc-700/80 shadow-md transition-all active:scale-95"
-                title={lang === 'tr' ? "Sıfır yeni bir proje aç" : "Open a fresh blank project"}
+                title={t('freshProjectTitle', lang)}
               >
                 <Plus size={14} className="text-[#F5B301]" />
-                <span>{lang === 'tr' ? 'Yeni Proje' : 'New Project'}</span>
+                <span>{t('newProject', lang)}</span>
               </button>
             )}
             {saveStatus && (
