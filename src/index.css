@@ -5,4 +5,34 @@ body {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
+
+/* GPU Hardware Layer Promotion for Mobile Safari & Chrome */
+.gpu-layer {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+  will-change: transform;
+}
+
+/* Fluid Mobile Touch Scrolling without Stutter */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
+}
+
+/* Layout and Paint Containment */
+.contain-paint {
+  contain: paint layout;
+}
+
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 400px;
+}
+

@@ -10,7 +10,7 @@ const Preview = ({ canvasRef }) => {
     const displayProgress = Math.min(smoothProgress, 100);
 
     return (
-        <div className={`w-full h-full bg-zinc-900/50 backdrop-blur-sm border-2 border-dashed border-zinc-700 rounded-xl flex flex-col items-center justify-center p-4 transition-all duration-300`}>
+        <div className={`w-full h-full bg-zinc-900/50 backdrop-blur-sm border-2 border-dashed border-zinc-700 rounded-xl flex flex-col items-center justify-center p-4 transition-all duration-300 gpu-layer`}>
             <canvas ref={canvasRef} className="hidden"></canvas>
             
             {isGenerating && (

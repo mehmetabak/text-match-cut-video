@@ -1365,7 +1365,7 @@ const Tools = () => {
         </div>
 
         {/* Coming Soon Tools */}
-        <div className="mt-16 sm:mt-24">
+        <div className="mt-16 sm:mt-24 content-auto contain-paint">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}

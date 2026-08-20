@@ -70,4 +70,62 @@ export function getFittedFontSize(ctx, text, maxWidth, initialSize, minSize = 14
   }
 
   return { fontSize: size, isWrappedNeeded: width > maxWidth };
-}
+}
+
+/**
+ * Mobil cihaz tespiti (Dokunmatik ve dar ekran kontrolü)
+ */
+export function isMobileDevice() {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  return (
+    navigator.maxTouchPoints > 0 ||
+    /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent || '')
+  );
+}
+
+/**
+ * Ekran Kilitlenmesini / Uyku Modunu Önleyici (Screen Wake Lock API)
+ * Mobilde uzun render işlemlerinde ekranın kararmasını ve işlemin iptal olmasını engeller.
+ * @returns {Promise<() => void>} Kilidi serbest bırakan cleanup fonksiyonu
+ */
+export async function requestScreenWakeLock() {
+  if (typeof navigator === 'undefined' || !navigator.wakeLock || !navigator.wakeLock.request) {
+    return () => {};
+  }
+  try {
+    const sentinel = await navigator.wakeLock.request('screen');
+    return () => {
+      try {
+        if (sentinel && !sentinel.released) {
+          sentinel.release();
+        }
+      } catch {
+        // Ignored
+      }
+    };
+  } catch (err) {
+    console.warn("Screen Wake Lock could not be acquired:", err);
+    return () => {};
+  }
+}
+
+/**
+ * Donanım Hızlandırmalı Düşük Gecikmeli 2D Context Oluşturucu
+ */
+export function getOptimizedCanvasContext(canvas, options = {}) {
+  if (!canvas) return null;
+  const defaultOpts = {
+    alpha: false,
+    desynchronized: true,
+    willReadFrequently: false,
+    ...options
+  };
+  try {
+    const ctx = canvas.getContext('2d', defaultOpts);
+    if (ctx) return ctx;
+  } catch (e) {
+    // Fallback if browser does not support specific flags
+  }
+  return canvas.getContext('2d');
+}
+

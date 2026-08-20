@@ -41,6 +41,7 @@ import {
   drawImageCover,
   drawVignette
 } from '../renderer/effects';
+import { isMobileDevice, requestScreenWakeLock, getOptimizedCanvasContext } from '../lib/canvasUtils';
 
 function formatDuration(seconds) {
   const mins = Math.floor(seconds / 60);
@@ -1027,21 +1028,41 @@ export default function VideoEffectTool() {
     }
   }, [fileUrl, type]);
 
-  // Live Canvas Interactive Preview Loop (Smooth 60fps)
+  // Live Canvas Interactive Preview Loop (Smooth with Mobile Inactivity Throttling)
   useEffect(() => {
     let active = true;
     let startTime = performance.now();
+    let lastFrameTime = 0;
+    const isMobile = isMobileDevice();
+    const frameInterval = isMobile ? (1000 / 30) : 0; // 30 FPS cap on mobile to save ~50% GPU & battery
 
     const renderLoop = (time) => {
       if (!active) return;
+
+      // Page Visibility Check: if tab is hidden in background, pause loop to save 100% CPU/GPU
+      if (typeof document !== 'undefined' && document.hidden) {
+        return;
+      }
+
+      // Mobile FPS Capping
+      if (frameInterval > 0) {
+        const delta = time - lastFrameTime;
+        if (delta < frameInterval) {
+          animFrameRef.current = requestAnimationFrame(renderLoop);
+          return;
+        }
+        lastFrameTime = time - (delta % frameInterval);
+      }
+
       const canvas = canvasRef.current;
       if (canvas) {
-        const ctx = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = canvas.height;
-        const elapsed = (time - startTime) / 1000;
-        const loopDuration = Math.max(3, duration);
-        const progressVal = (elapsed % loopDuration) / loopDuration;
+        const ctx = getOptimizedCanvasContext(canvas);
+        if (ctx) {
+          const width = canvas.width;
+          const height = canvas.height;
+          const elapsed = (time - startTime) / 1000;
+          const loopDuration = Math.max(3, duration);
+          const progressVal = (elapsed % loopDuration) / loopDuration;
 
         if (type === 'typewriter') {
           const totalChars = typewriterText.length;
@@ -1199,14 +1220,30 @@ export default function VideoEffectTool() {
             boxOffsetY: trackingBoxOffsetY
           });
         }
+        }
       }
       animFrameRef.current = requestAnimationFrame(renderLoop);
     };
+
+    const handleVisibilityChange = () => {
+      if (typeof document !== 'undefined' && !document.hidden && active) {
+        lastFrameTime = performance.now();
+        if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+        animFrameRef.current = requestAnimationFrame(renderLoop);
+      }
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
 
     animFrameRef.current = requestAnimationFrame(renderLoop);
     return () => {
       active = false;
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
     };
   }, [
     type, duration, typewriterText, fontColor, cursorStyle, typewriterMode, audioFxEnabled,
@@ -1234,11 +1271,14 @@ export default function VideoEffectTool() {
       return;
     }
 
-    try {
-      setStatus('processing');
-      setProgress(2);
-      setErrorMsg('');
+    setStatus('processing');
+    setProgress(2);
+    setErrorMsg('');
+    setResultUrl('');
 
+    const releaseWakeLock = await requestScreenWakeLock();
+
+    try {
       const totalDuration = Math.max(3, Number(duration) || 5);
 
       // 1. Extract and process audio if the source is a video file OR generate typewriter mechanical sound
@@ -1468,6 +1508,9 @@ export default function VideoEffectTool() {
         setProgress(Math.round(p));
       });
 
+      // Clear frames buffer to free memory on mobile
+      frames.length = 0;
+
       setResultUrl(videoUrl);
       setStatus('completed');
       setProgress(100);
@@ -1475,6 +1518,8 @@ export default function VideoEffectTool() {
       console.error("Render processing error:", err);
       setErrorMsg(err.message || 'Error occurred during rendering.');
       setStatus('error');
+    } finally {
+      releaseWakeLock();
     }
   };
 
@@ -3300,7 +3345,7 @@ export default function VideoEffectTool() {
                       ref={canvasRef}
                       width={formatPreset === '16:9' ? 1280 : (formatPreset === '9:16' ? 720 : 1080)}
                       height={formatPreset === '16:9' ? 720 : (formatPreset === '9:16' ? 1280 : 1080)}
-                      className="max-h-full max-w-full object-contain rounded-md shadow-2xl"
+                      className="max-h-full max-w-full object-contain rounded-md shadow-2xl gpu-layer"
                     />
                   </div>
 

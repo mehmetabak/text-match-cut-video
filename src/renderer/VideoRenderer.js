@@ -1,5 +1,5 @@
 // src/renderer/VideoRenderer.js
-import { wrapText, getFittedFontSize } from '../lib/canvasUtils';
+import { wrapText, getFittedFontSize, requestScreenWakeLock } from '../lib/canvasUtils';
 import { applyCameraShake, drawVignette } from './effects';
 import { AudioGenerator } from '../lib/audioUtils';
 import { createVideoFromFrames } from '../lib/ffmpeg';
@@ -7,7 +7,7 @@ import { createVideoFromFrames } from '../lib/ffmpeg';
 export class VideoRenderer {
     constructor(canvas, settings, textData, onProgress) {
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
+        this.ctx = canvas.getContext('2d', { willReadFrequently: true });
         this.settings = settings;
         this.textData = textData;
         this.onProgress = onProgress;
@@ -467,50 +467,60 @@ export class VideoRenderer {
     }
 
     async generateVideo() {
-        // 1. Fontların yüklenmesini bekle (İlk frame'lerde fallback font sorununu engeller)
-        if (typeof document !== 'undefined' && document.fonts) {
-            try {
-                await document.fonts.ready;
-            } catch (e) {
-                console.warn("Font loading ready check failed, proceeding anyway", e);
+        const releaseWakeLock = await requestScreenWakeLock();
+
+        try {
+            // 1. Fontların yüklenmesini bekle (İlk frame'lerde fallback font sorununu engeller)
+            if (typeof document !== 'undefined' && document.fonts) {
+                try {
+                    await document.fonts.ready;
+                } catch (e) {
+                    console.warn("Font loading ready check failed, proceeding anyway", e);
+                }
             }
-        }
 
-        const fps = 30;
-        const speedMultiplier = this.settings.speed ? parseFloat(this.settings.speed) : 2.5;
-        const durationPerCut = Math.max(0.1, 0.25 / (speedMultiplier / 2.5 || 1));
-        const framesPerCut = Math.max(2, Math.floor(durationPerCut * fps));
-        const positions = this.getCutPositions();
-        
-        if (positions.length === 0) {
-            throw new Error(`The phrase "${this.textData.phrase}" could not be used. Please try another one.`);
-        }
-        
-        const metrics = { ...this.getMetrics(), framesPerCut };
-        const allFrames = [];
-        const scenes = this.textData.scenes || [];
-        
-        for (let i = 0; i < positions.length; i++) {
-            const cutFrames = await this.renderCut({
-                pos: positions[i],
-                metrics,
-                cutIndex: i,
-                totalCuts: positions.length,
-                scenes
-            });
-            allFrames.push(...cutFrames);
-        }
-        
-        if (allFrames.length > 0) {
-            allFrames.push(new Uint8Array(allFrames[allFrames.length - 1]));
-        }
+            const fps = 30;
+            const speedMultiplier = this.settings.speed ? parseFloat(this.settings.speed) : 2.5;
+            const durationPerCut = Math.max(0.1, 0.25 / (speedMultiplier / 2.5 || 1));
+            const framesPerCut = Math.max(2, Math.floor(durationPerCut * fps));
+            const positions = this.getCutPositions();
+            
+            if (positions.length === 0) {
+                throw new Error(`The phrase "${this.textData.phrase}" could not be used. Please try another one.`);
+            }
+            
+            const metrics = { ...this.getMetrics(), framesPerCut };
+            const allFrames = [];
+            const scenes = this.textData.scenes || [];
+            
+            for (let i = 0; i < positions.length; i++) {
+                const cutFrames = await this.renderCut({
+                    pos: positions[i],
+                    metrics,
+                    cutIndex: i,
+                    totalCuts: positions.length,
+                    scenes
+                });
+                allFrames.push(...cutFrames);
+            }
+            
+            if (allFrames.length > 0) {
+                allFrames.push(new Uint8Array(allFrames[allFrames.length - 1]));
+            }
 
-        const audioGen = await AudioGenerator.create('/whoosh.mp3');
-        const totalDuration = allFrames.length / fps;
-        const audioBlob = await audioGen.generateAudio(positions.length, totalDuration);
-        
-        this.onProgress(90);
-        const videoUrl = await createVideoFromFrames(allFrames, audioBlob, fps, { highQuality: this.settings.highQuality, fastRender: this.settings.fastRender }, p => this.onProgress(90 + p * 0.1));
-        return videoUrl;
+            const audioGen = await AudioGenerator.create('/whoosh.mp3');
+            const totalDuration = allFrames.length / fps;
+            const audioBlob = await audioGen.generateAudio(positions.length, totalDuration);
+            
+            this.onProgress(90);
+            const videoUrl = await createVideoFromFrames(allFrames, audioBlob, fps, { highQuality: this.settings.highQuality, fastRender: this.settings.fastRender }, p => this.onProgress(90 + p * 0.1));
+            
+            // Clean up memory buffer
+            allFrames.length = 0;
+
+            return videoUrl;
+        } finally {
+            releaseWakeLock();
+        }
     }
 }
