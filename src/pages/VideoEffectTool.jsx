@@ -34,6 +34,8 @@ import {
   drawTimelineFrame,
   drawEventTreeFrame,
   drawCounterFrame,
+  drawPaperCutoutFrame,
+  drawTrackingHudFrame,
   drawImageCover,
   drawVignette
 } from '../renderer/effects';
@@ -210,6 +212,35 @@ export default function VideoEffectTool() {
   const [counterTheme, setCounterTheme] = useState("financial"); // 'financial' | 'cyberMetric' | 'warningRed' | 'slateClean'
   const [counterShowGauges, setCounterShowGauges] = useState(true);
 
+  // 13. Paper Cutout Collage Settings (FREE)
+  const [paperHeadline, setPaperHeadline] = useState(
+    lang === 'tr' ? "GİZLİ ARŞİV BELGELERİ SIZDIRILDI" : "CLASSIFIED DOSSIER LEAKED"
+  );
+  const [paperSnippet, setPaperSnippet] = useState(
+    lang === 'tr'
+      ? "Gizli araştırmacı gazetecilik raporları, kamuoyundan saklanan stratejik projeleri ve tutanakları gözler önüne seriyor."
+      : "Confidential investigative reports reveal undisclosed operations and strategic records."
+  );
+  const [paperSourceTag, setPaperSourceTag] = useState("NATIONAL ARCHIVES • FILE #741");
+  const [paperDateTag, setPaperDateTag] = useState(lang === 'tr' ? "KASIM 1974" : "OCTOBER 1974");
+  const [paperTheme, setPaperTheme] = useState("vintage"); // 'vintage' | 'noir' | 'neonNote' | 'cardstock'
+  const [paperTornStyle, setPaperTornStyle] = useState("rippedEdge"); // 'rippedEdge' | 'polaroid' | 'stampTicket'
+  const [paperTapeColor, setPaperTapeColor] = useState("washiGold"); // 'washiGold' | 'hazardStripe' | 'crimsonRed' | 'clearMatte'
+  const [paperJitter, setPaperJitter] = useState(true);
+  const [paperHighlight, setPaperHighlight] = useState(
+    lang === 'tr' ? "stratejik projeleri" : "undisclosed operations"
+  );
+
+  // 14. AI Target & Subject Tracker HUD Settings (PRO)
+  const [trackingTargetLabel, setTrackingTargetLabel] = useState("[CONFIRMED ID: SUBJECT 09]");
+  const [trackingCategory, setTrackingCategory] = useState("FACIAL BIOMETRICS • 4K SENSOR");
+  const [trackingConfidence, setTrackingConfidence] = useState(99.4);
+  const [trackingCoordinates, setTrackingCoordinates] = useState("LAT: 37.7749° N | LON: 122.4194° W");
+  const [trackingHudTheme, setTrackingHudTheme] = useState("cyberCyan"); // 'cyberCyan' | 'tacticalAmber' | 'crimsonAlert' | 'matrixEmerald'
+  const [trackingReticleStyle, setTrackingReticleStyle] = useState("cornerBrackets"); // 'cornerBrackets' | 'circularSniper' | 'fullHud'
+  const [trackingScanBeam, setTrackingScanBeam] = useState(true);
+  const [trackingLockAnimation, setTrackingLockAnimation] = useState(true);
+
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
   const animFrameRef = useRef(null);
@@ -248,8 +279,8 @@ export default function VideoEffectTool() {
     audioFxEnabledRef.current = audioFxEnabled;
   }, [audioFxEnabled]);
 
-  const validTypes = ['ken-burns', 'vhs-tape', 'glitch-master', 'typewriter', 'scanline', 'ascii', 'echo', 'gsearch', 'spotlight', 'formula', 'timeline', 'tree', 'counter'];
-  const isProTool = !['gsearch', 'spotlight', 'formula', 'timeline', 'tree', 'counter'].includes(type);
+  const validTypes = ['ken-burns', 'vhs-tape', 'glitch-master', 'typewriter', 'scanline', 'ascii', 'echo', 'gsearch', 'spotlight', 'formula', 'timeline', 'tree', 'counter', 'paper', 'tracking'];
+  const isProTool = !['gsearch', 'spotlight', 'formula', 'timeline', 'tree', 'counter', 'paper'].includes(type);
 
   // Route & Pro Access Protection
   useEffect(() => {
@@ -329,6 +360,16 @@ export default function VideoEffectTool() {
       title1: 'Stat',
       title2: lang === 'tr' ? 'Sayacı' : 'Counter',
       desc: lang === 'tr' ? 'Dönen kinetik dev sayılar ve karşılaştırmalı veri barları animasyonu.' : 'Kinetic rolling numbers with dual comparative metric bars animation.'
+    },
+    'paper': {
+      title1: 'Paper',
+      title2: lang === 'tr' ? 'Kolaj' : 'Cutout',
+      desc: lang === 'tr' ? 'Vox ve MagnatesMedia tarzı yırtık gazete küpürleri, maskeleme bandı ve stop-motion animasyonu.' : 'Vox and MagnatesMedia style ripped-paper collage with washi tape and stop-motion jitter.'
+    },
+    'tracking': {
+      title1: 'Target',
+      title2: 'Tracker HUD',
+      desc: lang === 'tr' ? 'Siber nişangah köşebentleri, biyometrik telemetri ve radar lazer taramalı hedef takip HUD paneli.' : 'Investigative surveillance HUD with locking reticle, biometric telemetry, and radar laser scan.'
     }
   };
 
@@ -407,7 +448,24 @@ export default function VideoEffectTool() {
     counterSuffix,
     counterTrendTag,
     counterTheme,
-    counterShowGauges: Boolean(counterShowGauges)
+    counterShowGauges: Boolean(counterShowGauges),
+    paperHeadline,
+    paperSnippet,
+    paperSourceTag,
+    paperDateTag,
+    paperTheme,
+    paperTornStyle,
+    paperTapeColor,
+    paperJitter: Boolean(paperJitter),
+    paperHighlight,
+    trackingTargetLabel,
+    trackingCategory,
+    trackingConfidence: Number(trackingConfidence) || 99.4,
+    trackingCoordinates,
+    trackingHudTheme,
+    trackingReticleStyle,
+    trackingScanBeam: Boolean(trackingScanBeam),
+    trackingLockAnimation: Boolean(trackingLockAnimation)
   });
 
   const loadedDraftIdRef = useRef(null);
@@ -521,6 +579,27 @@ export default function VideoEffectTool() {
     setCounterTrendTag("+394% SURGE ↗");
     setCounterTheme("financial");
     setCounterShowGauges(true);
+    setPaperHeadline(lang === 'tr' ? "GİZLİ ARŞİV BELGELERİ SIZDIRILDI" : "CLASSIFIED DOSSIER LEAKED");
+    setPaperSnippet(
+      lang === 'tr'
+        ? "Gizli araştırmacı gazetecilik raporları, kamuoyundan saklanan stratejik projeleri ve tutanakları gözler önüne seriyor."
+        : "Confidential investigative reports reveal undisclosed operations and strategic records."
+    );
+    setPaperSourceTag("NATIONAL ARCHIVES • FILE #741");
+    setPaperDateTag(lang === 'tr' ? "KASIM 1974" : "OCTOBER 1974");
+    setPaperTheme("vintage");
+    setPaperTornStyle("rippedEdge");
+    setPaperTapeColor("washiGold");
+    setPaperJitter(true);
+    setPaperHighlight(lang === 'tr' ? "stratejik projeleri" : "undisclosed operations");
+    setTrackingTargetLabel("[CONFIRMED ID: SUBJECT 09]");
+    setTrackingCategory("FACIAL BIOMETRICS • 4K SENSOR");
+    setTrackingConfidence(99.4);
+    setTrackingCoordinates("LAT: 37.7749° N | LON: 122.4194° W");
+    setTrackingHudTheme("cyberCyan");
+    setTrackingReticleStyle("cornerBrackets");
+    setTrackingScanBeam(true);
+    setTrackingLockAnimation(true);
     lastSavedSnapshotRef.current = null;
   };
 
@@ -622,6 +701,23 @@ export default function VideoEffectTool() {
     if (s.counterTrendTag !== undefined) setCounterTrendTag(s.counterTrendTag);
     if (s.counterTheme) setCounterTheme(s.counterTheme);
     if (s.counterShowGauges !== undefined) setCounterShowGauges(Boolean(s.counterShowGauges));
+    if (s.paperHeadline) setPaperHeadline(s.paperHeadline);
+    if (s.paperSnippet) setPaperSnippet(s.paperSnippet);
+    if (s.paperSourceTag) setPaperSourceTag(s.paperSourceTag);
+    if (s.paperDateTag) setPaperDateTag(s.paperDateTag);
+    if (s.paperTheme) setPaperTheme(s.paperTheme);
+    if (s.paperTornStyle) setPaperTornStyle(s.paperTornStyle);
+    if (s.paperTapeColor) setPaperTapeColor(s.paperTapeColor);
+    if (s.paperJitter !== undefined) setPaperJitter(Boolean(s.paperJitter));
+    if (s.paperHighlight) setPaperHighlight(s.paperHighlight);
+    if (s.trackingTargetLabel) setTrackingTargetLabel(s.trackingTargetLabel);
+    if (s.trackingCategory) setTrackingCategory(s.trackingCategory);
+    if (s.trackingConfidence !== undefined) setTrackingConfidence(Number(s.trackingConfidence));
+    if (s.trackingCoordinates) setTrackingCoordinates(s.trackingCoordinates);
+    if (s.trackingHudTheme) setTrackingHudTheme(s.trackingHudTheme);
+    if (s.trackingReticleStyle) setTrackingReticleStyle(s.trackingReticleStyle);
+    if (s.trackingScanBeam !== undefined) setTrackingScanBeam(Boolean(s.trackingScanBeam));
+    if (s.trackingLockAnimation !== undefined) setTrackingLockAnimation(Boolean(s.trackingLockAnimation));
   }, []);
 
   // 1. Load Draft / Restore Project (from query param or localStorage or cloud projects)
@@ -764,6 +860,10 @@ export default function VideoEffectTool() {
           isDefault = treeTheme === 'voxGold' && treeConnectorStyle === 'bezierCurve';
         } else if (type === 'counter') {
           isDefault = counterTheme === 'financial' && counterVal1 === 4200 && counterVal2 === 850 && counterShowGauges === true;
+        } else if (type === 'paper') {
+          isDefault = paperTheme === 'vintage' && paperTornStyle === 'rippedEdge' && paperTapeColor === 'washiGold';
+        } else if (type === 'tracking') {
+          isDefault = trackingHudTheme === 'cyberCyan' && trackingReticleStyle === 'cornerBrackets' && trackingConfidence === 99.4;
         }
       }
 
@@ -818,6 +918,8 @@ export default function VideoEffectTool() {
     timelineTitle, timelineEvents, timelineTheme, timelineStyle, timelineStartMilestone, timelineEndMilestone, timelineZoom,
     treeRootTitle, treeRootSubtitle, treeBranches, treeTheme, treeConnectorStyle,
     counterHeadline, counterSubtitle, counterVal1, counterLabel1, counterVal2, counterLabel2, counterPrefix, counterSuffix, counterTrendTag, counterTheme, counterShowGauges,
+    paperHeadline, paperSnippet, paperSourceTag, paperDateTag, paperTheme, paperTornStyle, paperTapeColor, paperJitter, paperHighlight,
+    trackingTargetLabel, trackingCategory, trackingConfidence, trackingCoordinates, trackingHudTheme, trackingReticleStyle, trackingScanBeam, trackingLockAnimation,
     type, lang, saveProject, projects, projectId, searchParams, setSearchParams
   ]);
 
@@ -1020,6 +1122,29 @@ export default function VideoEffectTool() {
             theme: counterTheme,
             showGauges: counterShowGauges
           });
+        } else if (type === 'paper') {
+          drawPaperCutoutFrame(ctx, sourceMediaRef.current, width, height, progressVal, {
+            headline: paperHeadline,
+            snippet: paperSnippet,
+            sourceTag: paperSourceTag,
+            dateTag: paperDateTag,
+            theme: paperTheme,
+            tornStyle: paperTornStyle,
+            tapeColor: paperTapeColor,
+            jitter: paperJitter,
+            highlightKeyword: paperHighlight
+          });
+        } else if (type === 'tracking') {
+          drawTrackingHudFrame(ctx, sourceMediaRef.current, width, height, progressVal, {
+            targetLabel: trackingTargetLabel,
+            category: trackingCategory,
+            confidence: trackingConfidence,
+            coordinates: trackingCoordinates,
+            theme: trackingHudTheme,
+            reticleStyle: trackingReticleStyle,
+            scanBeam: trackingScanBeam,
+            lockAnimation: trackingLockAnimation
+          });
         }
       }
       animFrameRef.current = requestAnimationFrame(renderLoop);
@@ -1044,6 +1169,8 @@ export default function VideoEffectTool() {
     timelineTitle, timelineEvents, timelineTheme, timelineStyle, timelineStartMilestone, timelineEndMilestone, timelineZoom,
     treeRootTitle, treeRootSubtitle, treeBranches, treeTheme, treeConnectorStyle,
     counterHeadline, counterSubtitle, counterVal1, counterLabel1, counterVal2, counterLabel2, counterPrefix, counterSuffix, counterTrendTag, counterTheme, counterShowGauges,
+    paperHeadline, paperSnippet, paperSourceTag, paperDateTag, paperTheme, paperTornStyle, paperTapeColor, paperJitter, paperHighlight,
+    trackingTargetLabel, trackingCategory, trackingConfidence, trackingCoordinates, trackingHudTheme, trackingReticleStyle, trackingScanBeam, trackingLockAnimation,
     lang
   ]);
 
@@ -1230,6 +1357,29 @@ export default function VideoEffectTool() {
             trendTag: counterTrendTag,
             theme: counterTheme,
             showGauges: counterShowGauges
+          });
+        } else if (type === 'paper') {
+          drawPaperCutoutFrame(ctx, sourceMediaRef.current, canvas.width, canvas.height, frameProgress, {
+            headline: paperHeadline,
+            snippet: paperSnippet,
+            sourceTag: paperSourceTag,
+            dateTag: paperDateTag,
+            theme: paperTheme,
+            tornStyle: paperTornStyle,
+            tapeColor: paperTapeColor,
+            jitter: paperJitter,
+            highlightKeyword: paperHighlight
+          });
+        } else if (type === 'tracking') {
+          drawTrackingHudFrame(ctx, sourceMediaRef.current, canvas.width, canvas.height, frameProgress, {
+            targetLabel: trackingTargetLabel,
+            category: trackingCategory,
+            confidence: trackingConfidence,
+            coordinates: trackingCoordinates,
+            theme: trackingHudTheme,
+            reticleStyle: trackingReticleStyle,
+            scanBeam: trackingScanBeam,
+            lockAnimation: trackingLockAnimation
           });
         } else {
           ctx.fillStyle = '#0F1015';
@@ -2510,6 +2660,213 @@ export default function VideoEffectTool() {
                         ]}
                         value={counterTheme}
                         onChange={setCounterTheme}
+                      />
+                    </>
+                  )}
+
+                  {/* 13. Paper Cutout Settings Panel */}
+                  {type === 'paper' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('paperHeadlineLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={paperHeadline}
+                          onChange={(e) => setPaperHeadline(e.target.value)}
+                          placeholder="e.g. CLASSIFIED DOSSIER LEAKED"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm font-bold"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('paperSnippetLabel', lang)}
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={paperSnippet}
+                          onChange={(e) => setPaperSnippet(e.target.value)}
+                          placeholder="Excerpt / Body text..."
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-sm resize-none"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            {t('paperSourceTagLabel', lang)}
+                          </label>
+                          <input
+                            type="text"
+                            value={paperSourceTag}
+                            onChange={(e) => setPaperSourceTag(e.target.value)}
+                            placeholder="ARCHIVES • FILE #741"
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            {t('paperDateTagLabel', lang)}
+                          </label>
+                          <input
+                            type="text"
+                            value={paperDateTag}
+                            onChange={(e) => setPaperDateTag(e.target.value)}
+                            placeholder="OCTOBER 1974"
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-accent text-white text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('paperHighlightLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={paperHighlight}
+                          onChange={(e) => setPaperHighlight(e.target.value)}
+                          placeholder="e.g. strategic projects"
+                          className="w-full p-2.5 bg-zinc-800 border border-amber-500/50 rounded-md focus:ring-2 focus:ring-amber-400 text-amber-200 text-sm"
+                        />
+                      </div>
+
+                      <SegmentedControl
+                        label={t('paperThemeLabel', lang)}
+                        options={[
+                          { value: 'vintage', label: t('paperThemeVintage', lang) },
+                          { value: 'noir', label: t('paperThemeNoir', lang) },
+                          { value: 'neonNote', label: t('paperThemeNeonNote', lang) },
+                          { value: 'cardstock', label: t('paperThemeCardstock', lang) }
+                        ]}
+                        value={paperTheme}
+                        onChange={setPaperTheme}
+                      />
+
+                      <SegmentedControl
+                        label={t('paperTornStyleLabel', lang)}
+                        options={[
+                          { value: 'rippedEdge', label: t('paperStyleRipped', lang) },
+                          { value: 'polaroid', label: t('paperStylePolaroid', lang) },
+                          { value: 'stampTicket', label: t('paperStyleTicket', lang) }
+                        ]}
+                        value={paperTornStyle}
+                        onChange={setPaperTornStyle}
+                      />
+
+                      <SegmentedControl
+                        label={t('paperTapeColorLabel', lang)}
+                        options={[
+                          { value: 'washiGold', label: t('paperTapeWashiGold', lang) },
+                          { value: 'hazardStripe', label: t('paperTapeHazard', lang) },
+                          { value: 'crimsonRed', label: t('paperTapeCrimson', lang) },
+                          { value: 'clearMatte', label: t('paperTapeClear', lang) }
+                        ]}
+                        value={paperTapeColor}
+                        onChange={setPaperTapeColor}
+                      />
+
+                      <Switch
+                        label={t('paperJitterLabel', lang)}
+                        checked={paperJitter}
+                        onChange={(e) => setPaperJitter(Boolean(e?.target ? e.target.checked : e))}
+                      />
+                    </>
+                  )}
+
+                  {/* 14. AI Target & Subject Tracker HUD Settings Panel */}
+                  {type === 'tracking' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('trackingTargetLabelLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={trackingTargetLabel}
+                          onChange={(e) => setTrackingTargetLabel(e.target.value)}
+                          placeholder="[TARGET: SUBJECT 09]"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-cyan-400 text-cyan-300 font-mono text-sm font-bold"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            {t('trackingCategoryLabel', lang)}
+                          </label>
+                          <input
+                            type="text"
+                            value={trackingCategory}
+                            onChange={(e) => setTrackingCategory(e.target.value)}
+                            placeholder="FACIAL BIOMETRICS"
+                            className="w-full p-2 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-cyan-400 text-white text-xs font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-400 mb-1">
+                            {t('trackingConfidenceLabel', lang)}: <span className="text-cyan-400 font-mono font-bold">{trackingConfidence}%</span>
+                          </label>
+                          <input
+                            type="range"
+                            min="50"
+                            max="99.9"
+                            step="0.1"
+                            value={trackingConfidence}
+                            onChange={(e) => setTrackingConfidence(Number(e.target.value))}
+                            className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-cyan-400 mt-2"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          {t('trackingCoordinatesLabel', lang)}
+                        </label>
+                        <input
+                          type="text"
+                          value={trackingCoordinates}
+                          onChange={(e) => setTrackingCoordinates(e.target.value)}
+                          placeholder="LAT: 37.7749° N | LON: 122.4194° W"
+                          className="w-full p-2.5 bg-zinc-800 border border-zinc-600 rounded-md focus:ring-2 focus:ring-cyan-400 text-zinc-300 font-mono text-xs"
+                        />
+                      </div>
+
+                      <SegmentedControl
+                        label={t('trackingHudThemeLabel', lang)}
+                        options={[
+                          { value: 'cyberCyan', label: t('hudThemeCyan', lang) },
+                          { value: 'tacticalAmber', label: t('hudThemeAmber', lang) },
+                          { value: 'crimsonAlert', label: t('hudThemeCrimson', lang) },
+                          { value: 'matrixEmerald', label: t('hudThemeEmerald', lang) }
+                        ]}
+                        value={trackingHudTheme}
+                        onChange={setTrackingHudTheme}
+                      />
+
+                      <SegmentedControl
+                        label={t('trackingReticleStyleLabel', lang)}
+                        options={[
+                          { value: 'cornerBrackets', label: t('reticleStyleCorners', lang) },
+                          { value: 'circularSniper', label: t('reticleStyleSniper', lang) },
+                          { value: 'fullHud', label: t('reticleStyleFullHud', lang) }
+                        ]}
+                        value={trackingReticleStyle}
+                        onChange={setTrackingReticleStyle}
+                      />
+
+                      <Switch
+                        label={t('trackingScanBeamLabel', lang)}
+                        checked={trackingScanBeam}
+                        onChange={(e) => setTrackingScanBeam(Boolean(e?.target ? e.target.checked : e))}
+                      />
+
+                      <Switch
+                        label={t('trackingLockAnimLabel', lang)}
+                        checked={trackingLockAnimation}
+                        onChange={(e) => setTrackingLockAnimation(Boolean(e?.target ? e.target.checked : e))}
                       />
                     </>
                   )}

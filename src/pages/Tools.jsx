@@ -321,6 +321,55 @@ const TOOLS = [
     )
   },
   {
+    id: 'paper',
+    titleKey: 'tool_paper_title',
+    descKey: 'tool_paper_desc',
+    path: '/effects/paper',
+    isPro: false,
+    isSoon: false,
+    isFree: true,
+    bgClass: 'from-amber-700/30 via-stone-800 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 overflow-hidden flex flex-col items-center justify-center p-4 opacity-90">
+        {/* Ripped Paper Collage Card */}
+        <motion.div
+          animate={isHovered ? { rotate: [-1, 1.5, -1], y: [0, -2, 0] } : { rotate: -1, y: 0 }}
+          transition={{ duration: 0.8, repeat: isHovered ? Infinity : 0, ease: "easeInOut" }}
+          className="relative w-44 bg-[#F2EFE9] text-zinc-900 p-2.5 rounded shadow-2xl border border-stone-300"
+          style={{ transformOrigin: 'top center' }}
+        >
+          {/* Washi Tape Strip */}
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-14 h-4 bg-amber-400/80 -rotate-2 shadow-sm border border-amber-500/40 rounded-sm" />
+          
+          <div className="flex items-center justify-between text-[7px] font-mono font-bold text-stone-500 border-b border-stone-300 pb-1 mb-1">
+            <span>ARCHIVES #741</span>
+            <span className="bg-red-600 text-white px-1 rounded-xs">TOP SECRET</span>
+          </div>
+
+          <div className="font-serif text-[10px] font-black leading-tight text-zinc-900 mb-1">
+            CLASSIFIED DOSSIER
+          </div>
+
+          <div className="text-[8px] font-serif text-zinc-700 leading-snug">
+            Strategic operations &{' '}
+            <span className="relative inline-block px-0.5">
+              <span className="relative z-10 font-bold text-black">undisclosed logs</span>
+              {isHovered ? (
+                <motion.span
+                  animate={{ width: ['0%', '100%'] }}
+                  transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 0.4 }}
+                  className="absolute inset-0 bg-yellow-300/80 -z-0 h-full rounded-xs"
+                />
+              ) : (
+                <span className="absolute inset-0 bg-yellow-300/80 -z-0 h-full rounded-xs w-full" />
+              )}
+            </span>
+          </div>
+        </motion.div>
+      </div>
+    )
+  },
+  {
     id: 'ken-burns',
     titleKey: 'toolKenBurns',
     descKey: 'toolKenBurnsDesc',
@@ -339,6 +388,64 @@ const TOOLS = [
         ) : (
           <div className="w-full h-full border border-[#00E5FF]/30 m-4 rounded-lg" />
         )}
+      </div>
+    )
+  },
+  {
+    id: 'tracking',
+    titleKey: 'tool_tracking_title',
+    descKey: 'tool_tracking_desc',
+    path: '/effects/tracking',
+    isPro: true,
+    isSoon: false,
+    bgClass: 'from-cyan-900/40 via-blue-900/20 to-zinc-900',
+    effect: (isHovered) => (
+      <div className="absolute inset-0 overflow-hidden flex items-center justify-center p-4 opacity-90">
+        {/* Reticle Lock Box */}
+        <div className="relative w-36 h-28 border border-cyan-500/30 bg-cyan-950/20 rounded flex flex-col justify-between p-1.5 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+          {/* Corner Brackets */}
+          <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-cyan-400" />
+          <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-cyan-400" />
+          <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-cyan-400" />
+          <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-cyan-400" />
+
+          {/* Radar Scanning Line */}
+          {isHovered && (
+            <motion.div
+              animate={{ y: [0, 96, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute left-0 right-0 h-0.5 bg-cyan-300 shadow-[0_0_10px_#22D3EE] z-10"
+            />
+          )}
+
+          {/* Header Metadata */}
+          <div className="flex justify-between items-center text-[7px] font-mono text-cyan-300">
+            <span className="font-bold">[LOCKED: 09]</span>
+            <span className="text-emerald-400">99.4% CONF</span>
+          </div>
+
+          {/* Center Crosshair */}
+          <div className="self-center flex items-center justify-center">
+            {isHovered ? (
+              <motion.div
+                animate={{ rotate: 360, scale: [1, 1.15, 1] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                className="w-8 h-8 rounded-full border border-dashed border-cyan-400/80 flex items-center justify-center"
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+              </motion.div>
+            ) : (
+              <div className="w-8 h-8 rounded-full border border-dashed border-cyan-400/80 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Telemetry */}
+          <div className="text-[7px] font-mono text-cyan-400/80 truncate">
+            LAT: 37.77°N | LON: 122.41°W
+          </div>
+        </div>
       </div>
     )
   },

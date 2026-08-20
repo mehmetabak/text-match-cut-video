@@ -27,6 +27,8 @@ async function build() {
     '/effects/timeline',
     '/effects/tree',
     '/effects/counter',
+    '/effects/paper',
+    '/effects/tracking',
     '/terms',
     '/privacy',
     '/cookies',

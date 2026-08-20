@@ -4399,5 +4399,652 @@ export function drawCounterFrame(ctx, width, height, progress = 0, options = {})
     ctx.restore();
 }
 
+// =========================================================================
+// 13. PAPER CUT-OUT & RIPPED COLLAGE ANIMATOR (VOX & MAGNATESMEDIA STYLE)
+// =========================================================================
+export function drawPaperCutoutFrame(ctx, a, b, c, d, e) {
+    let mediaSource = null;
+    let width, height, progress, options;
+
+    if (typeof a === 'number') {
+        width = a;
+        height = b;
+        progress = c || 0;
+        options = d || {};
+        mediaSource = options.mediaSource || null;
+    } else {
+        mediaSource = a;
+        width = Number(b) || (ctx.canvas ? ctx.canvas.width : 1920);
+        height = Number(c) || (ctx.canvas ? ctx.canvas.height : 1080);
+        progress = Number(d) || 0;
+        options = e || {};
+    }
+
+    width = Math.max(10, Number(width) || 1920);
+    height = Math.max(10, Number(height) || 1080);
+    progress = Math.max(0, Math.min(1, Number(progress) || 0));
+
+    const isVertical = height > width;
+    const mScale = Math.min(width, height) / 720;
+
+    const headline = options.headline || options.paperHeadline || "CLASSIFIED DOSSIER LEAKED";
+    const snippet = options.snippet || options.paperSnippet || "Confidential investigative reports reveal undisclosed operations and strategic records.";
+    const sourceTag = (options.sourceTag || options.paperSourceTag || "NATIONAL ARCHIVES • FILE #741").toUpperCase();
+    const dateTag = (options.dateTag || options.paperDateTag || "OCTOBER 1974").toUpperCase();
+    const theme = options.theme || options.paperTheme || "vintage"; // 'vintage' | 'noir' | 'neonNote' | 'cardstock'
+    const tornStyle = options.tornStyle || options.paperTornStyle || "rippedEdge"; // 'rippedEdge' | 'polaroid' | 'stampTicket'
+    const tapeColor = options.tapeColor || options.paperTapeColor || "washiGold"; // 'washiGold' | 'hazardStripe' | 'crimsonRed' | 'clearMatte'
+    const jitterEnabled = (options.jitter !== undefined ? options.jitter : options.paperJitter) !== false;
+    const highlightKeyword = options.highlightKeyword || options.paperHighlight || "";
+
+    ctx.save();
+
+    // 1. Theme Configuration
+    let bgGradient, paperBg, paperBorder, textHeadCol, textBodyCol, metaCol, badgeBg, badgeCol, highlightCol;
+    if (theme === 'noir') {
+        bgGradient = ctx.createRadialGradient(width / 2, height / 2, width * 0.1, width / 2, height / 2, width * 0.9);
+        bgGradient.addColorStop(0, '#18181B');
+        bgGradient.addColorStop(1, '#09090B');
+        paperBg = '#27272A';
+        paperBorder = '#3F3F46';
+        textHeadCol = '#FAFAFA';
+        textBodyCol = '#D4D4D8';
+        metaCol = '#A1A1AA';
+        badgeBg = '#E11D48';
+        badgeCol = '#FFFFFF';
+        highlightCol = 'rgba(244, 63, 94, 0.45)';
+    } else if (theme === 'neonNote') {
+        bgGradient = ctx.createRadialGradient(width / 2, height / 2, width * 0.1, width / 2, height / 2, width * 0.9);
+        bgGradient.addColorStop(0, '#1E293B');
+        bgGradient.addColorStop(1, '#0F172A');
+        paperBg = '#FEF08A';
+        paperBorder = '#FACC15';
+        textHeadCol = '#1E293B';
+        textBodyCol = '#334155';
+        metaCol = '#64748B';
+        badgeBg = '#0284C7';
+        badgeCol = '#FFFFFF';
+        highlightCol = 'rgba(56, 189, 248, 0.45)';
+    } else if (theme === 'cardstock') {
+        bgGradient = ctx.createRadialGradient(width / 2, height / 2, width * 0.1, width / 2, height / 2, width * 0.9);
+        bgGradient.addColorStop(0, '#1E1E24');
+        bgGradient.addColorStop(1, '#111113');
+        paperBg = '#FFFFFF';
+        paperBorder = '#E4E4E7';
+        textHeadCol = '#18181B';
+        textBodyCol = '#3F3F46';
+        metaCol = '#71717A';
+        badgeBg = '#18181B';
+        badgeCol = '#FAFAFA';
+        highlightCol = 'rgba(250, 204, 21, 0.5)';
+    } else {
+        // Vintage Newsprint Parchment (Default)
+        bgGradient = ctx.createRadialGradient(width / 2, height / 2, width * 0.1, width / 2, height / 2, width * 0.9);
+        bgGradient.addColorStop(0, '#1C1917');
+        bgGradient.addColorStop(0.6, '#12100E');
+        bgGradient.addColorStop(1, '#090807');
+        paperBg = '#F6F1E5';
+        paperBorder = '#D6CEBE';
+        textHeadCol = '#1C1917';
+        textBodyCol = '#292524';
+        metaCol = '#78716C';
+        badgeBg = '#78350F';
+        badgeCol = '#FEF3C7';
+        highlightCol = 'rgba(245, 179, 1, 0.55)';
+    }
+
+    // Outer Background
+    ctx.fillStyle = bgGradient;
+    ctx.fillRect(0, 0, width, height);
+
+    // Subtle table wooden grid lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+    ctx.lineWidth = 1;
+    for (let y = 0; y < height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+    }
+
+    // Stop-Motion Organic Paper Jitter (12fps stepped rotation and scale)
+    const animProg = Math.min(1.0, progress / 0.15); // Drop in
+    const scalePop = 0.92 + (0.08 * Math.sin(animProg * Math.PI / 2));
+    
+    let jitterAngle = -0.015;
+    let jitterX = 0;
+    let jitterY = 0;
+    if (jitterEnabled) {
+        const stepFrame = Math.floor(progress * 18);
+        jitterAngle = -0.02 + ((stepFrame % 3 - 1) * 0.008);
+        jitterX = (stepFrame % 4 - 2) * 1.5;
+        jitterY = ((stepFrame * 7) % 3 - 1) * 1.5;
+    }
+
+    // Paper Card Dimensions
+    const cardW = Math.round(isVertical ? width * 0.88 : width * 0.65);
+    const cardH = Math.round(isVertical ? height * 0.68 : height * 0.72);
+    const cardX = Math.round((width - cardW) / 2) + jitterX;
+    const cardY = Math.round((height - cardH) / 2) + jitterY;
+
+    ctx.save();
+    ctx.translate(width / 2, height / 2);
+    ctx.rotate(jitterAngle);
+    ctx.scale(scalePop, scalePop);
+    ctx.translate(-width / 2, -height / 2);
+
+    // Deep Realistic Paper Drop Shadow
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+    ctx.shadowBlur = 32;
+    ctx.shadowOffsetX = 6;
+    ctx.shadowOffsetY = 12;
+    ctx.fillRect(cardX + 4, cardY + 8, cardW - 8, cardH - 12);
+    ctx.restore();
+
+    // Draw Ripped / Polaroid Paper Card Body
+    ctx.save();
+    ctx.fillStyle = paperBg;
+    ctx.beginPath();
+
+    if (tornStyle === 'rippedEdge') {
+        // Jagged Ripped Top Edge
+        ctx.moveTo(cardX, cardY + 6);
+        const topSegments = 24;
+        for (let i = 1; i <= topSegments; i++) {
+            const px = cardX + (i * (cardW / topSegments));
+            const py = cardY + ((i % 2 === 0 ? 3 : -3) + (Math.sin(i * 1.7) * 2));
+            ctx.lineTo(px, py);
+        }
+        // Right Edge
+        ctx.lineTo(cardX + cardW, cardY + cardH - 6);
+        // Jagged Ripped Bottom Edge
+        const botSegments = 24;
+        for (let i = botSegments; i >= 0; i--) {
+            const px = cardX + (i * (cardW / botSegments));
+            const py = cardY + cardH + ((i % 2 === 0 ? -4 : 4) + (Math.cos(i * 1.5) * 3));
+            ctx.lineTo(px, py);
+        }
+        // Left Edge
+        ctx.lineTo(cardX, cardY + 6);
+        ctx.closePath();
+    } else {
+        // Smooth Polaroid / Ticket Card
+        if (ctx.roundRect) {
+            ctx.roundRect(cardX, cardY, cardW, cardH, tornStyle === 'polaroid' ? 4 : 8);
+        } else {
+            ctx.rect(cardX, cardY, cardW, cardH);
+        }
+    }
+    ctx.fill();
+
+    // Paper Outline Border
+    ctx.strokeStyle = paperBorder;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Optional Background Media Image / Texture
+    if (mediaSource) {
+        ctx.save();
+        ctx.clip();
+        const photoH = Math.round(cardH * 0.38);
+        const photoW = cardW - 32;
+        const photoX = cardX + 16;
+        const photoY = cardY + 54;
+        
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(photoX, photoY, photoW, photoH);
+        
+        try {
+            ctx.drawImage(mediaSource, photoX, photoY, photoW, photoH);
+        } catch (e) {}
+        ctx.restore();
+    }
+
+    // Header Meta & Source Badge
+    ctx.fillStyle = badgeBg;
+    const badgePadX = Math.round(10 * mScale);
+    const badgePadY = Math.round(4 * mScale);
+    const badgeFont = `800 ${Math.max(10, Math.round(11 * mScale))}px 'Inter', sans-serif`;
+    ctx.font = badgeFont;
+    const sourceW = ctx.measureText(sourceTag).width;
+    
+    if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(cardX + 24, cardY + 20, sourceW + (badgePadX * 2), 20 * mScale, 3);
+        ctx.fill();
+    } else {
+        ctx.fillRect(cardX + 24, cardY + 20, sourceW + (badgePadX * 2), 20 * mScale);
+    }
+
+    ctx.fillStyle = badgeCol;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(sourceTag, cardX + 24 + badgePadX, cardY + 20 + (10 * mScale));
+
+    // Date Tag (Right Aligned)
+    ctx.fillStyle = metaCol;
+    ctx.font = `700 ${Math.max(10, Math.round(11 * mScale))}px 'Courier New', monospace`;
+    ctx.textAlign = 'right';
+    ctx.fillText(dateTag, cardX + cardW - 24, cardY + 20 + (10 * mScale));
+    ctx.textAlign = 'left';
+
+    // Headline (Bold Serif Newspaper Typography)
+    const contentStartY = mediaSource ? (cardY + Math.round(cardH * 0.38) + 72) : (cardY + 68);
+    ctx.fillStyle = textHeadCol;
+    const headFontSize = Math.max(16, Math.round((isVertical ? 21 : 24) * mScale));
+    ctx.font = `900 ${headFontSize}px 'Georgia', serif`;
+    ctx.textBaseline = 'top';
+
+    // Word Wrap Headline
+    const maxTextW = cardW - 48;
+    const headWords = headline.split(' ');
+    let currentLine = '';
+    let curY = contentStartY;
+
+    for (const w of headWords) {
+        const testLine = currentLine ? `${currentLine} ${w}` : w;
+        if (ctx.measureText(testLine).width > maxTextW) {
+            ctx.fillText(currentLine, cardX + 24, curY);
+            currentLine = w;
+            curY += headFontSize * 1.25;
+        } else {
+            currentLine = testLine;
+        }
+    }
+    if (currentLine) {
+        ctx.fillText(currentLine, cardX + 24, curY);
+        curY += headFontSize * 1.35;
+    }
+
+    // Divider Line
+    ctx.strokeStyle = paperBorder;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cardX + 24, curY);
+    ctx.lineTo(cardX + cardW - 24, curY);
+    ctx.stroke();
+    curY += 14;
+
+    // Body Snippet with Animated Yellow / Neon Highlighter
+    ctx.fillStyle = textBodyCol;
+    const bodyFontSize = Math.max(12, Math.round((isVertical ? 13 : 15) * mScale));
+    ctx.font = `500 ${bodyFontSize}px 'Georgia', serif`;
+
+    const bodyWords = snippet.split(' ');
+    let bodyLine = '';
+    const highlightProg = Math.max(0, Math.min(1.0, (progress - 0.25) / 0.50));
+
+    for (const bw of bodyWords) {
+        const testBody = bodyLine ? `${bodyLine} ${bw}` : bw;
+        if (ctx.measureText(testBody).width > maxTextW) {
+            // Draw Highlight behind line if it contains the keyword
+            if (highlightKeyword && bodyLine.toLowerCase().includes(highlightKeyword.toLowerCase()) && highlightProg > 0) {
+                const lineW = ctx.measureText(bodyLine).width;
+                ctx.save();
+                ctx.fillStyle = highlightCol;
+                ctx.fillRect(cardX + 24, curY - 1, lineW * highlightProg, bodyFontSize + 4);
+                ctx.restore();
+            }
+
+            ctx.fillStyle = textBodyCol;
+            ctx.fillText(bodyLine, cardX + 24, curY);
+            bodyLine = bw;
+            curY += bodyFontSize * 1.45;
+        } else {
+            bodyLine = testBody;
+        }
+    }
+    if (bodyLine) {
+        if (highlightKeyword && bodyLine.toLowerCase().includes(highlightKeyword.toLowerCase()) && highlightProg > 0) {
+            const lineW = ctx.measureText(bodyLine).width;
+            ctx.save();
+            ctx.fillStyle = highlightCol;
+            ctx.fillRect(cardX + 24, curY - 1, lineW * highlightProg, bodyFontSize + 4);
+            ctx.restore();
+        }
+        ctx.fillStyle = textBodyCol;
+        ctx.fillText(bodyLine, cardX + 24, curY);
+    }
+
+    ctx.restore(); // Exit card clipping / rotation
+
+    // Realistic Washi Tape Fasteners
+    const drawTape = (tx, ty, tAngle, tWidth, tHeight) => {
+        ctx.save();
+        ctx.translate(tx, ty);
+        ctx.rotate(tAngle);
+
+        if (tapeColor === 'hazardStripe') {
+            ctx.fillStyle = '#EAB308';
+            ctx.fillRect(-tWidth / 2, -tHeight / 2, tWidth, tHeight);
+            // Black stripes
+            ctx.fillStyle = '#000000';
+            for (let sx = -tWidth / 2; sx < tWidth / 2; sx += 14) {
+                ctx.beginPath();
+                ctx.moveTo(sx, -tHeight / 2);
+                ctx.lineTo(sx + 8, tHeight / 2);
+                ctx.lineTo(sx + 14, tHeight / 2);
+                ctx.lineTo(sx + 6, -tHeight / 2);
+                ctx.fill();
+            }
+        } else if (tapeColor === 'crimsonRed') {
+            ctx.fillStyle = 'rgba(225, 29, 72, 0.78)';
+            ctx.fillRect(-tWidth / 2, -tHeight / 2, tWidth, tHeight);
+        } else if (tapeColor === 'clearMatte') {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+            ctx.fillRect(-tWidth / 2, -tHeight / 2, tWidth, tHeight);
+        } else {
+            // Washi Gold (Default)
+            ctx.fillStyle = 'rgba(245, 179, 1, 0.72)';
+            ctx.fillRect(-tWidth / 2, -tHeight / 2, tWidth, tHeight);
+        }
+
+        // Tape ragged ends
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(-tWidth / 2, -tHeight / 2, tWidth, tHeight);
+
+        ctx.restore();
+    };
+
+    // Tape on Top-Left Corner & Top-Right Corner
+    drawTape(cardX + 28, cardY - 4, -0.15, 64 * mScale, 20 * mScale);
+    drawTape(cardX + cardW - 28, cardY - 4, 0.18, 64 * mScale, 20 * mScale);
+
+    drawVignette(ctx, width, height, 0.35);
+    ctx.restore();
+}
+
+export function drawTrackingHudFrame(ctx, a, b, c, d, e) {
+    let mediaSource = null;
+    let width, height, progress, options;
+
+    if (typeof a === 'number') {
+        width = a;
+        height = b;
+        progress = c || 0;
+        options = d || {};
+        mediaSource = options.mediaSource || null;
+    } else {
+        mediaSource = a;
+        width = Number(b) || (ctx.canvas ? ctx.canvas.width : 1920);
+        height = Number(c) || (ctx.canvas ? ctx.canvas.height : 1080);
+        progress = Number(d) || 0;
+        options = e || {};
+    }
+
+    width = Math.max(10, Number(width) || 1920);
+    height = Math.max(10, Number(height) || 1080);
+    progress = Math.max(0, Math.min(1, Number(progress) || 0));
+
+    const isVertical = height > width;
+    const mScale = Math.min(width, height) / 720;
+
+    const targetLabel = options.targetLabel || options.trackingTargetLabel || "[CONFIRMED ID: SUBJECT 09]";
+    const category = (options.category || options.trackingCategory || "FACIAL BIOMETRICS • 4K SENSOR").toUpperCase();
+    const confidenceVal = Number(options.confidence !== undefined ? options.confidence : options.trackingConfidence) || 99.4;
+    const coordinates = options.coordinates || options.trackingCoordinates || "LAT: 37.7749° N | LON: 122.4194° W";
+    const theme = options.theme || options.trackingHudTheme || "cyberCyan"; // 'cyberCyan' | 'tacticalAmber' | 'crimsonAlert' | 'matrixEmerald'
+    const reticleStyle = options.reticleStyle || options.trackingReticleStyle || "cornerBrackets"; // 'cornerBrackets' | 'circularSniper' | 'fullHud'
+    const scanBeam = (options.scanBeam !== undefined ? options.scanBeam : options.trackingScanBeam) !== false;
+    const lockAnim = (options.lockAnimation !== undefined ? options.lockAnimation : options.trackingLockAnimation) !== false;
+
+    ctx.save();
+
+    // 1. HUD Color Palette Configuration
+    let hudMain, hudGlow, hudBgDim, hudDanger, gridCol;
+    if (theme === 'tacticalAmber') {
+        hudMain = '#F59E0B';
+        hudGlow = 'rgba(245, 158, 11, 0.75)';
+        hudBgDim = 'rgba(245, 158, 11, 0.12)';
+        hudDanger = '#EF4444';
+        gridCol = 'rgba(245, 158, 11, 0.08)';
+    } else if (theme === 'crimsonAlert') {
+        hudMain = '#EF4444';
+        hudGlow = 'rgba(239, 68, 68, 0.85)';
+        hudBgDim = 'rgba(239, 68, 68, 0.14)';
+        hudDanger = '#F59E0B';
+        gridCol = 'rgba(239, 68, 68, 0.08)';
+    } else if (theme === 'matrixEmerald') {
+        hudMain = '#10B981';
+        hudGlow = 'rgba(16, 185, 129, 0.75)';
+        hudBgDim = 'rgba(16, 185, 129, 0.12)';
+        hudDanger = '#EF4444';
+        gridCol = 'rgba(16, 185, 129, 0.08)';
+    } else {
+        // Cyber Cyan (Default)
+        hudMain = '#00E5FF';
+        hudGlow = 'rgba(0, 229, 255, 0.8)';
+        hudBgDim = 'rgba(0, 229, 255, 0.12)';
+        hudDanger = '#F43F5E';
+        gridCol = 'rgba(0, 229, 255, 0.08)';
+    }
+
+    // Background Canvas / Media
+    if (mediaSource) {
+        try {
+            const { width: srcW, height: srcH } = getSourceDimensions(mediaSource);
+            const scale = Math.max(width / srcW, height / srcH);
+            const sw = srcW * scale;
+            const sh = srcH * scale;
+            const sx = (width - sw) / 2;
+            const sy = (height - sh) / 2;
+            ctx.drawImage(mediaSource, sx, sy, sw, sh);
+
+            // Darkening surveillance tinted veil
+            ctx.fillStyle = 'rgba(5, 10, 20, 0.65)';
+            ctx.fillRect(0, 0, width, height);
+        } catch (e) {
+            ctx.fillStyle = '#050B14';
+            ctx.fillRect(0, 0, width, height);
+        }
+    } else {
+        // Deep Surveillance Grid Background
+        const bgGrad = ctx.createRadialGradient(width / 2, height / 2, width * 0.1, width / 2, height / 2, width * 0.85);
+        bgGrad.addColorStop(0, '#091522');
+        bgGrad.addColorStop(1, '#02060C');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, width, height);
+    }
+
+    // Top-Level Surveillance Grid Mesh
+    ctx.strokeStyle = gridCol;
+    ctx.lineWidth = 1;
+    const gridStep = Math.round(48 * mScale);
+    for (let x = 0; x < width; x += gridStep) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+    }
+    for (let y = 0; y < height; y += gridStep) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+    }
+
+    // Top Status Header Bar
+    ctx.fillStyle = hudMain;
+    ctx.font = `800 ${Math.max(10, Math.round(11 * mScale))}px 'Courier New', monospace`;
+    ctx.fillText(`● REC [AI SURVEILLANCE FEED]`, 28, 34);
+    
+    ctx.textAlign = 'right';
+    const timeCode = `00:0${Math.floor(progress * 10)}:${Math.floor((progress * 60) % 60).toString().padStart(2, '0')}:24`;
+    ctx.fillText(`SYS.LOCK // ${timeCode}`, width - 28, 34);
+    ctx.textAlign = 'left';
+
+    // Target Box Placement
+    const boxW = Math.round(isVertical ? width * 0.72 : width * 0.42);
+    const boxH = Math.round(isVertical ? height * 0.42 : height * 0.52);
+    
+    // Dynamic Tracking Lock Animation (Zooms from 1.35x down to 1.0x with slight bounce)
+    let lockScale = 1.0;
+    if (lockAnim) {
+        const lockProg = Math.min(1.0, progress / 0.20);
+        lockScale = 1.35 - (0.35 * Math.sin(lockProg * Math.PI / 2));
+    }
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const curW = boxW * lockScale;
+    const curH = boxH * lockScale;
+    const left = centerX - (curW / 2);
+    const top = centerY - (curH / 2);
+    const right = left + curW;
+    const bottom = top + curH;
+
+    // Sweeping Radar Scan Laser Line
+    if (scanBeam) {
+        const scanY = top + (curH * ((progress * 1.6) % 1.0));
+        ctx.save();
+        const laserGrad = ctx.createLinearGradient(left, scanY, right, scanY);
+        laserGrad.addColorStop(0, 'rgba(0,0,0,0)');
+        laserGrad.addColorStop(0.5, hudMain);
+        laserGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.strokeStyle = laserGrad;
+        ctx.shadowColor = hudGlow;
+        ctx.shadowBlur = 16;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(left, scanY);
+        ctx.lineTo(right, scanY);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // Reticle Center Crosshair
+    ctx.save();
+    ctx.strokeStyle = hudMain;
+    ctx.lineWidth = 1.5;
+    ctx.shadowColor = hudGlow;
+    ctx.shadowBlur = 10;
+    const chSize = 14 * mScale;
+    ctx.beginPath();
+    ctx.moveTo(centerX - chSize, centerY);
+    ctx.lineTo(centerX + chSize, centerY);
+    ctx.moveTo(centerX, centerY - chSize);
+    ctx.lineTo(centerX, centerY + chSize);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 6 * mScale, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // 4 Corner Brackets (Target Lock-On)
+    const bracketLen = Math.round(28 * mScale);
+    ctx.save();
+    ctx.strokeStyle = hudMain;
+    ctx.lineWidth = 3.5;
+    ctx.shadowColor = hudGlow;
+    ctx.shadowBlur = 14;
+
+    // Top-Left
+    ctx.beginPath();
+    ctx.moveTo(left, top + bracketLen);
+    ctx.lineTo(left, top);
+    ctx.lineTo(left + bracketLen, top);
+    ctx.stroke();
+
+    // Top-Right
+    ctx.beginPath();
+    ctx.moveTo(right - bracketLen, top);
+    ctx.lineTo(right, top);
+    ctx.lineTo(right, top + bracketLen);
+    ctx.stroke();
+
+    // Bottom-Right
+    ctx.beginPath();
+    ctx.moveTo(right, bottom - bracketLen);
+    ctx.lineTo(right, bottom);
+    ctx.lineTo(right - bracketLen, bottom);
+    ctx.stroke();
+
+    // Bottom-Left
+    ctx.beginPath();
+    ctx.moveTo(left + bracketLen, bottom);
+    ctx.lineTo(left, bottom);
+    ctx.lineTo(left, bottom - bracketLen);
+    ctx.stroke();
+    ctx.restore();
+
+    // Circular Sniper Radar Ring (If selected)
+    if (reticleStyle === 'circularSniper' || reticleStyle === 'fullHud') {
+        ctx.save();
+        ctx.strokeStyle = hudBgDim;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, curW * 0.45, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Rotating dashed lock circle
+        ctx.strokeStyle = hudMain;
+        ctx.setLineDash([8, 12]);
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(progress * Math.PI);
+        ctx.beginPath();
+        ctx.arc(0, 0, curW * 0.35, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+        ctx.restore();
+    }
+
+    // Top Identifier Badge on Bounding Box
+    ctx.fillStyle = hudMain;
+    if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(left, top - 26, 170 * mScale, 22, 2);
+        ctx.fill();
+    } else {
+        ctx.fillRect(left, top - 26, 170 * mScale, 22);
+    }
+
+    ctx.fillStyle = '#000000';
+    ctx.font = `900 ${Math.max(10, Math.round(11 * mScale))}px 'Courier New', monospace`;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`TARGET LOCKED [99.4%]`, left + 8, top - 15);
+
+    // Target Label & Category Underneath Box
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `800 ${Math.max(14, Math.round(17 * mScale))}px 'Inter', sans-serif`;
+    ctx.textBaseline = 'top';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 8;
+    ctx.fillText(targetLabel, left, bottom + 12);
+
+    ctx.fillStyle = hudMain;
+    ctx.font = `700 ${Math.max(10, Math.round(12 * mScale))}px 'Courier New', monospace`;
+    ctx.fillText(`CATEGORY // ${category}`, left, bottom + 38);
+
+    // Confidence Level Meter (Live Counting Progression)
+    const currentConf = Math.min(confidenceVal, (progress * 1.5) * confidenceVal).toFixed(1);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    ctx.font = `700 ${Math.max(10, Math.round(11 * mScale))}px 'Courier New', monospace`;
+    ctx.fillText(`CONFIDENCE: ${currentConf}%`, left, bottom + 58);
+
+    // Confidence Progress Bar
+    const barW = curW;
+    const barH = 5;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.fillRect(left, bottom + 74, barW, barH);
+
+    ctx.fillStyle = hudMain;
+    ctx.shadowColor = hudGlow;
+    ctx.shadowBlur = 10;
+    ctx.fillRect(left, bottom + 74, (Number(currentConf) / 100) * barW, barH);
+    ctx.shadowColor = 'transparent';
+
+    // Bottom Telemetry Coordinates
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.font = `600 ${Math.max(9, Math.round(11 * mScale))}px 'Courier New', monospace`;
+    ctx.fillText(coordinates, left, bottom + 88);
+
+    drawVignette(ctx, width, height, 0.45);
+    ctx.restore();
+}
+
+
 
 
