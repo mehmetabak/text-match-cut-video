@@ -15,7 +15,9 @@ import {
   Check,
   Edit2,
   Volume2,
-  Plus
+  Plus,
+  Image as ImageIcon,
+  Trash2
 } from 'lucide-react';
 import Switch from '../components/Switch';
 import SegmentedControl from '../components/SegmentedControl';
@@ -230,6 +232,10 @@ export default function VideoEffectTool() {
   const [paperHighlight, setPaperHighlight] = useState(
     lang === 'tr' ? "stratejik projeleri" : "undisclosed operations"
   );
+  const [paperImageScale, setPaperImageScale] = useState(1.0);
+  const [paperImagePanY, setPaperImagePanY] = useState(0);
+  const [paperImageHeight, setPaperImageHeight] = useState(0.35);
+  const [paperImageFit, setPaperImageFit] = useState("cover"); // 'cover' | 'contain'
 
   // 14. AI Target & Subject Tracker HUD Settings (PRO)
   const [trackingTargetLabel, setTrackingTargetLabel] = useState("[CONFIRMED ID: SUBJECT 09]");
@@ -458,6 +464,10 @@ export default function VideoEffectTool() {
     paperTapeColor,
     paperJitter: Boolean(paperJitter),
     paperHighlight,
+    paperImageScale: Number(paperImageScale) || 1.0,
+    paperImagePanY: Number(paperImagePanY) || 0,
+    paperImageHeight: Number(paperImageHeight) || 0.35,
+    paperImageFit,
     trackingTargetLabel,
     trackingCategory,
     trackingConfidence: Number(trackingConfidence) || 99.4,
@@ -592,6 +602,10 @@ export default function VideoEffectTool() {
     setPaperTapeColor("washiGold");
     setPaperJitter(true);
     setPaperHighlight(lang === 'tr' ? "stratejik projeleri" : "undisclosed operations");
+    setPaperImageScale(1.0);
+    setPaperImagePanY(0);
+    setPaperImageHeight(0.35);
+    setPaperImageFit("cover");
     setTrackingTargetLabel("[CONFIRMED ID: SUBJECT 09]");
     setTrackingCategory("FACIAL BIOMETRICS • 4K SENSOR");
     setTrackingConfidence(99.4);
@@ -710,6 +724,10 @@ export default function VideoEffectTool() {
     if (s.paperTapeColor) setPaperTapeColor(s.paperTapeColor);
     if (s.paperJitter !== undefined) setPaperJitter(Boolean(s.paperJitter));
     if (s.paperHighlight) setPaperHighlight(s.paperHighlight);
+    if (s.paperImageScale !== undefined) setPaperImageScale(Number(s.paperImageScale));
+    if (s.paperImagePanY !== undefined) setPaperImagePanY(Number(s.paperImagePanY));
+    if (s.paperImageHeight !== undefined) setPaperImageHeight(Number(s.paperImageHeight));
+    if (s.paperImageFit) setPaperImageFit(s.paperImageFit);
     if (s.trackingTargetLabel) setTrackingTargetLabel(s.trackingTargetLabel);
     if (s.trackingCategory) setTrackingCategory(s.trackingCategory);
     if (s.trackingConfidence !== undefined) setTrackingConfidence(Number(s.trackingConfidence));
@@ -1132,7 +1150,11 @@ export default function VideoEffectTool() {
             tornStyle: paperTornStyle,
             tapeColor: paperTapeColor,
             jitter: paperJitter,
-            highlightKeyword: paperHighlight
+            highlightKeyword: paperHighlight,
+            imageScale: paperImageScale,
+            imagePanY: paperImagePanY,
+            imageHeightRatio: paperImageHeight,
+            imageFit: paperImageFit
           });
         } else if (type === 'tracking') {
           drawTrackingHudFrame(ctx, sourceMediaRef.current, width, height, progressVal, {
@@ -1368,7 +1390,11 @@ export default function VideoEffectTool() {
             tornStyle: paperTornStyle,
             tapeColor: paperTapeColor,
             jitter: paperJitter,
-            highlightKeyword: paperHighlight
+            highlightKeyword: paperHighlight,
+            imageScale: paperImageScale,
+            imagePanY: paperImagePanY,
+            imageHeightRatio: paperImageHeight,
+            imageFit: paperImageFit
           });
         } else if (type === 'tracking') {
           drawTrackingHudFrame(ctx, sourceMediaRef.current, canvas.width, canvas.height, frameProgress, {
@@ -2667,6 +2693,124 @@ export default function VideoEffectTool() {
                   {/* 13. Paper Cutout Settings Panel */}
                   {type === 'paper' && (
                     <>
+                      {/* Photo & Media Upload & Framing Controls */}
+                      <div className="p-3.5 bg-zinc-800/70 border border-zinc-700/80 rounded-xl space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                            <ImageIcon size={14} />
+                            {t('paperImageSectionLabel', lang)}
+                          </span>
+                          {file && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFile(null);
+                                sourceMediaRef.current = null;
+                              }}
+                              className="text-[11px] text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors cursor-pointer"
+                              title={t('paperRemoveImageLabel', lang)}
+                            >
+                              <Trash2 size={12} />
+                              <span>{t('paperRemoveImageLabel', lang)}</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {file ? (
+                          <div className="flex items-center justify-between p-2 bg-zinc-900/80 border border-zinc-700 rounded-lg">
+                            <div className="flex items-center gap-2 min-w-0 pr-2">
+                              <span className="text-xs text-zinc-300 font-medium truncate font-mono">
+                                🖼️ {file.name}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="text-xs bg-zinc-800 hover:bg-zinc-700 text-yellow-400 font-semibold px-2.5 py-1 rounded border border-zinc-600 transition-colors flex-shrink-0 cursor-pointer"
+                            >
+                              {t('paperChangeImageLabel', lang)}
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full py-2.5 px-3 bg-zinc-900/80 hover:bg-zinc-700/60 border border-dashed border-yellow-500/50 hover:border-yellow-400 rounded-lg text-xs font-semibold text-yellow-400 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                          >
+                            <Upload size={14} />
+                            <span>{t('paperUploadImageLabel', lang)}</span>
+                          </button>
+                        )}
+
+                        {file && (
+                          <div className="space-y-3 pt-1 border-t border-zinc-700/60">
+                            {/* Framing Style */}
+                            <SegmentedControl
+                              label={t('paperImageFitLabel', lang)}
+                              options={[
+                                { value: 'cover', label: t('paperImageFitCover', lang) },
+                                { value: 'contain', label: t('paperImageFitContain', lang) }
+                              ]}
+                              value={paperImageFit}
+                              onChange={setPaperImageFit}
+                            />
+
+                            {/* Photo Height Ratio */}
+                            <div>
+                              <div className="flex justify-between text-xs font-medium text-gray-400 mb-1">
+                                <span>{t('paperImageHeightLabel', lang)}</span>
+                                <span className="text-yellow-400 font-mono">{Math.round(paperImageHeight * 100)}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0.18"
+                                max="0.55"
+                                step="0.01"
+                                value={paperImageHeight}
+                                onChange={(e) => setPaperImageHeight(parseFloat(e.target.value))}
+                                className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-yellow-400"
+                              />
+                            </div>
+
+                            {/* Photo Scale / Zoom */}
+                            <div>
+                              <div className="flex justify-between text-xs font-medium text-gray-400 mb-1">
+                                <span>{t('paperImageScaleLabel', lang)}</span>
+                                <span className="text-yellow-400 font-mono">{paperImageScale.toFixed(2)}x</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0.60"
+                                max="2.50"
+                                step="0.05"
+                                value={paperImageScale}
+                                onChange={(e) => setPaperImageScale(parseFloat(e.target.value))}
+                                className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-yellow-400"
+                              />
+                            </div>
+
+                            {/* Photo Vertical Pan */}
+                            <div>
+                              <div className="flex justify-between text-xs font-medium text-gray-400 mb-1">
+                                <span>{t('paperImagePanYLabel', lang)}</span>
+                                <span className="text-yellow-400 font-mono">
+                                  {paperImagePanY === 0 ? '0' : (paperImagePanY > 0 ? `+${Math.round(paperImagePanY * 100)}%` : `${Math.round(paperImagePanY * 100)}%`)}
+                                </span>
+                              </div>
+                              <input
+                                type="range"
+                                min="-1.0"
+                                max="1.0"
+                                step="0.05"
+                                value={paperImagePanY}
+                                onChange={(e) => setPaperImagePanY(parseFloat(e.target.value))}
+                                className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-yellow-400"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
                       <div>
                         <label className="block text-sm font-medium text-gray-400 mb-1">
                           {t('paperHeadlineLabel', lang)}

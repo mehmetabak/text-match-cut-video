@@ -4585,20 +4585,62 @@ export function drawPaperCutoutFrame(ctx, a, b, c, d, e) {
     ctx.stroke();
 
     // Optional Background Media Image / Texture
+    let photoH = 0;
     if (mediaSource) {
-        ctx.save();
-        ctx.clip();
-        const photoH = Math.round(cardH * 0.38);
+        const heightRatio = Math.max(0.15, Math.min(0.60, Number(options.imageHeightRatio ?? options.paperImageHeight ?? 0.35)));
+        const imgScale = Math.max(0.5, Math.min(3.0, Number(options.imageScale ?? options.paperImageScale ?? 1.0)));
+        const imgPanX = Math.max(-1.0, Math.min(1.0, Number(options.imagePanX ?? options.paperImagePanX ?? 0)));
+        const imgPanY = Math.max(-1.0, Math.min(1.0, Number(options.imagePanY ?? options.paperImagePanY ?? 0)));
+        const imgFit = options.imageFit || options.paperImageFit || 'cover';
+
+        photoH = Math.round(cardH * heightRatio);
         const photoW = cardW - 32;
         const photoX = cardX + 16;
-        const photoY = cardY + 54;
+        const photoY = cardY + Math.round(48 * mScale);
         
-        ctx.fillStyle = '#000000';
+        ctx.save();
+        // Inner clipping path for the photo frame
+        ctx.beginPath();
+        if (ctx.roundRect) {
+            ctx.roundRect(photoX, photoY, photoW, photoH, 4);
+        } else {
+            ctx.rect(photoX, photoY, photoW, photoH);
+        }
+        ctx.clip();
+
+        // Dark matte backing
+        ctx.fillStyle = '#0F0F12';
         ctx.fillRect(photoX, photoY, photoW, photoH);
         
         try {
-            ctx.drawImage(mediaSource, photoX, photoY, photoW, photoH);
+            if (imgFit === 'contain') {
+                const { width: sW, height: sH } = getSourceDimensions(mediaSource);
+                const sAspect = sW / sH;
+                const dAspect = photoW / photoH;
+                let rW, rH;
+                if (sAspect > dAspect) {
+                    rW = photoW * imgScale;
+                    rH = rW / sAspect;
+                } else {
+                    rH = photoH * imgScale;
+                    rW = rH * sAspect;
+                }
+                const pX = photoX + (photoW - rW) / 2 + (imgPanX * (photoW - rW) * 0.5);
+                const pY = photoY + (photoH - rH) / 2 + (imgPanY * (photoH - rH) * 0.5);
+                ctx.drawImage(mediaSource, pX, pY, rW, rH);
+            } else {
+                drawImageCover(ctx, mediaSource, photoX, photoY, photoW, photoH, imgScale, imgPanX, imgPanY);
+            }
         } catch (e) {}
+
+        // Subtle frame stroke
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+        ctx.lineWidth = 1.5;
+        if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(photoX, photoY, photoW, photoH, 4);
+            ctx.stroke();
+        }
         ctx.restore();
     }
 
@@ -4612,25 +4654,25 @@ export function drawPaperCutoutFrame(ctx, a, b, c, d, e) {
     
     if (ctx.roundRect) {
         ctx.beginPath();
-        ctx.roundRect(cardX + 24, cardY + 20, sourceW + (badgePadX * 2), 20 * mScale, 3);
+        ctx.roundRect(cardX + 24, cardY + 16, sourceW + (badgePadX * 2), 20 * mScale, 3);
         ctx.fill();
     } else {
-        ctx.fillRect(cardX + 24, cardY + 20, sourceW + (badgePadX * 2), 20 * mScale);
+        ctx.fillRect(cardX + 24, cardY + 16, sourceW + (badgePadX * 2), 20 * mScale);
     }
 
     ctx.fillStyle = badgeCol;
     ctx.textBaseline = 'middle';
-    ctx.fillText(sourceTag, cardX + 24 + badgePadX, cardY + 20 + (10 * mScale));
+    ctx.fillText(sourceTag, cardX + 24 + badgePadX, cardY + 16 + (10 * mScale));
 
     // Date Tag (Right Aligned)
     ctx.fillStyle = metaCol;
     ctx.font = `700 ${Math.max(10, Math.round(11 * mScale))}px 'Courier New', monospace`;
     ctx.textAlign = 'right';
-    ctx.fillText(dateTag, cardX + cardW - 24, cardY + 20 + (10 * mScale));
+    ctx.fillText(dateTag, cardX + cardW - 24, cardY + 16 + (10 * mScale));
     ctx.textAlign = 'left';
 
     // Headline (Bold Serif Newspaper Typography)
-    const contentStartY = mediaSource ? (cardY + Math.round(cardH * 0.38) + 72) : (cardY + 68);
+    const contentStartY = mediaSource ? (cardY + photoH + Math.round(62 * mScale)) : (cardY + Math.round(56 * mScale));
     ctx.fillStyle = textHeadCol;
     const headFontSize = Math.max(16, Math.round((isVertical ? 21 : 24) * mScale));
     ctx.font = `900 ${headFontSize}px 'Georgia', serif`;

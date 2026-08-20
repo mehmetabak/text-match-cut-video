@@ -16,8 +16,8 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } }
 };
 
 // Tool tanımları da component dışına taşındı — sabit veri, her seferinde yeniden kurulmasına gerek yok
@@ -1171,46 +1171,37 @@ const ToolCard = memo(function ToolCard({ tool, lang, onNavigate, user }) {
       variants={itemVariants}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`group relative h-64 sm:h-72 rounded-[2rem] overflow-hidden bg-gradient-to-br ${tool.bgClass} border border-zinc-800/50 hover:border-zinc-700/80 transition-colors shadow-2xl cursor-pointer block`}
-      whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
-      whileTap={{ scale: 0.98 }}
+      className={`group relative h-64 sm:h-72 rounded-[2rem] overflow-hidden bg-gradient-to-br ${tool.bgClass} border border-zinc-800/50 hover:border-zinc-700/80 transition-all duration-300 hover:-translate-y-1 shadow-2xl cursor-pointer block select-none`}
     >
       {tool.effect(isHovered)}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none"></div>
 
-      <div className="absolute top-4 right-4 flex gap-2 z-20">
+      <div className="absolute top-4 right-4 flex items-center gap-1.5 z-20 pointer-events-none select-none">
         {tool.isFree && (
-          <div className="bg-green-500/30 text-green-400 border border-green-500/50 text-[10px] font-black px-2 py-1 rounded-md tracking-wider">
+          <div className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md tracking-wider shadow-sm">
             {t('free', lang) || 'FREE'}
           </div>
         )}
         {tool.isPro && (
-          <div className="bg-[#F5B301] text-black text-[10px] font-black px-2 py-1 rounded-md tracking-wider">
+          <div className="bg-[#F5B301] text-black text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wider shadow-sm">
             {t('pro', lang) || 'PRO'}
           </div>
         )}
         {tool.isSoon && (
-          <div className="bg-zinc-800/90 text-white text-[10px] font-bold px-2 py-1 rounded-md tracking-wider border border-zinc-700/50">
+          <div className="bg-zinc-800/90 text-zinc-300 text-[10px] font-bold px-2 py-0.5 rounded-md tracking-wider border border-zinc-700/50 shadow-sm">
             {t('soon', lang) || 'SOON'}
           </div>
         )}
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full p-6 z-20">
-        <motion.h2
-          animate={{ y: isHovered ? -5 : 0 }}
-          transition={{ duration: 0.2 }}
-          className="text-xl sm:text-2xl font-bold text-white mb-1"
-        >
+      <div className="absolute bottom-0 left-0 w-full p-6 z-20 pointer-events-none">
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-1 transition-transform duration-200 group-hover:-translate-y-0.5">
           {t(tool.titleKey, lang)}
-        </motion.h2>
-        <motion.p
-          animate={{ opacity: isHovered ? 1 : 0.7 }}
-          className="text-sm text-zinc-300 line-clamp-2"
-        >
+        </h2>
+        <p className="text-sm text-zinc-300 line-clamp-2 transition-opacity duration-200 opacity-80 group-hover:opacity-100">
           {t(tool.descKey, lang)}
-        </motion.p>
+        </p>
       </div>
     </motion.a>
   );
@@ -1238,8 +1229,6 @@ const Tools = () => {
       }, 150);
     };
 
-    // passive: true -> tarayıcı scroll'u JS'i beklemeden işleyebiliyor (asıl kasma kaynağı buydu)
-    // capture: true korunuyor -> iç içe scroll container'ları da yakalanabilsin diye
     window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll, true);

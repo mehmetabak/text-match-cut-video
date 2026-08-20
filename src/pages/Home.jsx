@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { MousePointer2, Volume2, Zap, Settings, Palette, Download, Play, Layers, ChevronDown, Check, Wand2, Mail, ArrowRight, LayoutGrid, Globe } from 'lucide-react';
+import { 
+  MousePointer2, Volume2, Zap, Settings, Palette, Download, Play, Layers, 
+  ChevronDown, Check, Wand2, Mail, LayoutGrid, Globe
+} from 'lucide-react';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAuthStore } from '../store/authStore';
 import { t } from '../lib/i18n';
 import CookieModal from '../components/modals/CookieModal';
 import { Helmet } from 'react-helmet-async';
+import HowItWorksFlow from '../components/home/HowItWorksFlow';
+import ProductHuntBanner from '../components/home/ProductHuntBanner';
+import ProductHuntBadge from '../components/home/ProductHuntBadge';
 
 // A component that simulates a cinematic "match cut" effect for the hero word
 const HeroCutWord = ({ word }) => {
@@ -183,7 +189,7 @@ const Home = () => {
       name: t('toolMatchCut', lang),
       description: t('toolMatchCutDesc', lang),
       icon: <Layers className="w-6 h-6 text-accent-gold" />,
-      color: 'from-accent-gold to-orange-500',
+      color: 'from-accent-gold to-amber-600',
       border: 'border-border-color hover:border-accent-gold',
       link: '/match-cut',
       badge: t('badgeAvailable', lang)
@@ -192,9 +198,9 @@ const Home = () => {
       id: 'ken-burns',
       name: t('toolKenBurns', lang),
       description: t('toolKenBurnsDesc', lang),
-      icon: <Play className="w-6 h-6 text-[#00E5FF]" />,
-      color: 'from-[#00E5FF] to-blue-500',
-      border: 'border-border-color hover:border-[#00E5FF]',
+      icon: <Play className="w-6 h-6 text-blue-400" />,
+      color: 'from-blue-500 to-indigo-600',
+      border: 'border-border-color hover:border-blue-500',
       link: '/effects/ken-burns',
       badge: t('badgeAvailable', lang)
     },
@@ -202,9 +208,9 @@ const Home = () => {
       id: 'glitch',
       name: t('toolGlitch', lang),
       description: t('toolGlitchDesc', lang),
-      icon: <Zap className="w-6 h-6 text-[#B026FF]" />,
-      color: 'from-[#B026FF] to-pink-500',
-      border: 'border-border-color hover:border-[#B026FF]',
+      icon: <Zap className="w-6 h-6 text-purple-400" />,
+      color: 'from-purple-500 to-pink-600',
+      border: 'border-border-color hover:border-purple-500',
       link: '/effects/glitch-master',
       badge: t('badgeAvailable', lang)
     }
@@ -221,22 +227,22 @@ const Home = () => {
   return (
     <div className={`w-full flex-grow flex flex-col items-center bg-bg-base text-text-primary overflow-x-hidden ${isRtl ? 'dir-rtl text-right' : 'text-left'}`}>
       <Helmet>
-        <title>{lang === 'tr' ? 'AnimationMaker — Ücretsiz Çevrimiçi Video Efektleri & Tipografi Animasyonu' : 'AnimationMaker — Free Online Video Effects & Kinetic Typography Maker'}</title>
-        <meta name="description" content={lang === 'tr' ? 'Metin ve görsellerinizle saniyeler içinde dinamik animasyonlar, Match Cut, Ken Burns ve retro VHS video efektleri oluşturun. Tarayıcı tabanlı ve ücretsiz.' : 'Create dynamic kinetic typography animations, match cuts, Ken Burns zooms, and vintage VHS video effects in seconds directly in your browser. 100% free and client-side.'} />
+        <title>{`${t('heroTitle1', lang)} ${t('heroTitle2', lang)} — AnimationMaker`}</title>
+        <meta name="description" content={t('heroDesc', lang)} />
         <meta name="keywords" content="video effect maker, online video editor, kinetic typography, match cut online, ken burns effect, vhs video generator, glitch effect video, typewriter animation, crt scanline, ascii video generator, animationmaker" />
         <link rel="canonical" href="https://animationmaker.m0s.space" />
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-        <meta property="og:title" content="AnimationMaker | Free Online Video Effects" />
-        <meta property="og:description" content="Create dynamic typography animations and cinematic effects in seconds." />
+        <meta property="og:title" content="AnimationMaker | Free Online Video Effects & Match Cut Studio" />
+        <meta property="og:description" content={t('heroDesc', lang)} />
         <meta property="og:url" content="https://animationmaker.m0s.space" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AnimationMaker" />
-        <meta property="og:image" content="https://animationmaker.m0s.space/logo.png" />
+        <meta property="og:image" content="https://animationmaker.m0s.space/og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AnimationMaker | Free Online Video Effects" />
-        <meta name="twitter:description" content="Create dynamic typography animations and cinematic effects in seconds." />
-        <meta name="twitter:image" content="https://animationmaker.m0s.space/logo.png" />
+        <meta name="twitter:title" content="AnimationMaker | Free Online Video Effects & Match Cut Studio" />
+        <meta name="twitter:description" content={t('heroDesc', lang)} />
+        <meta name="twitter:image" content="https://animationmaker.m0s.space/og-image.png" />
         <script type="application/ld+json">
           {JSON.stringify([
             {
@@ -290,11 +296,14 @@ const Home = () => {
         </script>
       </Helmet>
 
+      {/* Product Hunt Referral Banner */}
+      <ProductHuntBanner />
+
       {/* Subtle Noise Texture Overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.015] mix-blend-overlay z-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
 
       {/* --- HERO SECTION --- */}
-      <section className="w-full max-w-[1280px] mx-auto px-6 pt-16 md:pt-24 pb-32 flex flex-col items-center text-center relative z-10">
+      <section className="w-full max-w-[1280px] mx-auto px-6 pt-16 md:pt-24 pb-20 flex flex-col items-center text-center relative z-10">
         <motion.div initial="hidden" animate="visible" variants={revealVar} className="font-mono text-xs font-bold tracking-widest text-text-muted mb-6 uppercase border border-border-color rounded-full px-3 py-1 bg-surface">
           {t('heroEyebrow', lang)}
         </motion.div>
@@ -316,11 +325,11 @@ const Home = () => {
           <span>{t('heroTrust3', lang)}</span>
         </motion.div>
 
-        <motion.div initial="hidden" animate="visible" variants={revealVar} className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto">
+        <motion.div initial="hidden" animate="visible" variants={revealVar} className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto mb-8">
           <Link
             to="/tools"
             onClick={handleStartProject}
-            className="group relative w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-accent-gold to-[#FF9D00] text-bg-base font-bold text-lg rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,179,1,0.4)] flex items-center justify-center gap-3 overflow-hidden"
+            className="group relative w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-accent-gold to-[#FF9D00] text-bg-base font-bold text-lg rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,179,1,0.4)] flex items-center justify-center gap-3 overflow-hidden shadow-lg"
           >
             {/* Elegant and subtle hover gradient shift */}
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
@@ -328,24 +337,15 @@ const Home = () => {
             <span className="relative z-10 tracking-wide">{t('heroCTA', lang)}</span>
           </Link>
         </motion.div>
+
+        {/* --- PROMINENT PRODUCT HUNT LAUNCH BADGE --- */}
+        <motion.div initial="hidden" animate="visible" variants={revealVar} className="flex items-center justify-center">
+          <ProductHuntBadge />
+        </motion.div>
       </section>
 
-      {/* --- BENTO FEATURES GRID --- */}
-      <section className="w-full max-w-[1280px] mx-auto px-6 py-20 relative z-10 border-t border-border-color/50">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-          {bentoItems.map((item, idx) => (
-            <BentoCard
-              key={idx}
-              num={item.num}
-              title={item.title}
-              desc={item.desc}
-              icon={item.icon}
-              fullWidth={item.fullWidth}
-              delay={idx * 0.1}
-            />
-          ))}
-        </div>
-      </section>
+      {/* --- HOW IT WORKS (3-STEP VISUAL FLOW) --- */}
+      <HowItWorksFlow />
 
       {/* --- TOOLS GALLERY (Features) --- */}
       <section className="w-full bg-surface-raised border-y border-border-color relative z-10">
@@ -354,14 +354,14 @@ const Home = () => {
             <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">{t('homeToolsTitle', lang)}</h2>
             <p className="text-text-muted font-body max-w-2xl mx-auto">{t('homeToolsDesc', lang)}</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {tools.map((tool, idx) => (
               <motion.div
                 key={tool.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.4 }}
+                transition={{ delay: idx * 0.08, duration: 0.4 }}
               >
                 <ToolCard tool={tool} />
               </motion.div>
@@ -380,9 +380,34 @@ const Home = () => {
             >
               <div className="absolute inset-0 bg-[#F5B301]/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
               <LayoutGrid size={18} className="relative z-10 group-hover:text-[#F5B301] transition-colors" />
-              <span className="relative z-10 tracking-wide">{t('seeAllTools', lang) || 'View All Tools'}</span>
+              <span className="relative z-10 tracking-wide font-semibold">{t('seeAllTools', lang) || 'View All Tools'}</span>
             </Link>
           </motion.div>
+        </div>
+      </section>
+
+      {/* --- BENTO FEATURES GRID --- */}
+      <section className="w-full max-w-[1280px] mx-auto px-6 py-20 relative z-10 border-t border-border-color/50">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-3">
+            {t('bentoSectionTitle', lang)}
+          </h2>
+          <p className="text-text-muted font-body">
+            {t('bentoSectionDesc', lang)}
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+          {bentoItems.map((item, idx) => (
+            <BentoCard
+              key={idx}
+              num={item.num}
+              title={item.title}
+              desc={item.desc}
+              icon={item.icon}
+              fullWidth={item.fullWidth}
+              delay={idx * 0.1}
+            />
+          ))}
         </div>
       </section>
 
@@ -527,7 +552,7 @@ const Home = () => {
           </div>
 
           <div className="flex flex-col items-center md:items-start gap-4 text-center md:text-left">
-            <h4 className="text-white font-bold text-lg mb-2">{lang === 'tr' ? 'Bağlantılar' : 'Social & Web'}</h4>
+            <h4 className="text-white font-bold text-lg mb-2">{t('footerLinksTitle', lang) || 'Social & Web'}</h4>
             <a
               href="https://x.com/AniMaker_m0s"
               target="_blank"
@@ -553,7 +578,7 @@ const Home = () => {
               onClick={() => setIsCookieModalOpen(true)}
               className="text-text-muted hover:text-white transition-colors flex items-center justify-center md:justify-start gap-2"
             >
-              <Settings className="w-4 h-4" /> {t('cookieSettings', lang) || (lang === 'tr' ? 'Çerez Ayarları' : 'Cookie Settings')}
+              <Settings className="w-4 h-4" /> {t('cookieSettings', lang) || 'Cookie Settings'}
             </button>
           </div>
         </div>
