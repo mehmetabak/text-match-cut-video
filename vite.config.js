@@ -24,6 +24,12 @@ export default defineConfig({
       }
     })
   ],
+  optimizeDeps: {
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util', '@ffmpeg/core']
+  },
+  worker: {
+    format: 'es'
+  },
   build: {
     rollupOptions: {
       output: {
@@ -45,6 +51,10 @@ export default defineConfig({
     }
   },
   server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'credentialless'
+    },
     proxy: {
       '/__/auth': {
         target: 'https://animation-maker-9e47a.firebaseapp.com',
