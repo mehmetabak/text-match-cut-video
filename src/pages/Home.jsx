@@ -489,7 +489,7 @@ const Home = () => {
                 <span className="bg-red-500/20 text-red-500 text-xs font-bold px-2 py-0.5 rounded-full">{t('pricingLimitedTime', lang) || 'Limited time offer'}</span>
               </div>
               <div className="flex items-baseline">
-                <span className="text-5xl font-bold text-accent-gold">{t('pricingProPrice', lang) || '$3.99'}</span>
+                <span className="text-5xl font-bold text-accent-gold">{t('pricingProPrice', lang) || '$2.39'}</span>
                 <span className="text-lg text-text-muted ml-2 font-normal">{t('pricingMonth', lang)}</span>
               </div>
             </div>

@@ -130,7 +130,7 @@ const Pricing = () => {
               "@type": "Offer",
               "url": "https://animationmaker.m0s.space/pricing",
               "priceCurrency": "USD",
-              "price": "3.99",
+              "price": "2.39",
               "priceValidUntil": "2027-12-31",
               "availability": "https://schema.org/InStock"
             }
@@ -224,7 +224,7 @@ const Pricing = () => {
                 <span className="bg-red-500/20 text-red-400 text-xs font-bold px-2 py-0.5 rounded-full">{t.pricingLimitedTime || 'Limited time offer'}</span>
               </div>
               <div className="flex items-baseline">
-                <span className="text-5xl font-bold text-purple-400">{t.pricingProPrice || '$3.99'}</span>
+                <span className="text-5xl font-bold text-purple-400">{t.pricingProPrice || '$2.39'}</span>
                 <span className="text-zinc-500 ml-2">/{t.pricingMonth}</span>
               </div>
             </div>
