@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && vite build --ssr src/entry-server.jsx --outDir dist-server && node prerender.js && node generate-sitemap.js",
+    "indexnow": "node submit-indexnow.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
