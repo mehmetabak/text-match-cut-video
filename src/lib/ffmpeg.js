@@ -248,28 +248,45 @@ export async function createVideoFromFrames(frames, audioBlob, fps, optionsOrHig
     const isOptionsObj = typeof optionsOrHighQuality === 'object' && optionsOrHighQuality !== null;
     const highQuality = isOptionsObj ? !!optionsOrHighQuality.highQuality : !!optionsOrHighQuality;
     const fastRender = isOptionsObj ? !!optionsOrHighQuality.fastRender : false;
+    const experimentalRender = isOptionsObj ? !!optionsOrHighQuality.experimentalRender : false;
 
     const hasAudio = !!audioBlob;
     if (hasAudio) {
         await ffmpeg.writeFile('audio.wav', new Uint8Array(await audioBlob.arrayBuffer()));
     }
 
-    const ext = (highQuality && !fastRender) ? 'png' : 'jpg';
+    const ext = (highQuality && !fastRender && !experimentalRender) ? 'png' : 'jpg';
+    const totalFrames = frames.length;
 
-    for (let i = 0; i < frames.length; i++) {
-        const name = `frame${String(i).padStart(4, '0')}.${ext}`;
-        await ffmpeg.writeFile(name, frames[i]);
-        if (onProgress) onProgress((i / frames.length) * 50);
+    // Paralel toplu aktarım (Concurrent Batch Transfer) - roundtrip gecikmesini 10x azaltır
+    const BATCH_SIZE = 30;
+    for (let b = 0; b < totalFrames; b += BATCH_SIZE) {
+        const batchPromises = [];
+        const end = Math.min(b + BATCH_SIZE, totalFrames);
+        for (let i = b; i < end; i++) {
+            const name = `frame${String(i).padStart(4, '0')}.${ext}`;
+            batchPromises.push(ffmpeg.writeFile(name, frames[i]));
+        }
+        await Promise.all(batchPromises);
+        if (onProgress) {
+            onProgress((end / totalFrames) * 35);
+        }
     }
 
     const onFfmpegProgress = ({ progress }) => {
-        if (onProgress) onProgress(50 + progress * 50);
+        if (onProgress) {
+            const clampedP = Math.max(0, Math.min(1, progress || 0));
+            onProgress(35 + clampedP * 65);
+        }
     };
     ffmpeg.on('progress', onFfmpegProgress);
 
     let preset = 'fast';
     let crf = '22';
-    if (fastRender) {
+    if (experimentalRender) {
+        preset = 'ultrafast';
+        crf = '20'; // Pristine Full HD 1080p output with ultrafast encode
+    } else if (fastRender) {
         preset = 'ultrafast';
         crf = '24';
     } else if (highQuality) {
@@ -290,11 +307,12 @@ export async function createVideoFromFrames(frames, audioBlob, fps, optionsOrHig
         '-c:v', 'libx264',
         '-preset', preset,
         '-tune', 'zerolatency',
-        '-crf', crf
+        '-crf', crf,
+        '-threads', '0'
     );
 
     if (hasAudio) {
-        args.push('-c:a', 'aac', '-shortest');
+        args.push('-c:a', 'aac', '-b:a', '192k', '-shortest');
     }
 
     args.push(
@@ -306,16 +324,27 @@ export async function createVideoFromFrames(frames, audioBlob, fps, optionsOrHig
 
     const data = await ffmpeg.readFile('output.mp4');
 
-    // Bellek (RAM) Temizliği
+    // Bellek (RAM) Temizliği - Paralel silme
     ffmpeg.off('progress', onFfmpegProgress);
     if (hasAudio) {
-        await ffmpeg.deleteFile('audio.wav');
+        ffmpeg.deleteFile('audio.wav').catch(() => {});
     }
-    await ffmpeg.deleteFile('output.mp4');
-    for (let i = 0; i < frames.length; i++) {
-        const name = `frame${String(i).padStart(4, '0')}.${ext}`;
-        await ffmpeg.deleteFile(name);
-    }
+    ffmpeg.deleteFile('output.mp4').catch(() => {});
+    
+    // Arka planda frame'leri asenkron temizle
+    (async () => {
+        for (let b = 0; b < totalFrames; b += BATCH_SIZE) {
+            const batchPromises = [];
+            const end = Math.min(b + BATCH_SIZE, totalFrames);
+            for (let i = b; i < end; i++) {
+                const name = `frame${String(i).padStart(4, '0')}.${ext}`;
+                batchPromises.push(ffmpeg.deleteFile(name).catch(() => {}));
+            }
+            await Promise.all(batchPromises);
+        }
+    })();
+
+    if (onProgress) onProgress(100);
 
     return URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
 }

@@ -431,12 +431,13 @@ export class VideoRenderer {
             for (let f = 0; f < framesPerCut; f++) {
                 const p = f / framesPerCut;
                 this.drawNewspaperScene({ scene, progress: p, cutIndex });
-                const format = this.settings.highQuality && !this.settings.fastRender ? 'image/png' : 'image/jpeg';
-                const quality = this.settings.highQuality && !this.settings.fastRender ? 1.0 : (this.settings.fastRender ? 0.86 : 0.95);
+                const isPng = this.settings.highQuality && !this.settings.fastRender && !this.settings.experimentalRender;
+                const format = isPng ? 'image/png' : 'image/jpeg';
+                const quality = isPng ? 1.0 : (this.settings.experimentalRender ? 0.94 : (this.settings.fastRender ? 0.86 : 0.95));
                 const blob = await new Promise(res => this.canvas.toBlob(res, format, quality));
                 const arrayBuffer = await blob.arrayBuffer();
                 frameList.push(new Uint8Array(arrayBuffer));
-                const currentProgress = ((cutIndex + p) / totalCuts) * 90;
+                const currentProgress = ((cutIndex + p) / totalCuts) * 50;
                 this.onProgress(currentProgress);
             }
         } else {
@@ -449,12 +450,13 @@ export class VideoRenderer {
                     for (let f = 0; f < framesPerCut; f++) {
                         const p = f / framesPerCut;
                         this.drawClassicScene({ lineIndex: lineIdx, lineText: line, metrics, progress: p });
-                        const format = this.settings.highQuality && !this.settings.fastRender ? 'image/png' : 'image/jpeg';
-                        const quality = this.settings.highQuality && !this.settings.fastRender ? 1.0 : (this.settings.fastRender ? 0.86 : 0.95);
+                        const isPng = this.settings.highQuality && !this.settings.fastRender && !this.settings.experimentalRender;
+                        const format = isPng ? 'image/png' : 'image/jpeg';
+                        const quality = isPng ? 1.0 : (this.settings.experimentalRender ? 0.94 : (this.settings.fastRender ? 0.86 : 0.95));
                         const blob = await new Promise(res => this.canvas.toBlob(res, format, quality));
                         const arrayBuffer = await blob.arrayBuffer();
                         frameList.push(new Uint8Array(arrayBuffer));
-                        const currentProgress = ((cutIndex + p) / totalCuts) * 90;
+                        const currentProgress = ((cutIndex + p) / totalCuts) * 50;
                         this.onProgress(currentProgress);
                     }
                     break;
@@ -508,15 +510,23 @@ export class VideoRenderer {
                 allFrames.push(new Uint8Array(allFrames[allFrames.length - 1]));
             }
 
+            this.onProgress(50);
             const audioGen = await AudioGenerator.create('/whoosh.mp3');
             const totalDuration = allFrames.length / fps;
             const audioBlob = await audioGen.generateAudio(positions.length, totalDuration);
             
-            this.onProgress(90);
-            const videoUrl = await createVideoFromFrames(allFrames, audioBlob, fps, { highQuality: this.settings.highQuality, fastRender: this.settings.fastRender }, p => this.onProgress(90 + p * 0.1));
+            this.onProgress(55);
+            const videoUrl = await createVideoFromFrames(allFrames, audioBlob, fps, { 
+                highQuality: this.settings.highQuality, 
+                fastRender: this.settings.fastRender,
+                experimentalRender: this.settings.experimentalRender 
+            }, p => {
+                this.onProgress(55 + (p / 100) * 45);
+            });
             
             // Clean up memory buffer
             allFrames.length = 0;
+            this.onProgress(100);
 
             return videoUrl;
         } finally {

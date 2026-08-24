@@ -24,6 +24,7 @@ export const useSettingsStore = create(
       lang: detectLanguage(),  // Otomatik dil tespiti
       highQuality: false, // Beta yüksek kalite ayarı
       fastRender: false, // Hızlı render (Turbo) modu
+      experimentalRender: false, // Deneysel Hızlı 1080p (Ultrafast Full HD)
       renderMode: 'classic', // Varsayılan: 'classic' (Klasik), Seçenek: 'newspaper' (Gazete / Yeni Mod)
       vignetteEffect: true, // Sinematik kenar karartma
       cookieConsent: { analytics: true, essential: true, hasConsented: false },
@@ -36,11 +37,14 @@ export const useSettingsStore = create(
 
       // Fonksiyonlar
       setSetting: (key, value) => set((state) => {
+        if (key === 'experimentalRender' && value) {
+          return { [key]: value, highQuality: false, fastRender: false };
+        }
         if (key === 'highQuality' && value) {
-          return { [key]: value, fastRender: false };
+          return { [key]: value, fastRender: false, experimentalRender: false };
         }
         if (key === 'fastRender' && value) {
-          return { [key]: value, highQuality: false };
+          return { [key]: value, highQuality: false, experimentalRender: false };
         }
         return { [key]: value };
       }),

@@ -32,6 +32,7 @@ function MatchCutTool() {
   const darkTheme = useSettingsStore(state => state.darkTheme);
   const highQuality = useSettingsStore(state => state.highQuality);
   const fastRender = useSettingsStore(state => state.fastRender);
+  const experimentalRender = useSettingsStore(state => state.experimentalRender);
   const renderMode = useSettingsStore(state => state.renderMode);
   const vignetteEffect = useSettingsStore(state => state.vignetteEffect);
   
@@ -70,6 +71,7 @@ function MatchCutTool() {
     setSetting('fontFamily', "'Times New Roman', Times, serif");
     setSetting('highQuality', false);
     setSetting('fastRender', false);
+    setSetting('experimentalRender', false);
     setSetting('renderMode', 'classic');
     setSetting('vignetteEffect', true);
   };
@@ -168,7 +170,7 @@ function MatchCutTool() {
     const timeoutId = setTimeout(async () => {
       const projectSettings = { 
         phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps,
-        format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender,
+        format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender, experimentalRender,
         renderMode: renderMode || 'newspaper',
         vignetteEffect: vignetteEffect ?? true
       };
@@ -204,6 +206,7 @@ function MatchCutTool() {
         blurIntensity === 'Medium' &&
         !highQuality &&
         !fastRender &&
+        !experimentalRender &&
         !projectName.trim();
 
       // Boş ve değiştirilmemiş varsayılan projeyi kaydetmeyi engelle
@@ -247,7 +250,7 @@ function MatchCutTool() {
     return () => clearTimeout(timeoutId);
   }, [
     phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps,
-    format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender,
+    format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender, experimentalRender,
     renderMode, vignetteEffect, projectName, user
   ]);
 

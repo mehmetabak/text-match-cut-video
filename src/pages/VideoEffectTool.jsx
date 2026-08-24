@@ -78,6 +78,7 @@ export default function VideoEffectTool() {
   const [formatPreset, setFormatPreset] = useState('16:9'); // '16:9' | '9:16' | '1:1'
   const [hdOutput, setHdOutput] = useState(false);
   const [fastRender, setFastRender] = useState(false);
+  const [experimentalRender, setExperimentalRender] = useState(false);
   const [duration, setDuration] = useState(5); // in seconds (3 - 300)
   const [audioFxEnabled, setAudioFxEnabled] = useState(false);
 
@@ -277,6 +278,7 @@ export default function VideoEffectTool() {
     setHdOutput(isChecked);
     if (isChecked) {
       setFastRender(false);
+      setExperimentalRender(false);
     }
   };
 
@@ -285,6 +287,16 @@ export default function VideoEffectTool() {
     setFastRender(isChecked);
     if (isChecked) {
       setHdOutput(false);
+      setExperimentalRender(false);
+    }
+  };
+
+  const handleToggleExperimentalRender = (val) => {
+    const isChecked = typeof val === 'boolean' ? val : Boolean(val?.target?.checked ?? val);
+    setExperimentalRender(isChecked);
+    if (isChecked) {
+      setHdOutput(false);
+      setFastRender(false);
     }
   };
 
@@ -1304,17 +1316,18 @@ export default function VideoEffectTool() {
       }
 
       const canvas = document.createElement('canvas');
+      const is1080p = hdOutput || experimentalRender;
       let outWidth, outHeight;
       if (formatPreset === '16:9') {
-        outWidth = hdOutput ? 1920 : 1280;
-        outHeight = hdOutput ? 1080 : 720;
+        outWidth = is1080p ? 1920 : 1280;
+        outHeight = is1080p ? 1080 : 720;
       } else if (formatPreset === '9:16') {
-        outWidth = hdOutput ? 1080 : 720;
-        outHeight = hdOutput ? 1920 : 1280;
+        outWidth = is1080p ? 1080 : 720;
+        outHeight = is1080p ? 1920 : 1280;
       } else {
         // 1:1 Square
-        outWidth = hdOutput ? 1080 : 720;
-        outHeight = hdOutput ? 1080 : 720;
+        outWidth = is1080p ? 1080 : 720;
+        outHeight = is1080p ? 1080 : 720;
       }
       canvas.width = outWidth;
       canvas.height = outHeight;
@@ -1492,8 +1505,9 @@ export default function VideoEffectTool() {
           }
         }
 
-        const mime = (hdOutput && !fastRender) ? 'image/png' : 'image/jpeg';
-        const quality = (hdOutput && !fastRender) ? 1.0 : (fastRender ? 0.86 : 0.96);
+        const isPng = hdOutput && !fastRender && !experimentalRender;
+        const mime = isPng ? 'image/png' : 'image/jpeg';
+        const quality = isPng ? 1.0 : (experimentalRender ? 0.94 : (fastRender ? 0.86 : 0.96));
         const blob = await new Promise(resolve => canvas.toBlob(resolve, mime, quality));
         const arrayBuf = await blob.arrayBuffer();
         frames.push(new Uint8Array(arrayBuf));
@@ -1504,8 +1518,12 @@ export default function VideoEffectTool() {
       }
 
       setProgress(52);
-      const videoUrl = await createVideoFromFrames(frames, audioBlob, fps, { highQuality: hdOutput, fastRender }, (p) => {
-        setProgress(Math.round(p));
+      const videoUrl = await createVideoFromFrames(frames, audioBlob, fps, { 
+        highQuality: hdOutput, 
+        fastRender,
+        experimentalRender 
+      }, (p) => {
+        setProgress(Math.round(55 + (p / 100) * 45));
       });
 
       // Clear frames buffer to free memory on mobile
@@ -3242,6 +3260,13 @@ export default function VideoEffectTool() {
                     label={t('fastRenderLabel', lang) || 'Hızlı Render (Turbo Mod)'}
                     checked={fastRender}
                     onChange={handleToggleFastRender}
+                  />
+
+                  {/* Experimental Fast 1080p Switch */}
+                  <Switch
+                    label={t('experimentalRenderLabel', lang) || 'Deneysel Hızlı 1080p'}
+                    checked={experimentalRender}
+                    onChange={handleToggleExperimentalRender}
                   />
 
                 </div>
