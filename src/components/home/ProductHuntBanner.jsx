@@ -45,36 +45,44 @@ export default function ProductHuntBanner() {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ height: 0, opacity: 0 }}
-        animate={{ height: 'auto', opacity: 1 }}
-        exit={{ height: 0, opacity: 0 }}
-        className="w-full bg-gradient-to-r from-[#16161A] via-[#1D1D24] to-[#16161A] border-b border-accent-gold/40 text-white relative z-50 overflow-hidden shadow-lg"
+        initial={{ opacity: 0, y: -10, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -10, scale: 0.98 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-[900px] mx-auto px-4 pt-20 sm:pt-24 pb-2 relative z-30"
       >
-        <div className="max-w-[1280px] mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-body">
-          {/* Left Welcome Tag */}
-          <div className="flex items-center gap-2.5">
-            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#DA552F] text-white flex items-center justify-center font-bold text-xs shadow-md">
+        <div className="w-full bg-[#16161A]/95 backdrop-blur-md border border-[#DA552F]/40 shadow-[0_8px_30px_rgba(218,85,47,0.15)] text-white rounded-2xl px-4 sm:px-5 py-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3">
+          {/* Left: Product Hunt Icon & Welcome */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-[#DA552F] text-white font-black text-sm flex items-center justify-center shadow-md flex-shrink-0">
               P
-            </span>
-            <span className="font-semibold text-zinc-100">
-              {t('phBannerWelcome', lang) || 'Welcome Product Hunt Hunters! 👋'}
-            </span>
-            <span className="hidden md:inline-block text-zinc-400">
-              {t('phBannerDesc', lang) || 'Enjoy full access to our kinetic typography & video effects studio.'}
-            </span>
+            </div>
+            <div className="flex flex-col text-left min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-display font-bold text-xs sm:text-sm text-zinc-100 truncate">
+                  {t('phBannerWelcome', lang) || 'Welcome Product Hunt Community! 👋'}
+                </span>
+                <span className="hidden sm:inline-flex items-center gap-1 bg-[#DA552F]/20 text-[#DA552F] border border-[#DA552F]/30 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
+                  <Sparkles size={10} /> SPECIAL ACCESS
+                </span>
+              </div>
+              <span className="text-[11px] sm:text-xs text-zinc-400 font-body truncate">
+                {t('phBannerDesc', lang) || 'Create viral kinetic typography & match cut videos in seconds with full access.'}
+              </span>
+            </div>
           </div>
 
-          {/* Right Action & Dismiss */}
-          <div className="flex items-center gap-3 ml-auto">
-            <span className="bg-accent-gold/20 text-accent-gold border border-accent-gold/30 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full">
-              LAUNCH DAY ACCESS
+          {/* Right: Launch Tag & Dismiss */}
+          <div className="flex items-center gap-2.5 ml-auto flex-shrink-0">
+            <span className="sm:hidden bg-[#DA552F]/20 text-[#DA552F] border border-[#DA552F]/30 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
+              SPECIAL ACCESS
             </span>
             <button
               onClick={handleDismiss}
-              className="p-1 text-zinc-400 hover:text-white rounded hover:bg-zinc-800 transition-colors"
+              className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors"
               aria-label="Dismiss banner"
             >
-              <X size={15} />
+              <X size={16} />
             </button>
           </div>
         </div>
