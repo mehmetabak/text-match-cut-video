@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, X } from 'lucide-react';
 import { useSettingsStore } from '../../store/settingsStore';
+import { t } from '../../lib/i18n';
 
 export default function ProductHuntBanner() {
   const { lang } = useSettingsStore();
@@ -20,6 +21,9 @@ export default function ProductHuntBanner() {
       const isFromPH = 
         urlParams.get('ref') === 'producthunt' ||
         urlParams.get('utm_source') === 'producthunt' ||
+        urlParams.get('utm_campaign')?.includes('product-hunt') ||
+        urlParams.get('utm_campaign')?.includes('producthunt') ||
+        urlParams.get('utm_campaign')?.includes('animation-maker') ||
         urlParams.get('source') === 'producthunt';
 
       if (isFromPH) {
@@ -53,10 +57,10 @@ export default function ProductHuntBanner() {
               P
             </span>
             <span className="font-semibold text-zinc-100">
-              {t('phBannerWelcome', lang)}
+              {t('phBannerWelcome', lang) || 'Welcome Product Hunt Hunters! 👋'}
             </span>
             <span className="hidden md:inline-block text-zinc-400">
-              {t('phBannerDesc', lang)}
+              {t('phBannerDesc', lang) || 'Enjoy full access to our kinetic typography & video effects studio.'}
             </span>
           </div>
 
