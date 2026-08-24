@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
 import { useSettingsStore } from '../../store/settingsStore';
 import { t } from '../../lib/i18n';
 
@@ -27,7 +27,11 @@ export default function ProductHuntBanner() {
         urlParams.get('source') === 'producthunt';
 
       if (isFromPH) {
-        setIsVisible(true);
+        // Small entrance delay for natural feel
+        const timer = setTimeout(() => {
+          setIsVisible(true);
+        }, 600);
+        return () => clearTimeout(timer);
       }
     }
   }, []);
@@ -44,49 +48,45 @@ export default function ProductHuntBanner() {
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: -10, scale: 0.98 }}
+      <motion.aside
+        aria-label="Product Hunt Welcome"
+        initial={{ opacity: 0, y: 35, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -10, scale: 0.98 }}
-        transition={{ duration: 0.3 }}
-        className="w-full max-w-[900px] mx-auto px-4 pt-20 sm:pt-24 pb-2 relative z-30"
+        exit={{ opacity: 0, y: 35, scale: 0.95 }}
+        transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+        className="fixed bottom-5 right-4 sm:right-6 z-50 w-[calc(100%-2rem)] sm:w-auto sm:max-w-md pointer-events-auto select-none"
       >
-        <div className="w-full bg-[#16161A]/95 backdrop-blur-md border border-[#DA552F]/40 shadow-[0_8px_30px_rgba(218,85,47,0.15)] text-white rounded-2xl px-4 sm:px-5 py-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3">
-          {/* Left: Product Hunt Icon & Welcome */}
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-[#DA552F] text-white font-black text-sm flex items-center justify-center shadow-md flex-shrink-0">
-              P
-            </div>
-            <div className="flex flex-col text-left min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-display font-bold text-xs sm:text-sm text-zinc-100 truncate">
-                  {t('phBannerWelcome', lang) || 'Welcome Product Hunt Community! 👋'}
-                </span>
-                <span className="hidden sm:inline-flex items-center gap-1 bg-[#DA552F]/20 text-[#DA552F] border border-[#DA552F]/30 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
-                  <Sparkles size={10} /> SPECIAL ACCESS
-                </span>
-              </div>
-              <span className="text-[11px] sm:text-xs text-zinc-400 font-body truncate">
-                {t('phBannerDesc', lang) || 'Create viral kinetic typography & match cut videos in seconds with full access.'}
-              </span>
-            </div>
+        <div className="bg-[#131317]/95 backdrop-blur-xl border border-zinc-800/90 hover:border-zinc-700 shadow-[0_16px_40px_rgba(0,0,0,0.65),0_0_20px_rgba(218,85,47,0.12)] text-white rounded-2xl p-3.5 sm:p-4 flex items-start gap-3.5 relative overflow-hidden group">
+          {/* Subtle Accent Glow Top Line */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#DA552F] to-transparent opacity-80"></div>
+
+          {/* Product Hunt Brand Icon */}
+          <div className="w-9 h-9 rounded-xl bg-[#DA552F] text-white font-black text-base flex items-center justify-center shadow-lg shadow-[#DA552F]/30 flex-shrink-0 mt-0.5">
+            P
           </div>
 
-          {/* Right: Launch Tag & Dismiss */}
-          <div className="flex items-center gap-2.5 ml-auto flex-shrink-0">
-            <span className="sm:hidden bg-[#DA552F]/20 text-[#DA552F] border border-[#DA552F]/30 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
-              SPECIAL ACCESS
-            </span>
-            <button
-              onClick={handleDismiss}
-              className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition-colors"
-              aria-label="Dismiss banner"
-            >
-              <X size={16} />
-            </button>
+          {/* Message Content */}
+          <div className="flex-1 min-w-0 pr-6">
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="font-display font-bold text-xs sm:text-sm text-zinc-100 leading-snug">
+                {t('phToastTitle', lang) || 'Welcome from Product Hunt! 👋'}
+              </h4>
+            </div>
+            <p className="text-[11px] sm:text-xs text-zinc-400 font-body leading-relaxed">
+              {t('phToastDesc', lang) || 'Enjoy full access to all 15+ video effects & Match Cut studio.'}
+            </p>
           </div>
+
+          {/* Close Dismiss Button */}
+          <button
+            onClick={handleDismiss}
+            className="absolute top-3 right-3 p-1 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800/80 transition-colors"
+            aria-label="Dismiss notification"
+          >
+            <X size={15} />
+          </button>
         </div>
-      </motion.div>
+      </motion.aside>
     </AnimatePresence>
   );
 }
