@@ -30,6 +30,8 @@ function MatchCutTool() {
   const textHighlight = useSettingsStore(state => state.textHighlight);
   const blurIntensity = useSettingsStore(state => state.blurIntensity);
   const darkTheme = useSettingsStore(state => state.darkTheme);
+  const renderResolution = useSettingsStore(state => state.renderResolution);
+  const renderSpeed = useSettingsStore(state => state.renderSpeed);
   const highQuality = useSettingsStore(state => state.highQuality);
   const fastRender = useSettingsStore(state => state.fastRender);
   const experimentalRender = useSettingsStore(state => state.experimentalRender);
@@ -69,6 +71,8 @@ function MatchCutTool() {
     setSetting('textHighlight', true);
     setSetting('blurIntensity', 'Medium');
     setSetting('fontFamily', "'Times New Roman', Times, serif");
+    setSetting('renderResolution', 'hd');
+    setSetting('renderSpeed', 'standard');
     setSetting('highQuality', false);
     setSetting('fastRender', false);
     setSetting('experimentalRender', false);
@@ -170,7 +174,10 @@ function MatchCutTool() {
     const timeoutId = setTimeout(async () => {
       const projectSettings = { 
         phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps,
-        format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender, experimentalRender,
+        format, videoLength, textHighlight, blurIntensity, darkTheme,
+        renderResolution: renderResolution || 'hd',
+        renderSpeed: renderSpeed || 'standard',
+        highQuality, fastRender, experimentalRender,
         renderMode: renderMode || 'newspaper',
         vignetteEffect: vignetteEffect ?? true
       };
@@ -204,6 +211,8 @@ function MatchCutTool() {
         textHighlight === true && 
         (renderMode === 'newspaper' || !renderMode) &&
         blurIntensity === 'Medium' &&
+        renderResolution === 'hd' &&
+        renderSpeed === 'standard' &&
         !highQuality &&
         !fastRender &&
         !experimentalRender &&
@@ -250,8 +259,8 @@ function MatchCutTool() {
     return () => clearTimeout(timeoutId);
   }, [
     phrase, fontFamily, fontWeight, textColor, bgColor, bgType, speed, resolution, fps,
-    format, videoLength, textHighlight, blurIntensity, darkTheme, highQuality, fastRender, experimentalRender,
-    renderMode, vignetteEffect, projectName, user
+    format, videoLength, textHighlight, blurIntensity, darkTheme, renderResolution, renderSpeed,
+    highQuality, fastRender, experimentalRender, renderMode, vignetteEffect, projectName, user
   ]);
 
   const handleGenerate = useCallback(async () => {

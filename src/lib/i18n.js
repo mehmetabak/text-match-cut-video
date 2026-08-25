@@ -1,5 +1,13 @@
 export const strings = {
   "en": {
+    "renderResolutionLabel": "Output Resolution",
+    "renderSpeedLabel": "Render Speed & Quality",
+    "speedStandard": "Standard (Slow)",
+    "speedFast": "Fast (Turbo)",
+    "renderModeSummaryTurbo": "Turbo Mode · Fast Encoding",
+    "renderModeSummaryStandard": "Standard Mode · Balanced Quality",
+    "renderModeSummaryExperimental": "Experimental Mode · Fast",
+    "renderModeSummaryMaster": "Master Quality · Lossless",
     "loginGoogle": "Login with Google",
     "continueAsGuest": "Continue as Guest",
     "saveProgressTitle": "Don't lose your work!",
@@ -618,6 +626,14 @@ export const strings = {
     "draftSaved": "Draft Saved"
   },
   "tr": {
+    "renderResolutionLabel": "Çıktı Çözünürlüğü",
+    "renderSpeedLabel": "Render Hızı & Kalite",
+    "speedStandard": "Standart (Dengeli)",
+    "speedFast": "Hızlı (Turbo)",
+    "renderModeSummaryTurbo": "Turbo Mod · Hızlı Kodlama",
+    "renderModeSummaryStandard": "Standart Mod · Dengeli Kalite",
+    "renderModeSummaryExperimental": "Deneysel Mod · Hızlı",
+    "renderModeSummaryMaster": "Master Kalite · Yüksek Kalite",
     "untitledProject": "İsimsiz Proje",
     "cookieTitle": "Çerez Tercihleri",
     "cookieDesc": "Uygulamamızın düzgün çalışması için zorunlu çerezleri ve deneyiminizi geliştirmek adına araçlarımızla nasıl etkileşim kurduğunuzu anlamak için isteğe bağlı analitik çerezleri kullanıyoruz.",
@@ -1236,6 +1252,14 @@ export const strings = {
     "draftSaved": "Taslak Kaydedildi"
   },
   "de": {
+    "renderResolutionLabel": "Ausgabeauflösung",
+    "renderSpeedLabel": "Render-Geschwindigkeit & Qualität",
+    "speedStandard": "Standard (Sorgfältig)",
+    "speedFast": "Schnell (Turbo)",
+    "renderModeSummaryTurbo": "Turbo-Modus · Schnelle Kodierung",
+    "renderModeSummaryStandard": "Standard-Modus · Ausgewogene Qualität",
+    "renderModeSummaryExperimental": "Experimenteller Modus · Schnell",
+    "renderModeSummaryMaster": "Master-Qualität · Verlustfrei",
     "loginGoogle": "Mit Google anmelden",
     "continueAsGuest": "Als Gast fortfahren",
     "saveProgressTitle": "Verliere nicht deine Arbeit!",
@@ -1854,6 +1878,14 @@ export const strings = {
     "draftSaved": "Entwurf gespeichert"
   },
   "fr": {
+    "renderResolutionLabel": "Résolution de sortie",
+    "renderSpeedLabel": "Vitesse et qualité de rendu",
+    "speedStandard": "Standard (Détaillé)",
+    "speedFast": "Rapide (Turbo)",
+    "renderModeSummaryTurbo": "Mode Turbo · Encodage rapide",
+    "renderModeSummaryStandard": "Mode Standard · Qualité équilibrée",
+    "renderModeSummaryExperimental": "Mode Expérimental · Rapide",
+    "renderModeSummaryMaster": "Qualité Master · Sans perte",
     "loginGoogle": "Se connecter avec Google",
     "continueAsGuest": "Continuer en tant qu'invité",
     "saveProgressTitle": "Ne perdez pas votre travail !",
@@ -2472,6 +2504,14 @@ export const strings = {
     "draftSaved": "Brouillon enregistré"
   },
   "es": {
+    "renderResolutionLabel": "Resolución de salida",
+    "renderSpeedLabel": "Velocidad y calidad de renderizado",
+    "speedStandard": "Estándar (Detallado)",
+    "speedFast": "Rápido (Turbo)",
+    "renderModeSummaryTurbo": "Modo Turbo · Codificación rápida",
+    "renderModeSummaryStandard": "Modo Estándar · Calidad equilibrada",
+    "renderModeSummaryExperimental": "Modo Experimental · Rápido",
+    "renderModeSummaryMaster": "Calidad Master · Sin pérdidas",
     "loginGoogle": "Iniciar sesión con Google",
     "continueAsGuest": "Continuar como invitado",
     "saveProgressTitle": "¡No pierdas tu trabajo!",
@@ -3090,6 +3130,14 @@ export const strings = {
     "draftSaved": "Borrador guardado"
   },
   "zh": {
+    "renderResolutionLabel": "输出分辨率",
+    "renderSpeedLabel": "渲染速度与质量",
+    "speedStandard": "标准 (细致)",
+    "speedFast": "快速 (Turbo)",
+    "renderModeSummaryTurbo": "Turbo 极速模式 · 快速编码",
+    "renderModeSummaryStandard": "标准模式 · 均衡画质",
+    "renderModeSummaryExperimental": "实验模式 · 快速",
+    "renderModeSummaryMaster": "Master 旗舰品质 · 无损",
     "loginGoogle": "使用 Google 登录",
     "continueAsGuest": "以访客身份继续",
     "saveProgressTitle": "不要丢失您的作品！",
@@ -3708,6 +3756,14 @@ export const strings = {
     "draftSaved": "草稿已保存"
   },
   "ar": {
+    "renderResolutionLabel": "دقة الإخراج",
+    "renderSpeedLabel": "سرعة وجودة الرندر",
+    "speedStandard": "قياسي (دقيق)",
+    "speedFast": "سريع (توربو)",
+    "renderModeSummaryTurbo": "وضع توربو · ترميز سريع",
+    "renderModeSummaryStandard": "وضع قياسي · جودة متوازنة",
+    "renderModeSummaryExperimental": "وضع تجريبي · سريع",
+    "renderModeSummaryMaster": "جودة ماستر · فائقة الدقة",
     "loginGoogle": "تسجيل الدخول عبر Google",
     "continueAsGuest": "المتابعة كضيف",
     "saveProgressTitle": "لا تفقد عملك!",
@@ -4326,6 +4382,14 @@ export const strings = {
     "draftSaved": "تم حفظ المسودة"
   },
   "ko": {
+    "renderResolutionLabel": "출력 해상도",
+    "renderSpeedLabel": "렌더링 속도 및 품질",
+    "speedStandard": "표준 (정밀)",
+    "speedFast": "빠름 (터보)",
+    "renderModeSummaryTurbo": "터보 모드 · 빠른 인코딩",
+    "renderModeSummaryStandard": "표준 모드 · 균형 품질",
+    "renderModeSummaryExperimental": "실험적 모드 · 빠름",
+    "renderModeSummaryMaster": "마스터 화질 · 무손실",
     "loginGoogle": "Google 계정으로 로그인",
     "continueAsGuest": "게스트로 계속하기",
     "saveProgressTitle": "작업 내용을 잃어버리지 마세요!",
@@ -4944,6 +5008,14 @@ export const strings = {
     "draftSaved": "임시 저장됨"
   },
   "ja": {
+    "renderResolutionLabel": "出力解像度",
+    "renderSpeedLabel": "レンダリング速度と品質",
+    "speedStandard": "標準 (詳細)",
+    "speedFast": "高速 (ターボ)",
+    "renderModeSummaryTurbo": "ターボモード · 高速エンコード",
+    "renderModeSummaryStandard": "標準モード · バランス品質",
+    "renderModeSummaryExperimental": "実験的モード · 高速",
+    "renderModeSummaryMaster": "マスター品質 · ロスレス",
     "loginGoogle": "Googleでログイン",
     "continueAsGuest": "ゲストとして続行",
     "saveProgressTitle": "作業内容を保存しましょう！",
@@ -5562,6 +5634,14 @@ export const strings = {
     "draftSaved": "下書きを保存しました"
   },
   "id": {
+    "renderResolutionLabel": "Resolusi Output",
+    "renderSpeedLabel": "Kecepatan & Kualitas Render",
+    "speedStandard": "Standar (Detail)",
+    "speedFast": "Cepat (Turbo)",
+    "renderModeSummaryTurbo": "Mode Turbo · Enkoding Cepat",
+    "renderModeSummaryStandard": "Mode Standar · Kualitas Seimbang",
+    "renderModeSummaryExperimental": "Mode Eksperimental · Cepat",
+    "renderModeSummaryMaster": "Kualitas Master · Lossless",
     "loginGoogle": "Masuk dengan Google",
     "continueAsGuest": "Lanjutkan sebagai Tamu",
     "saveProgressTitle": "Jangan kehilangan progres Anda!",
@@ -6180,6 +6260,14 @@ export const strings = {
     "draftSaved": "Draf Tersimpan"
   },
   "th": {
+    "renderResolutionLabel": "ความละเอียดของวิดีโอ",
+    "renderSpeedLabel": "ความเร็วและคุณภาพการเรนเดอร์",
+    "speedStandard": "มาตรฐาน (ละเอียด)",
+    "speedFast": "เร็ว (เทอร์โบ)",
+    "renderModeSummaryTurbo": "โหมดเทอร์โบ · เข้ารหัสเร็ว",
+    "renderModeSummaryStandard": "โหมดมาตรฐาน · คุณภาพสมดุล",
+    "renderModeSummaryExperimental": "โหมดทดลอง · เร็ว",
+    "renderModeSummaryMaster": "คุณภาพมาสเตอร์ · คมชัดสูงสุด",
     "loginGoogle": "เข้าสู่ระบบด้วย Google",
     "continueAsGuest": "ดำเนินการต่อในฐานะผู้เยี่ยมชม",
     "saveProgressTitle": "อย่าปล่อยให้ผลงานของคุณสูญหาย!",
@@ -6798,6 +6886,14 @@ export const strings = {
     "draftSaved": "บันทึกร่างแล้ว"
   },
   "hi": {
+    "renderResolutionLabel": "आउटपुट रिज़ॉल्यूशन",
+    "renderSpeedLabel": "रेंडर गति और गुणवत्ता",
+    "speedStandard": "मानक (विस्तृत)",
+    "speedFast": "तेज़ (टर्बो)",
+    "renderModeSummaryTurbo": "टर्बो मोड · तेज़ एन्कोडिंग",
+    "renderModeSummaryStandard": "मानक मोड · संतुलित गुणवत्ता",
+    "renderModeSummaryExperimental": "प्रायोगिक मोड · तेज़",
+    "renderModeSummaryMaster": "मास्टर गुणवत्ता · हानिरहित",
     "loginGoogle": "Google से लॉगिन करें",
     "continueAsGuest": "अतिथि के रूप में जारी रखें",
     "saveProgressTitle": "अपना काम न खोएं!",
@@ -7416,6 +7512,14 @@ export const strings = {
     "draftSaved": "ड्राफ्ट सहेजा गया"
   },
   "ru": {
+    "renderResolutionLabel": "Разрешение видео",
+    "renderSpeedLabel": "Скорость и качество рендеринга",
+    "speedStandard": "Стандарт (Детально)",
+    "speedFast": "Быстро (Турбо)",
+    "renderModeSummaryTurbo": "Турбо режим · Быстрое кодирование",
+    "renderModeSummaryStandard": "Стандартный режим · Сбалансированное качество",
+    "renderModeSummaryExperimental": "Экспериментальный режим · Быстро",
+    "renderModeSummaryMaster": "Мастер качество · Высокое качество",
     "loginGoogle": "Войти через Google",
     "continueAsGuest": "Продолжить как гость",
     "saveProgressTitle": "Не потеряйте вашу работу!",
@@ -8034,6 +8138,14 @@ export const strings = {
     "draftSaved": "Черновик сохранен"
   },
   "pt": {
+    "renderResolutionLabel": "Resolução de Saída",
+    "renderSpeedLabel": "Velocidade e Qualidade de Renderização",
+    "speedStandard": "Padrão (Detalhado)",
+    "speedFast": "Rápido (Turbo)",
+    "renderModeSummaryTurbo": "Modo Turbo · Codificação Rápida",
+    "renderModeSummaryStandard": "Modo Padrão · Qualidade Equilibrada",
+    "renderModeSummaryExperimental": "Modo Experimental · Rápido",
+    "renderModeSummaryMaster": "Qualidade Master · Sem perdas",
     "loginGoogle": "Entrar com o Google",
     "continueAsGuest": "Continuar como convidado",
     "saveProgressTitle": "Não perca o seu trabalho!",

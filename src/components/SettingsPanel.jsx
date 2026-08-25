@@ -80,9 +80,39 @@ const SettingsPanel = ({ onGenerate }) => {
         <Switch label={t('darkThemeLabel', lang)} checked={settings.darkTheme} onChange={(e) => setSetting('darkTheme', Boolean(e?.target ? e.target.checked : e))} />
         <Switch label={t('highlightLabel', lang)} checked={settings.textHighlight} onChange={(e) => setSetting('textHighlight', Boolean(e?.target ? e.target.checked : e))} />
         <Switch label={t('vignetteEffectLabel', lang)} checked={settings.vignetteEffect ?? true} onChange={(e) => setSetting('vignetteEffect', Boolean(e?.target ? e.target.checked : e))} />
-        <Switch label={t('highQualityLabel', lang)} checked={settings.highQuality} onChange={(e) => setSetting('highQuality', Boolean(e?.target ? e.target.checked : e))} />
-        <Switch label={t('fastRenderLabel', lang)} checked={settings.fastRender ?? false} onChange={(e) => setSetting('fastRender', Boolean(e?.target ? e.target.checked : e))} />
-        <Switch label={t('experimentalRenderLabel', lang)} checked={settings.experimentalRender ?? false} onChange={(e) => setSetting('experimentalRender', Boolean(e?.target ? e.target.checked : e))} />
+
+        {/* 2-Axis Render Controls: Resolution & Speed Matrix */}
+        <div className="pt-2 border-t border-zinc-800/80 space-y-3">
+          <SegmentedControl
+            label={t('renderResolutionLabel', lang)}
+            options={[
+              { value: 'hd', label: 'HD' },
+              { value: 'full_hd', label: 'Full HD' },
+            ]}
+            value={settings.renderResolution || (settings.highQuality || settings.experimentalRender ? 'full_hd' : 'hd')}
+            onChange={(v) => setSetting('renderResolution', v)}
+          />
+
+          <SegmentedControl
+            label={t('renderSpeedLabel', lang)}
+            options={[
+              { value: 'standard', label: t('speedStandard', lang) },
+              { value: 'fast', label: t('speedFast', lang) },
+            ]}
+            value={settings.renderSpeed || (settings.fastRender || settings.experimentalRender ? 'fast' : 'standard')}
+            onChange={(v) => setSetting('renderSpeed', v)}
+          />
+
+          <div className="text-xs px-3 py-2 bg-zinc-800/60 border border-zinc-700/50 rounded-lg text-zinc-300 flex items-center justify-between shadow-sm">
+            <span className="font-medium text-amber-400">
+              {(settings.renderResolution === 'full_hd' || settings.highQuality || settings.experimentalRender) ? (
+                (settings.renderSpeed === 'fast' || settings.experimentalRender) ? t('renderModeSummaryExperimental', lang) : t('renderModeSummaryMaster', lang)
+              ) : (
+                (settings.renderSpeed === 'fast' || settings.fastRender) ? t('renderModeSummaryTurbo', lang) : t('renderModeSummaryStandard', lang)
+              )}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="border-t border-zinc-700 pt-4 flex-shrink-0">

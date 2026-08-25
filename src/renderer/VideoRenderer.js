@@ -12,13 +12,28 @@ export class VideoRenderer {
         this.textData = textData;
         this.onProgress = onProgress;
 
-        const resolutions = {
+        const isFullHd = Boolean(settings.renderResolution === 'full_hd' || settings.highQuality || settings.experimentalRender);
+        const resolutions = isFullHd ? {
             horizontal: { width: 1920, height: 1080 },
             vertical: { width: 1080, height: 1920 },
+        } : {
+            horizontal: { width: 1280, height: 720 },
+            vertical: { width: 720, height: 1280 },
         };
         this.resolution = resolutions[settings.format] || resolutions.horizontal;
         this.canvas.width = this.resolution.width;
         this.canvas.height = this.resolution.height;
+
+        // Pre-create vignette gradient for high-performance frame drawing
+        const maxRadius = Math.max(this.resolution.width, this.resolution.height) * 0.75;
+        const minRadius = Math.min(this.resolution.width, this.resolution.height) * 0.25;
+        this.vignetteGradient = this.ctx.createRadialGradient(
+            this.resolution.width / 2, this.resolution.height / 2, minRadius,
+            this.resolution.width / 2, this.resolution.height / 2, maxRadius
+        );
+        this.vignetteGradient.addColorStop(0, 'rgba(0,0,0,0)');
+        this.vignetteGradient.addColorStop(0.5, 'rgba(0,0,0,0.135)');
+        this.vignetteGradient.addColorStop(1, 'rgba(0,0,0,0.45)');
     }
 
     _shuffleArray(array) {
@@ -121,21 +136,139 @@ export class VideoRenderer {
         this.ctx.fillStyle = this.settings.darkTheme ? '#ffffff' : '#000';
         this.ctx.fillText(phrase, phraseX, phraseY);
 
-        if (this.settings.vignetteEffect) {
-            drawVignette(this.ctx, width, height, 0.4);
+        if (this.settings.vignetteEffect && this.vignetteGradient) {
+            this.ctx.save();
+            this.ctx.fillStyle = this.vignetteGradient;
+            this.ctx.fillRect(0, 0, width, height);
+            this.ctx.restore();
         }
 
         this.ctx.restore();
     }
 
     // ==========================================
-    // 2. YENİ GAZETE MODU SAHNE ÇİZİMİ (Newspaper / V2 - Kamera Merkezleme & Alan Derinliği)
+    // 2. YENİ GAZETE MODU ÖNBELLEKLİ YERLEŞİM (Newspaper Layout Precomputation)
     // ==========================================
-    drawNewspaperScene({ scene, progress, cutIndex }) {
+    getNewspaperLayout({ scene, cutIndex }) {
+        const { width, height } = this.resolution;
+        const isVertical = this.settings.format === 'vertical';
+        const fontFamily = this.settings.fontFamily || "'Times New Roman', Times, serif";
+
+        const phrase = scene.phrase || this.textData.phrase || '';
+        const phraseLower = phrase.toLowerCase();
+        const placementType = scene.placementType || 'HEADLINE';
+
+        const baseHeroSize = Math.floor(isVertical ? width / 12.5 : width / 19);
+        const cutVariance = 0.94 + ((cutIndex * 13) % 15) * 0.01;
+        const targetFontSize = Math.floor(baseHeroSize * cutVariance);
+
+        let targetLine = "";
+        let targetFontStyle = "bold";
+        let headlineSize = targetFontSize;
+        let mastheadSize = Math.floor(targetFontSize * 0.7);
+        let bodyFontSize = Math.floor(targetFontSize * 0.36);
+        let bylineSize = Math.floor(targetFontSize * 0.38);
+
+        if (placementType === 'HEADLINE' || placementType === 'HEADLINE_MACRO') {
+            targetLine = scene.headline || phrase;
+            targetFontStyle = "bold";
+            headlineSize = targetFontSize;
+            mastheadSize = Math.floor(headlineSize * 0.65);
+            bylineSize = Math.floor(headlineSize * 0.38);
+            bodyFontSize = Math.floor(headlineSize * 0.34);
+        } else if (placementType === 'PARAGRAPH') {
+            targetLine = scene.targetText || phrase;
+            targetFontStyle = "normal";
+            bodyFontSize = targetFontSize;
+            headlineSize = Math.floor(bodyFontSize * 2.2);
+            mastheadSize = Math.floor(bodyFontSize * 1.5);
+            bylineSize = Math.floor(bodyFontSize * 0.85);
+        } else if (placementType === 'BYLINE') {
+            targetLine = scene.byline || phrase;
+            targetFontStyle = "italic";
+            bylineSize = targetFontSize;
+            headlineSize = Math.floor(bylineSize * 2.4);
+            mastheadSize = Math.floor(bylineSize * 1.6);
+            bodyFontSize = Math.floor(bylineSize * 1.0);
+        }
+
+        const targetFont = `${targetFontStyle} ${targetFontSize}px ${fontFamily}`;
+        this.ctx.font = targetFont;
+
+        let matchIndex = targetLine.toLowerCase().indexOf(phraseLower);
+        if (matchIndex === -1) {
+            targetLine = `... ${phrase} ...`;
+            matchIndex = targetLine.toLowerCase().indexOf(phraseLower);
+        }
+
+        const textBefore = targetLine.substring(0, matchIndex);
+        const textMatch = targetLine.substring(matchIndex, matchIndex + phrase.length);
+        const textAfter = targetLine.substring(matchIndex + phrase.length);
+
+        const beforeWidth = this.ctx.measureText(textBefore).width;
+        const phraseWidth = this.ctx.measureText(textMatch).width;
+        const phraseHeight = targetFontSize * 1.15;
+
+        const screenCenterX = width / 2;
+        const screenCenterY = height / 2;
+        const targetLineStartX = screenCenterX - beforeWidth - (phraseWidth / 2);
+        const targetLineY = screenCenterY;
+
+        const contentWidth = width * (isVertical ? 0.90 : 0.86);
+        const leftAlignX = screenCenterX - (contentWidth / 2);
+        const lineSpacing = isVertical ? 1.55 : 1.42;
+
+        const mastheadFont = `900 ${mastheadSize}px ${fontFamily}`;
+        const dateFont = `600 ${Math.floor(mastheadSize * 0.4)}px ${fontFamily}`;
+        const headlineFont = `bold ${headlineSize}px ${fontFamily}`;
+        const bylineFont = `italic ${bylineSize}px ${fontFamily}`;
+        const bodyFont = `normal ${bodyFontSize}px ${fontFamily}`;
+
+        this.ctx.font = bodyFont;
+        const topLines = wrapText(this.ctx, scene.topParagraph || '', contentWidth);
+        const bottomLines = wrapText(this.ctx, scene.bottomParagraph || '', contentWidth);
+
+        return {
+            placementType,
+            targetFont,
+            mastheadFont,
+            dateFont,
+            headlineFont,
+            bylineFont,
+            bodyFont,
+            mastheadSize,
+            headlineSize,
+            bylineSize,
+            bodyFontSize,
+            textBefore,
+            textMatch,
+            textAfter,
+            beforeWidth,
+            phraseWidth,
+            phraseHeight,
+            screenCenterX,
+            screenCenterY,
+            targetLineStartX,
+            targetLineY,
+            contentWidth,
+            leftAlignX,
+            lineSpacing,
+            topLines,
+            bottomLines,
+            paperName: scene.paperName,
+            dateLine: scene.dateLine,
+            headline: scene.headline,
+            byline: scene.byline
+        };
+    }
+
+    // ==========================================
+    // 3. YENİ GAZETE MODU SAHNE ÇİZİMİ (Newspaper / V2 - Hızlı Render)
+    // ==========================================
+    drawNewspaperScene({ scene, progress, cutIndex, layout }) {
         const { width, height } = this.resolution;
         const isVertical = this.settings.format === 'vertical';
         const isDark = this.settings.darkTheme;
-        const fontFamily = this.settings.fontFamily || "'Times New Roman', Times, serif";
 
         const BLUR_MAP = { Low: 3, Medium: 6, High: 10 };
         const baseBlur = BLUR_MAP[this.settings.blurIntensity] || 6;
@@ -156,84 +289,20 @@ export class VideoRenderer {
         // Kamera Mikro Sarsıntısı
         applyCameraShake(this.ctx, 2);
 
-        const zoom = scene.zoomScale || 1.0;
-        const phrase = scene.phrase || this.textData.phrase || '';
-        const phraseLower = phrase.toLowerCase();
-        const placementType = scene.placementType || 'HEADLINE';
-
-        // HEDEF KELİME HERO BOYUTU:
-        // Tüm kesimlerde kelimenin ekranda algılanan büyüklüğünü korumak için
-        // kelime boyutu sabit bir "Hero" boyuta kilitlenir, çevreleyen gazete öğeleri ise
-        // o kesimin kadrajına (Headline / Macro Paragraph / Byline) göre yakınlaştırılıp uzaklaştırılır.
-        const baseHeroSize = Math.floor(isVertical ? width / 12.5 : width / 19);
-        const cutVariance = 0.94 + ((cutIndex * 13) % 15) * 0.01; // Hafif doğal ritim (0.94x - 1.08x)
-        const targetFontSize = Math.floor(baseHeroSize * cutVariance);
-
-        let targetLine = "";
-        let targetFontStyle = "bold";
-        let headlineSize = targetFontSize;
-        let mastheadSize = Math.floor(targetFontSize * 0.7);
-        let bodyFontSize = Math.floor(targetFontSize * 0.36);
-        let bylineSize = Math.floor(targetFontSize * 0.38);
-
-        if (placementType === 'HEADLINE' || placementType === 'HEADLINE_MACRO') {
-            targetLine = scene.headline || phrase;
-            targetFontStyle = "bold";
-            headlineSize = targetFontSize;
-            mastheadSize = Math.floor(headlineSize * 0.65);
-            bylineSize = Math.floor(headlineSize * 0.38);
-            bodyFontSize = Math.floor(headlineSize * 0.34);
-        } else if (placementType === 'PARAGRAPH') {
-            // Paragraf kadrajı: Kamera paragrafa makro-yakınlaşır!
-            targetLine = scene.targetText || phrase;
-            targetFontStyle = "normal";
-            bodyFontSize = targetFontSize; // Paragraf metni hero boyuta yükselir
-            headlineSize = Math.floor(bodyFontSize * 2.2); // Üstteki başlık devasa kadraja girer
-            mastheadSize = Math.floor(bodyFontSize * 1.5);
-            bylineSize = Math.floor(bodyFontSize * 0.85);
-        } else if (placementType === 'BYLINE') {
-            // Byline kadrajı: Kamera alt başlığa yakınlaşır!
-            targetLine = scene.byline || phrase;
-            targetFontStyle = "italic";
-            bylineSize = targetFontSize; // Byline hero boyuta yükselir
-            headlineSize = Math.floor(bylineSize * 2.4);
-            mastheadSize = Math.floor(bylineSize * 1.6);
-            bodyFontSize = Math.floor(bylineSize * 1.0);
-        }
-
-        const targetFont = `${targetFontStyle} ${targetFontSize}px ${fontFamily}`;
-        this.ctx.font = targetFont;
-
-        // Hedef kelimenin hedef satır içindeki yerini ölç
-        let matchIndex = targetLine.toLowerCase().indexOf(phraseLower);
-        if (matchIndex === -1) {
-            targetLine = `... ${phrase} ...`;
-            matchIndex = targetLine.toLowerCase().indexOf(phraseLower);
-        }
-
-        const textBefore = targetLine.substring(0, matchIndex);
-        const textMatch = targetLine.substring(matchIndex, matchIndex + phrase.length);
-        const textAfter = targetLine.substring(matchIndex + phrase.length);
-
-        const beforeWidth = this.ctx.measureText(textBefore).width;
-        const phraseWidth = this.ctx.measureText(textMatch).width;
-        const phraseHeight = targetFontSize * 1.15;
-
-        // MATEMATİKSEL KAMERA MERKEZLEME:
-        // Hedef kelimenin tam ortası ekranın (width/2, height/2) noktasına denk gelecek!
-        const screenCenterX = width / 2;
-        const screenCenterY = height / 2;
-        const targetLineStartX = screenCenterX - beforeWidth - (phraseWidth / 2);
-        const targetLineY = screenCenterY;
+        const l = layout || this.getNewspaperLayout({ scene, cutIndex });
+        const {
+            placementType, targetFont, mastheadFont, dateFont, headlineFont, bylineFont, bodyFont,
+            mastheadSize, headlineSize, bylineSize, bodyFontSize,
+            textBefore, textMatch, textAfter, beforeWidth, phraseWidth, phraseHeight,
+            screenCenterX, screenCenterY, targetLineStartX, targetLineY,
+            contentWidth, leftAlignX, lineSpacing, topLines, bottomLines,
+            paperName, dateLine, headline, byline
+        } = l;
 
         // PASAJ 1: BULANIK ARKA PLAN & GAZETE ÖĞELERİ
         this.ctx.save();
         this.ctx.filter = `blur(${Math.max(2, blurAmount + 3.5)}px)`;
         this.ctx.textBaseline = 'middle';
-
-        const contentWidth = width * (isVertical ? 0.90 : 0.86);
-        const leftAlignX = screenCenterX - (contentWidth / 2);
-        const lineSpacing = isVertical ? 1.55 : 1.42;
 
         if (placementType === 'HEADLINE' || placementType === 'HEADLINE_MACRO') {
             const headY = targetLineY;
@@ -243,15 +312,15 @@ export class VideoRenderer {
             const bylineY = headY + (headlineSize * (isVertical ? 1.45 : 1.25));
 
             // 1. Gazete Başlığı (Masthead)
-            this.ctx.font = `900 ${mastheadSize}px ${fontFamily}`;
+            this.ctx.font = mastheadFont;
             this.ctx.fillStyle = textColor;
             this.ctx.textAlign = 'center';
-            this.ctx.fillText(scene.paperName || 'THE DAILY NONSENSE', screenCenterX, mastheadY);
+            this.ctx.fillText(paperName || 'THE DAILY NONSENSE', screenCenterX, mastheadY);
 
             // Tarih Satırı
-            this.ctx.font = `600 ${Math.floor(mastheadSize * 0.4)}px ${fontFamily}`;
+            this.ctx.font = dateFont;
             this.ctx.fillStyle = mutedColor;
-            this.ctx.fillText(scene.dateLine || 'FRI · JUN 10 2005 · VOL.192 NO.91', screenCenterX, dateY);
+            this.ctx.fillText(dateLine || 'FRI · JUN 10 2005 · VOL.192 NO.91', screenCenterX, dateY);
 
             // Ayırıcı Çizgiler
             this.ctx.strokeStyle = ruleColor;
@@ -261,11 +330,10 @@ export class VideoRenderer {
             this.ctx.lineTo(leftAlignX + contentWidth, dateY + mastheadSize * 0.42);
             this.ctx.stroke();
 
-            // Üst Dolgu Paragrafları (Ekranın üst sınırına kadar doldur)
-            this.ctx.font = `normal ${bodyFontSize}px ${fontFamily}`;
+            // Üst Dolgu Paragrafları
+            this.ctx.font = bodyFont;
             this.ctx.fillStyle = mutedColor;
             this.ctx.textAlign = 'left';
-            const topLines = wrapText(this.ctx, scene.topParagraph || '', contentWidth);
             const availableTopSlots = Math.floor((mastheadY - mastheadSize * 1.1 + 40) / (bodyFontSize * lineSpacing));
             const renderTopCount = Math.min(topLines.length, Math.max(1, availableTopSlots));
 
@@ -285,14 +353,13 @@ export class VideoRenderer {
             this.ctx.fillText(textAfter, targetLineStartX + beforeWidth + phraseWidth, targetLineY);
 
             // Alt Başlık (Byline)
-            this.ctx.font = `italic ${bylineSize}px ${fontFamily}`;
+            this.ctx.font = bylineFont;
             this.ctx.fillStyle = mutedColor;
-            this.ctx.fillText(scene.byline || '— Special Reports Desk', leftAlignX, bylineY);
+            this.ctx.fillText(byline || '— Special Reports Desk', leftAlignX, bylineY);
 
-            // Alt Dolgu Paragrafları (Ekranın en altına kadar dengeli dağıt)
-            this.ctx.font = `normal ${bodyFontSize}px ${fontFamily}`;
+            // Alt Dolgu Paragrafları
+            this.ctx.font = bodyFont;
             this.ctx.fillStyle = mutedColor;
-            const bottomLines = wrapText(this.ctx, scene.bottomParagraph || '', contentWidth);
             const bottomStartY = bylineY + (bylineSize * (isVertical ? 2.0 : 1.7));
 
             for (let i = 0; i < bottomLines.length; i++) {
@@ -302,48 +369,39 @@ export class VideoRenderer {
             }
 
         } else if (placementType === 'PARAGRAPH') {
-            // Paragraf içinde kelime odağı (Macro Zoom)
             const lineY = targetLineY;
             const headY = lineY - (headlineSize * (isVertical ? 1.8 : 1.6));
             const mastheadY = headY - (mastheadSize * (isVertical ? 1.8 : 1.5));
 
-            // Gazete Başlığı
-            this.ctx.font = `900 ${mastheadSize}px ${fontFamily}`;
+            this.ctx.font = mastheadFont;
             this.ctx.fillStyle = textColor;
             this.ctx.textAlign = 'center';
             if (mastheadY > -100) {
-                this.ctx.fillText(scene.paperName || 'THE REGIONAL MURMUR', screenCenterX, mastheadY);
+                this.ctx.fillText(paperName || 'THE REGIONAL MURMUR', screenCenterX, mastheadY);
             }
 
-            // Büyük Başlık
-            this.ctx.font = `bold ${headlineSize}px ${fontFamily}`;
+            this.ctx.font = headlineFont;
             this.ctx.fillStyle = textColor;
             this.ctx.textAlign = 'center';
             if (headY > -100) {
-                this.ctx.fillText(scene.headline || 'Celebrity apologizes to everyone', screenCenterX, headY);
+                this.ctx.fillText(headline || 'Celebrity apologizes to everyone', screenCenterX, headY);
             }
 
-            // Paragrafın hedef satırının öncesi ve sonrası
             this.ctx.font = targetFont;
             this.ctx.fillStyle = mutedColor;
             this.ctx.textAlign = 'left';
             this.ctx.fillText(textBefore, targetLineStartX, targetLineY);
             this.ctx.fillText(textAfter, targetLineStartX + beforeWidth + phraseWidth, targetLineY);
 
-            // Üst dolgu satırları
-            this.ctx.font = `normal ${bodyFontSize}px ${fontFamily}`;
+            this.ctx.font = bodyFont;
             this.ctx.fillStyle = mutedColor;
-            const topLines = wrapText(this.ctx, scene.topParagraph || '', contentWidth);
             for (let i = 0; i < topLines.length; i++) {
                 const y = lineY - ((i + 1) * bodyFontSize * lineSpacing);
                 if (y < -40) break;
-                // Başlık ile çakışmayı engelle
                 if (y > headY - headlineSize * 0.4 && y < headY + headlineSize * 0.4) continue;
                 this.ctx.fillText(topLines[topLines.length - 1 - i], leftAlignX, y);
             }
 
-            // Alt dolgu satırları (Aşağıya doğru kesintisiz akış)
-            const bottomLines = wrapText(this.ctx, scene.bottomParagraph || '', contentWidth);
             for (let i = 0; i < bottomLines.length; i++) {
                 const y = lineY + ((i + 1) * bodyFontSize * lineSpacing);
                 if (y > height + 40) break;
@@ -355,31 +413,26 @@ export class VideoRenderer {
             const headY = bylineY - (headlineSize * (isVertical ? 1.6 : 1.4));
             const mastheadY = headY - (mastheadSize * (isVertical ? 2.0 : 1.7));
 
-            // Gazete Başlığı
-            this.ctx.font = `900 ${mastheadSize}px ${fontFamily}`;
+            this.ctx.font = mastheadFont;
             this.ctx.fillStyle = textColor;
             this.ctx.textAlign = 'center';
             if (mastheadY > -100) {
-                this.ctx.fillText(scene.paperName || 'SAN ANDREAS CHRONICLE', screenCenterX, mastheadY);
+                this.ctx.fillText(paperName || 'SAN ANDREAS CHRONICLE', screenCenterX, mastheadY);
             }
 
-            // Başlık
-            this.ctx.font = `bold ${headlineSize}px ${fontFamily}`;
+            this.ctx.font = headlineFont;
             this.ctx.fillStyle = textColor;
             this.ctx.textAlign = 'center';
-            this.ctx.fillText(scene.headline || 'Investigation continues across region', screenCenterX, headY);
+            this.ctx.fillText(headline || 'Investigation continues across region', screenCenterX, headY);
 
-            // Byline öncesi ve sonrası
             this.ctx.font = targetFont;
             this.ctx.fillStyle = mutedColor;
             this.ctx.textAlign = 'left';
             this.ctx.fillText(textBefore, targetLineStartX, targetLineY);
             this.ctx.fillText(textAfter, targetLineStartX + beforeWidth + phraseWidth, targetLineY);
 
-            // Alt Dolgu Paragrafları (Ekranı dolduracak şekilde)
-            this.ctx.font = `normal ${bodyFontSize}px ${fontFamily}`;
+            this.ctx.font = bodyFont;
             this.ctx.fillStyle = mutedColor;
-            const bottomLines = wrapText(this.ctx, scene.bottomParagraph || '', contentWidth);
             const bottomStartY = bylineY + (bylineSize * (isVertical ? 1.8 : 1.5));
 
             for (let i = 0; i < bottomLines.length; i++) {
@@ -389,9 +442,9 @@ export class VideoRenderer {
             }
         }
 
-        this.ctx.restore(); // Bulanıklık filtresini kaldır
+        this.ctx.restore();
 
-        // PASAJ 2: KESKİN & VURGULU HEDEF KELİME (TAM EKRAN MERKEZİNDE)
+        // PASAJ 2: KESKİN & VURGULU HEDEF KELİME
         this.ctx.save();
         this.ctx.filter = 'none';
         this.ctx.textBaseline = 'middle';
@@ -400,13 +453,11 @@ export class VideoRenderer {
         const highlightX = screenCenterX - (phraseWidth / 2);
         const highlightY = screenCenterY - (phraseHeight / 2);
 
-        // 1. Sarı Vurgu Kutusu
         if (this.settings.textHighlight) {
             this.ctx.fillStyle = highlightColor;
             this.ctx.fillRect(highlightX - 6, highlightY, phraseWidth + 12, phraseHeight);
         }
 
-        // 2. Net Hedef Kelime
         this.ctx.font = targetFont;
         this.ctx.fillStyle = isDark ? '#FFFFFF' : '#111111';
         this.ctx.fillText(textMatch, highlightX, screenCenterY);
@@ -414,8 +465,11 @@ export class VideoRenderer {
         this.ctx.restore();
 
         // PASAJ 3: SİNEMATİK KARARTMA (VIGNETTE)
-        if (this.settings.vignetteEffect) {
-            drawVignette(this.ctx, width, height, 0.45);
+        if (this.settings.vignetteEffect && this.vignetteGradient) {
+            this.ctx.save();
+            this.ctx.fillStyle = this.vignetteGradient;
+            this.ctx.fillRect(0, 0, width, height);
+            this.ctx.restore();
         }
 
         this.ctx.restore();
@@ -428,12 +482,14 @@ export class VideoRenderer {
 
         if (isNewspaper && scenes && scenes.length > 0) {
             const scene = scenes[cutIndex % scenes.length];
+            const layout = this.getNewspaperLayout({ scene, cutIndex });
+
             for (let f = 0; f < framesPerCut; f++) {
                 const p = f / framesPerCut;
-                this.drawNewspaperScene({ scene, progress: p, cutIndex });
+                this.drawNewspaperScene({ scene, progress: p, cutIndex, layout });
                 const isPng = this.settings.highQuality && !this.settings.fastRender && !this.settings.experimentalRender;
                 const format = isPng ? 'image/png' : 'image/jpeg';
-                const quality = isPng ? 1.0 : (this.settings.experimentalRender ? 0.94 : (this.settings.fastRender ? 0.86 : 0.95));
+                const quality = isPng ? 1.0 : (this.settings.experimentalRender ? 0.94 : (this.settings.fastRender ? 0.80 : 0.85));
                 const blob = await new Promise(res => this.canvas.toBlob(res, format, quality));
                 const arrayBuffer = await blob.arrayBuffer();
                 frameList.push(new Uint8Array(arrayBuffer));
@@ -452,7 +508,7 @@ export class VideoRenderer {
                         this.drawClassicScene({ lineIndex: lineIdx, lineText: line, metrics, progress: p });
                         const isPng = this.settings.highQuality && !this.settings.fastRender && !this.settings.experimentalRender;
                         const format = isPng ? 'image/png' : 'image/jpeg';
-                        const quality = isPng ? 1.0 : (this.settings.experimentalRender ? 0.94 : (this.settings.fastRender ? 0.86 : 0.95));
+                        const quality = isPng ? 1.0 : (this.settings.experimentalRender ? 0.94 : (this.settings.fastRender ? 0.80 : 0.85));
                         const blob = await new Promise(res => this.canvas.toBlob(res, format, quality));
                         const arrayBuffer = await blob.arrayBuffer();
                         frameList.push(new Uint8Array(arrayBuffer));
@@ -516,10 +572,12 @@ export class VideoRenderer {
             const audioBlob = await audioGen.generateAudio(positions.length, totalDuration);
             
             this.onProgress(55);
+            const isFullHd = Boolean(this.settings.renderResolution === 'full_hd' || this.settings.highQuality || this.settings.experimentalRender);
+            const isFast = Boolean(this.settings.renderSpeed === 'fast' || this.settings.fastRender || this.settings.experimentalRender);
             const videoUrl = await createVideoFromFrames(allFrames, audioBlob, fps, { 
-                highQuality: this.settings.highQuality, 
-                fastRender: this.settings.fastRender,
-                experimentalRender: this.settings.experimentalRender 
+                highQuality: isFullHd && !isFast, 
+                fastRender: !isFullHd && isFast,
+                experimentalRender: isFullHd && isFast 
             }, p => {
                 this.onProgress(55 + (p / 100) * 45);
             });

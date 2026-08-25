@@ -22,9 +22,11 @@ export const useSettingsStore = create(
       blurIntensity: 'Medium',
       fontFamily: "'Times New Roman', Times, serif",
       lang: detectLanguage(),  // Otomatik dil tespiti
-      highQuality: false, // Beta yüksek kalite ayarı
-      fastRender: false, // Hızlı render (Turbo) modu
-      experimentalRender: false, // Deneysel Hızlı 1080p (Ultrafast Full HD)
+      renderResolution: 'hd', // 'hd' (720p) | 'full_hd' (1080p)
+      renderSpeed: 'standard', // 'standard' (slow/master) | 'fast' (turbo)
+      highQuality: false, // Beta yüksek kalite ayarı (Full HD + Standard)
+      fastRender: false, // Hızlı render (Turbo) modu (HD + Fast)
+      experimentalRender: false, // Deneysel Hızlı 1080p (Full HD + Fast)
       renderMode: 'classic', // Varsayılan: 'classic' (Klasik), Seçenek: 'newspaper' (Gazete / Yeni Mod)
       vignetteEffect: true, // Sinematik kenar karartma
       cookieConsent: { analytics: true, essential: true, hasConsented: false },
@@ -37,16 +39,48 @@ export const useSettingsStore = create(
 
       // Fonksiyonlar
       setSetting: (key, value) => set((state) => {
-        if (key === 'experimentalRender' && value) {
-          return { [key]: value, highQuality: false, fastRender: false };
+        let next = { ...state, [key]: value };
+
+        if (key === 'renderResolution' || key === 'renderSpeed') {
+          const res = key === 'renderResolution' ? value : (state.renderResolution || 'hd');
+          const speed = key === 'renderSpeed' ? value : (state.renderSpeed || 'standard');
+          
+          if (res === 'full_hd' && speed === 'fast') {
+            next.experimentalRender = true;
+            next.highQuality = false;
+            next.fastRender = false;
+          } else if (res === 'full_hd' && speed === 'standard') {
+            next.highQuality = true;
+            next.experimentalRender = false;
+            next.fastRender = false;
+          } else if (res === 'hd' && speed === 'fast') {
+            next.fastRender = true;
+            next.highQuality = false;
+            next.experimentalRender = false;
+          } else {
+            // hd + standard
+            next.fastRender = false;
+            next.highQuality = false;
+            next.experimentalRender = false;
+          }
+        } else if (key === 'experimentalRender' && value) {
+          next.renderResolution = 'full_hd';
+          next.renderSpeed = 'fast';
+          next.highQuality = false;
+          next.fastRender = false;
+        } else if (key === 'highQuality' && value) {
+          next.renderResolution = 'full_hd';
+          next.renderSpeed = 'standard';
+          next.fastRender = false;
+          next.experimentalRender = false;
+        } else if (key === 'fastRender' && value) {
+          next.renderResolution = 'hd';
+          next.renderSpeed = 'fast';
+          next.highQuality = false;
+          next.experimentalRender = false;
         }
-        if (key === 'highQuality' && value) {
-          return { [key]: value, fastRender: false, experimentalRender: false };
-        }
-        if (key === 'fastRender' && value) {
-          return { [key]: value, highQuality: false, experimentalRender: false };
-        }
-        return { [key]: value };
+
+        return next;
       }),
       setGenerationState: (state) => set(state),
     }),

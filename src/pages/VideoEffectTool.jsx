@@ -273,30 +273,31 @@ export default function VideoEffectTool() {
     }
   };
 
-  const handleToggleHdOutput = (val) => {
-    const isChecked = typeof val === 'boolean' ? val : Boolean(val?.target?.checked ?? val);
-    setHdOutput(isChecked);
-    if (isChecked) {
+  const handleResolutionChange = (res) => {
+    const isFullHd = res === 'full_hd';
+    const isFast = fastRender || experimentalRender;
+    if (isFullHd) {
+      setHdOutput(!isFast);
+      setExperimentalRender(isFast);
       setFastRender(false);
+    } else {
+      setHdOutput(false);
       setExperimentalRender(false);
+      setFastRender(isFast);
     }
   };
 
-  const handleToggleFastRender = (val) => {
-    const isChecked = typeof val === 'boolean' ? val : Boolean(val?.target?.checked ?? val);
-    setFastRender(isChecked);
-    if (isChecked) {
+  const handleSpeedChange = (speed) => {
+    const isFast = speed === 'fast';
+    const isFullHd = hdOutput || experimentalRender;
+    if (isFullHd) {
+      setExperimentalRender(isFast);
+      setHdOutput(!isFast);
+      setFastRender(false);
+    } else {
+      setFastRender(isFast);
       setHdOutput(false);
       setExperimentalRender(false);
-    }
-  };
-
-  const handleToggleExperimentalRender = (val) => {
-    const isChecked = typeof val === 'boolean' ? val : Boolean(val?.target?.checked ?? val);
-    setExperimentalRender(isChecked);
-    if (isChecked) {
-      setHdOutput(false);
-      setFastRender(false);
     }
   };
 
@@ -1507,7 +1508,7 @@ export default function VideoEffectTool() {
 
         const isPng = hdOutput && !fastRender && !experimentalRender;
         const mime = isPng ? 'image/png' : 'image/jpeg';
-        const quality = isPng ? 1.0 : (experimentalRender ? 0.94 : (fastRender ? 0.86 : 0.96));
+        const quality = isPng ? 1.0 : (experimentalRender ? 0.94 : (fastRender ? 0.80 : 0.85));
         const blob = await new Promise(resolve => canvas.toBlob(resolve, mime, quality));
         const arrayBuf = await blob.arrayBuffer();
         frames.push(new Uint8Array(arrayBuf));
@@ -3248,27 +3249,38 @@ export default function VideoEffectTool() {
                     />
                   )}
 
-                  {/* 1080p High Quality Switch */}
-                  <Switch
-                    label={t('highQualityLabel', lang) || 'Yüksek Kalite (1080p)'}
-                    checked={hdOutput}
-                    onChange={handleToggleHdOutput}
-                  />
+                  {/* 2-Axis Render Controls: Resolution & Speed Matrix */}
+                  <div className="pt-2 border-t border-zinc-800/80 space-y-3">
+                    <SegmentedControl
+                      label={t('renderResolutionLabel', lang)}
+                      options={[
+                        { value: 'hd', label: 'HD' },
+                        { value: 'full_hd', label: 'Full HD' },
+                      ]}
+                      value={hdOutput || experimentalRender ? 'full_hd' : 'hd'}
+                      onChange={handleResolutionChange}
+                    />
 
-                  {/* Turbo Fast Render Switch */}
-                  <Switch
-                    label={t('fastRenderLabel', lang) || 'Hızlı Render (Turbo Mod)'}
-                    checked={fastRender}
-                    onChange={handleToggleFastRender}
-                  />
+                    <SegmentedControl
+                      label={t('renderSpeedLabel', lang)}
+                      options={[
+                        { value: 'standard', label: t('speedStandard', lang) },
+                        { value: 'fast', label: t('speedFast', lang) },
+                      ]}
+                      value={fastRender || experimentalRender ? 'fast' : 'standard'}
+                      onChange={handleSpeedChange}
+                    />
 
-                  {/* Experimental Fast 1080p Switch */}
-                  <Switch
-                    label={t('experimentalRenderLabel', lang) || 'Deneysel Hızlı 1080p'}
-                    checked={experimentalRender}
-                    onChange={handleToggleExperimentalRender}
-                  />
-
+                    <div className="text-xs px-3 py-2 bg-zinc-800/60 border border-zinc-700/50 rounded-lg text-zinc-300 flex items-center justify-between shadow-sm">
+                      <span className="font-medium text-amber-400">
+                        {(hdOutput || experimentalRender) ? (
+                          experimentalRender ? t('renderModeSummaryExperimental', lang) : t('renderModeSummaryMaster', lang)
+                        ) : (
+                          fastRender ? t('renderModeSummaryTurbo', lang) : t('renderModeSummaryStandard', lang)
+                        )}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Video Format (Aspect Ratio) matching MatchCutTool */}

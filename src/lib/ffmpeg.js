@@ -259,7 +259,7 @@ export async function createVideoFromFrames(frames, audioBlob, fps, optionsOrHig
     const totalFrames = frames.length;
 
     // Paralel toplu aktarım (Concurrent Batch Transfer) - roundtrip gecikmesini 10x azaltır
-    const BATCH_SIZE = 30;
+    const BATCH_SIZE = 40;
     for (let b = 0; b < totalFrames; b += BATCH_SIZE) {
         const batchPromises = [];
         const end = Math.min(b + BATCH_SIZE, totalFrames);
@@ -281,17 +281,17 @@ export async function createVideoFromFrames(frames, audioBlob, fps, optionsOrHig
     };
     ffmpeg.on('progress', onFfmpegProgress);
 
-    let preset = 'fast';
-    let crf = '22';
+    let preset = 'ultrafast';
+    let crf = '23';
     if (experimentalRender) {
         preset = 'ultrafast';
-        crf = '20'; // Pristine Full HD 1080p output with ultrafast encode
+        crf = '21';
     } else if (fastRender) {
         preset = 'ultrafast';
-        crf = '24';
+        crf = '26';
     } else if (highQuality) {
-        preset = 'medium';
-        crf = '18';
+        preset = 'fast';
+        crf = '19';
     }
 
     const args = [
@@ -306,9 +306,7 @@ export async function createVideoFromFrames(frames, audioBlob, fps, optionsOrHig
     args.push(
         '-c:v', 'libx264',
         '-preset', preset,
-        '-tune', 'zerolatency',
-        '-crf', crf,
-        '-threads', '0'
+        '-crf', crf
     );
 
     if (hasAudio) {
