@@ -1643,8 +1643,27 @@ export default function VideoEffectTool() {
         <meta name="description" content={`${toolInfo.desc} Create professional ${toolInfo.title1} ${toolInfo.title2} video animations online in seconds directly in your browser.`} />
         <meta name="keywords" content={`${toolInfo.title1} ${toolInfo.title2}, ${type} video effect, online video animator, free video effect maker, kinetic video effects, animationmaker`} />
         <link rel="canonical" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        
+        {/* Multilingual Hreflang Tags */}
+        <link rel="alternate" hrefLang="x-default" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="en" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="tr" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="de" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="fr" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="es" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="zh" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="ar" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="ko" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="ja" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="id" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="th" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="hi" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="ru" href={`https://animationmaker.m0s.space/effects/${type}`} />
+        <link rel="alternate" hrefLang="pt" href={`https://animationmaker.m0s.space/effects/${type}`} />
+
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta property="og:title" content={`${toolInfo.title1} ${toolInfo.title2} | AnimationMaker`} />
         <meta property="og:description" content={toolInfo.desc} />
         <meta property="og:url" content={`https://animationmaker.m0s.space/effects/${type}`} />
@@ -1656,25 +1675,74 @@ export default function VideoEffectTool() {
         <meta name="twitter:description" content={toolInfo.desc} />
         <meta name="twitter:image" content="https://animationmaker.m0s.space/og-image.png" />
         <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            "name": `${toolInfo.title1} ${toolInfo.title2}`,
-            "applicationCategory": "MultimediaApplication",
-            "operatingSystem": "Web",
-            "offers": {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "USD"
+          {JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": `${toolInfo.title1} ${toolInfo.title2}`,
+              "applicationCategory": "MultimediaApplication",
+              "operatingSystem": "Web, Browser",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              },
+              "description": `${toolInfo.desc} Free client-side video effect generator with instant in-browser rendering.`,
+              "url": `https://animationmaker.m0s.space/effects/${type}`,
+              "publisher": {
+                "@type": "Organization",
+                "name": "AnimationMaker",
+                "url": "https://animationmaker.m0s.space"
+              }
             },
-            "description": toolInfo.desc,
-            "url": `https://animationmaker.m0s.space/effects/${type}`,
-            "publisher": {
-              "@type": "Organization",
-              "name": "AnimationMaker",
-              "url": "https://animationmaker.m0s.space"
+            {
+              "@context": "https://schema.org",
+              "@type": "HowTo",
+              "name": `How to Create a ${toolInfo.title1} ${toolInfo.title2} Video Online`,
+              "description": `Step-by-step instructions to create and export ${toolInfo.title1} ${toolInfo.title2} video animations in your browser.`,
+              "step": [
+                {
+                  "@type": "HowToStep",
+                  "name": "Configure text or media",
+                  "text": "Upload your media or enter your text in the configuration editor."
+                },
+                {
+                  "@type": "HowToStep",
+                  "name": "Adjust effect settings",
+                  "text": "Customize aspect ratio, resolution, speed, and thematic audio settings."
+                },
+                {
+                  "@type": "HowToStep",
+                  "name": "Export MP4 video",
+                  "text": "Click Generate to render the video in your browser and download the watermark-free MP4."
+                }
+              ]
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://animationmaker.m0s.space"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Tools",
+                  "item": "https://animationmaker.m0s.space/tools"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "name": `${toolInfo.title1} ${toolInfo.title2}`,
+                  "item": `https://animationmaker.m0s.space/effects/${type}`
+                }
+              ]
             }
-          })}
+          ])}
         </script>
       </Helmet>
 

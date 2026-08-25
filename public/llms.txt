@@ -1,0 +1,27 @@
+# Animation Maker
+
+> Animation Maker is a free, browser-based motion graphics and video editing studio for creating kinetic typography, text match cuts, document spotlights, typewriter effects, and retro video filters entirely on the client side with zero server uploads.
+
+## Core Tools & Features
+
+- [Text Match Cut](https://animationmaker.m0s.space/match-cut): Create kinetic typography videos where a target keyword stays stationary in the visual center while surrounding sentences rapidly transition on the beat.
+- [Tools Directory](https://animationmaker.m0s.space/tools): Complete suite of 18+ browser-based video effects.
+- [Typewriter Animation](https://animationmaker.m0s.space/effects/typewriter): Realistic kinetic typewriter text with synchronized mechanical audio clicks.
+- [Document Spotlight](https://animationmaker.m0s.space/effects/spotlight): Vox-style fluorescent highlighter on text, articles, and research documents.
+- [CRT Scanline](https://animationmaker.m0s.space/effects/scanline): Retro cathode-ray tube phosphor scanlines and curved glass distortion.
+- [VHS Tape Effect](https://animationmaker.m0s.space/effects/vhs-tape): Analog magnetic tape tracking distortion, chromatic aberration, and retro timestamps.
+- [Glitch Master](https://animationmaker.m0s.space/effects/glitch-master): RGB color displacement and digital compression artifacts.
+- [Ken Burns Zoom](https://animationmaker.m0s.space/effects/ken-burns): Smooth pan-and-zoom motion for documentary photos and artwork.
+- [AI Subject Tracking HUD](https://animationmaker.m0s.space/effects/tracking): Futuristic cyber surveillance tracking boxes and bounding target lock overlays.
+- [Paper Cutout Collage](https://animationmaker.m0s.space/effects/paper): MagnatesMedia-style torn paper textures and stop-motion animations.
+
+## Key Technical Specifications
+
+- **Client-Side Rendering**: 100% in-browser rendering via HTML5 Canvas 2D, Web Audio DSP, and WebAssembly FFmpeg (libx264).
+- **Privacy First**: Zero video or text uploads; all user media stays locally in device memory.
+- **Export Resolutions**: Standard HD (1280x720 / 720x1280) and Full HD 1080p in 16:9, 9:16 vertical, and 1:1 square aspect ratios.
+- **Audio Synthesis**: Procedural sound generation for clicks, whooshes, and tape noise using the Web Audio API.
+
+## Documentation & Architecture
+
+- [Technical Engineering Article](https://animationmaker.m0s.space/llms-full.txt): Complete architecture breakdown of the client-side rendering pipeline, coordinate mathematics, and WebAssembly optimizations.

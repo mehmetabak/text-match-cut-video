@@ -293,38 +293,83 @@ function MatchCutTool() {
         <meta name="description" content={lang === 'tr' ? 'Kelimelerinizle mükemmel senkronize olan dinamik Match Cut tipografi animasyonları ve video kesitleri oluşturun.' : 'Create dynamic match cut kinetic typography video animations synchronized with your chosen keywords in seconds.'} />
         <meta name="keywords" content="match cut video maker, kinetic typography, sync text video generator, dynamic text video, online video editor, animationmaker" />
         <link rel="canonical" href="https://animationmaker.m0s.space/match-cut" />
+        
+        {/* Multilingual Hreflang Tags */}
+        <link rel="alternate" hrefLang="x-default" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="en" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="tr" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="de" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="fr" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="es" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="zh" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="ar" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="ko" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="ja" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="id" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="th" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="hi" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="ru" href="https://animationmaker.m0s.space/match-cut" />
+        <link rel="alternate" hrefLang="pt" href="https://animationmaker.m0s.space/match-cut" />
+
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta property="og:title" content="Match Cut Video Maker | AnimationMaker" />
         <meta property="og:description" content="Create dynamic match cut kinetic typography animations in seconds." />
         <meta property="og:url" content="https://animationmaker.m0s.space/match-cut" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AnimationMaker" />
-        <meta property="og:image" content="https://animationmaker.m0s.space/logo.png" />
+        <meta property="og:image" content="https://animationmaker.m0s.space/og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Match Cut Video Maker | AnimationMaker" />
         <meta name="twitter:description" content="Create dynamic match cut typography video animations in seconds." />
-        <meta name="twitter:image" content="https://animationmaker.m0s.space/logo.png" />
+        <meta name="twitter:image" content="https://animationmaker.m0s.space/og-image.png" />
         <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            "name": "Match Cut Video Maker",
-            "applicationCategory": "MultimediaApplication",
-            "operatingSystem": "Web",
-            "offers": {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "USD"
+          {JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "Match Cut Video Maker",
+              "applicationCategory": "MultimediaApplication",
+              "operatingSystem": "Web, Browser",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              },
+              "description": "Create dynamic match cut typography video animations directly in your browser with zero server uploads.",
+              "url": "https://animationmaker.m0s.space/match-cut",
+              "publisher": {
+                "@type": "Organization",
+                "name": "AnimationMaker",
+                "url": "https://animationmaker.m0s.space"
+              }
             },
-            "description": "Create dynamic match cut typography video animations.",
-            "url": "https://animationmaker.m0s.space/match-cut",
-            "publisher": {
-              "@type": "Organization",
-              "name": "AnimationMaker",
-              "url": "https://animationmaker.m0s.space"
+            {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://animationmaker.m0s.space"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Tools",
+                  "item": "https://animationmaker.m0s.space/tools"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "name": "Text Match Cut",
+                  "item": "https://animationmaker.m0s.space/match-cut"
+                }
+              ]
             }
-          })}
+          ])}
         </script>
       </Helmet>
       <canvas ref={canvasRef} className="hidden"></canvas>

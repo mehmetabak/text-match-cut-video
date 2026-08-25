@@ -1240,85 +1240,86 @@ const Tools = () => {
     <div className="flex-1 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-12 pt-8 sm:pt-12 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-16 flex flex-col relative z-10 min-h-[calc(100vh-80px)]">
       <Helmet>
         <title>{lang === 'tr' ? 'Tüm Video Efekt Araçları | AnimationMaker' : 'All Video Effect Tools | AnimationMaker'}</title>
-        <meta name="description" content={lang === 'tr' ? 'Match Cut, Ken Burns, VHS Kaset, Glitch Master, Daktilo, Tarama Çizgisi, ASCII ve Yankı efektleri gibi tarayıcı tabanlı video animasyon araçlarımızı keşfedin.' : 'Explore our comprehensive browser-based video creation tools: Match Cut, Ken Burns, VHS Tape, Glitch Master, Typewriter, Scanline, ASCII, and Echo.'} />
-        <meta name="keywords" content="video effect suite, match cut, ken burns online, glitch master, typewriter effect, scanline crt, ascii video, echo video effect, animationmaker" />
+        <meta name="description" content={lang === 'tr' ? 'Match Cut, Ken Burns, VHS Kaset, Glitch Master, Daktilo, Tarama Çizgisi, Belge Vurgulama ve Takip efektleri gibi tarayıcı tabanlı video animasyon araçlarımızı keşfedin.' : 'Explore our comprehensive browser-based video creation tools: Match Cut, Ken Burns, VHS Tape, Glitch Master, Typewriter, Scanline, Document Spotlight, and Motion Tracking.'} />
+        <meta name="keywords" content="video effect suite, match cut, ken burns online, glitch master, typewriter effect, scanline crt, ascii video, spotlight highlighter, paper collage, motion tracking, animationmaker" />
         <link rel="canonical" href="https://animationmaker.m0s.space/tools" />
+        
+        {/* Multilingual Hreflang Tags */}
+        <link rel="alternate" hrefLang="x-default" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="en" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="tr" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="de" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="fr" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="es" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="zh" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="ar" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="ko" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="ja" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="id" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="th" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="hi" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="ru" href="https://animationmaker.m0s.space/tools" />
+        <link rel="alternate" hrefLang="pt" href="https://animationmaker.m0s.space/tools" />
+
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta property="og:title" content="All Video Effect Tools | AnimationMaker" />
-        <meta property="og:description" content="Discover powerful browser-based video animation tools." />
+        <meta property="og:description" content="Discover powerful browser-based video animation and motion graphics tools." />
         <meta property="og:url" content="https://animationmaker.m0s.space/tools" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AnimationMaker" />
-        <meta property="og:image" content="https://animationmaker.m0s.space/logo.png" />
+        <meta property="og:image" content="https://animationmaker.m0s.space/og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="All Video Effect Tools | AnimationMaker" />
-        <meta name="twitter:description" content="Discover powerful browser-based video animation tools." />
-        <meta name="twitter:image" content="https://animationmaker.m0s.space/logo.png" />
+        <meta name="twitter:description" content="Discover powerful browser-based video animation and motion graphics tools." />
+        <meta name="twitter:image" content="https://animationmaker.m0s.space/og-image.png" />
         <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            "name": "AnimationMaker Video Creation Tools",
-            "description": "A collection of online browser-based video effects and kinetic typography tools.",
-            "url": "https://animationmaker.m0s.space/tools",
-            "itemListElement": [
-              {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "Match Cut Effect",
-                "url": "https://animationmaker.m0s.space/match-cut"
-              },
-              {
-                "@type": "ListItem",
-                "position": 2,
-                "name": "Ken Burns Pro",
-                "url": "https://animationmaker.m0s.space/effects/ken-burns"
-              },
-              {
-                "@type": "ListItem",
-                "position": 3,
-                "name": "VHS Tape Effect",
-                "url": "https://animationmaker.m0s.space/effects/vhs-tape"
-              },
-              {
-                "@type": "ListItem",
-                "position": 4,
-                "name": "Glitch Master",
-                "url": "https://animationmaker.m0s.space/effects/glitch-master"
-              },
-              {
-                "@type": "ListItem",
-                "position": 5,
-                "name": "Typewriter Text",
-                "url": "https://animationmaker.m0s.space/effects/typewriter"
-              },
-              {
-                "@type": "ListItem",
-                "position": 6,
-                "name": "Scanline CRT",
-                "url": "https://animationmaker.m0s.space/effects/scanline"
-              },
-              {
-                "@type": "ListItem",
-                "position": 7,
-                "name": "ASCII Art Video",
-                "url": "https://animationmaker.m0s.space/effects/ascii"
-              },
-              {
-                "@type": "ListItem",
-                "position": 8,
-                "name": "Echo Video Trails",
-                "url": "https://animationmaker.m0s.space/effects/echo"
-              },
-              {
-                "@type": "ListItem",
-                "position": 9,
-                "name": "Google Search Animator",
-                "url": "https://animationmaker.m0s.space/effects/gsearch"
-              }
-            ]
-          })}
+          {JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "ItemList",
+              "name": "AnimationMaker Video Creation Tools",
+              "description": "A collection of online browser-based video effects and kinetic typography tools.",
+              "url": "https://animationmaker.m0s.space/tools",
+              "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "Text Match Cut", "url": "https://animationmaker.m0s.space/match-cut" },
+                { "@type": "ListItem", "position": 2, "name": "Ken Burns Zoom", "url": "https://animationmaker.m0s.space/effects/ken-burns" },
+                { "@type": "ListItem", "position": 3, "name": "VHS Tape Effect", "url": "https://animationmaker.m0s.space/effects/vhs-tape" },
+                { "@type": "ListItem", "position": 4, "name": "Glitch Master", "url": "https://animationmaker.m0s.space/effects/glitch-master" },
+                { "@type": "ListItem", "position": 5, "name": "Typewriter Text", "url": "https://animationmaker.m0s.space/effects/typewriter" },
+                { "@type": "ListItem", "position": 6, "name": "Scanline CRT", "url": "https://animationmaker.m0s.space/effects/scanline" },
+                { "@type": "ListItem", "position": 7, "name": "ASCII Art Video", "url": "https://animationmaker.m0s.space/effects/ascii" },
+                { "@type": "ListItem", "position": 8, "name": "Echo Video Trails", "url": "https://animationmaker.m0s.space/effects/echo" },
+                { "@type": "ListItem", "position": 9, "name": "Google Search Animator", "url": "https://animationmaker.m0s.space/effects/gsearch" },
+                { "@type": "ListItem", "position": 10, "name": "Document Spotlight Highlighter", "url": "https://animationmaker.m0s.space/effects/spotlight" },
+                { "@type": "ListItem", "position": 11, "name": "Formula & Math Particle Animator", "url": "https://animationmaker.m0s.space/effects/formula" },
+                { "@type": "ListItem", "position": 12, "name": "Timeline & History Animator", "url": "https://animationmaker.m0s.space/effects/timeline" },
+                { "@type": "ListItem", "position": 13, "name": "Tree Branching Diagram", "url": "https://animationmaker.m0s.space/effects/tree" },
+                { "@type": "ListItem", "position": 14, "name": "Data Counter & Odometer", "url": "https://animationmaker.m0s.space/effects/counter" },
+                { "@type": "ListItem", "position": 15, "name": "Paper Cutout Collage", "url": "https://animationmaker.m0s.space/effects/paper" },
+                { "@type": "ListItem", "position": 16, "name": "AI Target Tracking HUD", "url": "https://animationmaker.m0s.space/effects/tracking" }
+              ]
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://animationmaker.m0s.space"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Tools",
+                  "item": "https://animationmaker.m0s.space/tools"
+                }
+              ]
+            }
+          ])}
         </script>
       </Helmet>
 

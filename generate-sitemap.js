@@ -36,6 +36,7 @@ const pages = [
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
@@ -44,6 +45,10 @@ ${pages.map(p => `  <url>
     <lastmod>${today}</lastmod>
     <changefreq>${p.changefreq}</changefreq>
     <priority>${p.priority}</priority>
+    <image:image>
+      <image:loc>${BASE_URL}/og-image.png</image:loc>
+      <image:title>AnimationMaker - Kinetic Typography and Video Effects</image:title>
+    </image:image>
   </url>`).join('\n')}
 </urlset>`
 

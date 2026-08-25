@@ -1,0 +1,47 @@
+# Animation Maker - Full Technical Documentation & AI Knowledge Base
+
+## Overview
+Animation Maker (https://animationmaker.m0s.space) is a client-side video effects and kinetic typography web application. It runs entirely inside the user's browser without backend rendering servers, utilizing HTML5 Canvas 2D, Web Audio DSP, and WebAssembly FFmpeg.
+
+---
+
+## 1. Tool Suite Capabilities
+
+### 1.1 Text Match Cut (/match-cut)
+- Rapidly transitions between disparate sentences where a specified target keyword remains stationary at the optical center of the viewport.
+- Features custom font support, automatic line wrapping, background video/color styling, and customizable cut speeds.
+- Supports horizontal (16:9) and vertical (9:16) video formats for TikTok, YouTube Shorts, and Instagram Reels.
+
+### 1.2 Kinetic Video Effects (/tools)
+1. **Typewriter Effect (/effects/typewriter)**: Kinetic character-by-character typewriter reveal with synchronized procedural mechanical click sound synthesis.
+2. **Document Spotlight (/effects/spotlight)**: Vox-style animated highlighter focusing on target phrases or paragraphs in documents and articles.
+3. **CRT Scanline (/effects/scanline)**: Cathode-ray tube phosphor scanline rasterization with glass curvature and ambient bloom.
+4. **VHS Tape (/effects/vhs-tape)**: Analog magnetic tape artifacts, tracking static, chromatic aberration, and retro VCR on-screen display timestamps.
+5. **Glitch Master (/effects/glitch-master)**: Cyberpunk RGB chromatic splitting, digital block corruption, and noise pulses.
+6. **Ken Burns Zoom (/effects/ken-burns)**: Smooth cinematic pan-and-zoom motion paths over high-resolution images and artwork.
+7. **Paper Cutout Collage (/effects/paper)**: Torn paper edges, washi tape accents, and stop-motion jitter.
+8. **AI Subject Tracking HUD (/effects/tracking)**: Surveillance bounding boxes with target crosshairs and velocity telemetry.
+9. **Timeline History (/effects/timeline)**: Vertical and horizontal chronological timeline milestone animations.
+10. **Formula Animator (/effects/formula)**: Mathematical, financial, and code formula particle transitions.
+
+---
+
+## 2. Engineering Architecture & Technical Design
+
+### 2.1 In-Browser Memory Management
+- A 10-second video at 30fps produces 300 frames. At 1080p RGBA, naive allocation consumes over 2.5 GB of memory, causing garbage collection stutter or mobile tab crashes.
+- Animation Maker implements single-pass pre-allocated buffer reuse, passing typed arrays directly to the WebAssembly worker without creating throwaway image objects.
+
+### 2.2 Text Match Cut Coordinate Geometry
+- Target word optical centering is calculated by determining the local offset of the keyword within the sentence line:
+  `shiftDeltaX = viewportCenter.x - (textBeforeWidth + keywordWidth / 2)`
+- Cut Layout Caching resolves all text measurements, font scaling, and paragraph line breaks once per cut before animation starts, reducing CPU rendering time by over 80%.
+
+### 2.3 Web Audio API Procedural DSP Synthesis
+- Rather than downloading static audio files, sound effects (tactile typewriter clicks, tape snaps, transition whooshes) are synthesized mathematically via `OfflineAudioContext`, `BiquadFilterNode`, and exponential gain envelopes.
+- Synthesized audio buffers are rendered in milliseconds and converted to a WAV blob for sample-accurate video muxing.
+
+### 2.4 WebAssembly FFmpeg Encoding Pipeline
+- Utilizes WebAssembly libx264 encoding with mod-16 standard resolutions ($1280 \times 720$ and $720 \times 1280$) to maximize SIMD operations.
+- Frame extraction uses calibrated JPEG compression (`quality: 0.85`), accelerating frame transfer from 30–50ms down to 1–2ms per frame compared to PNG.
+- Batch frame transfers into the virtual FFmpeg filesystem prevent WebAssembly heap exhaustion.

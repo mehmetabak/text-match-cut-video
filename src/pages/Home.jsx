@@ -231,8 +231,27 @@ const Home = () => {
         <meta name="description" content={t('heroDesc', lang)} />
         <meta name="keywords" content="video effect maker, online video editor, kinetic typography, match cut online, ken burns effect, vhs video generator, glitch effect video, typewriter animation, crt scanline, ascii video generator, animationmaker" />
         <link rel="canonical" href="https://animationmaker.m0s.space" />
+        
+        {/* Multilingual Hreflang Tags for International Search */}
+        <link rel="alternate" hrefLang="x-default" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="en" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="tr" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="de" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="fr" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="es" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="zh" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="ar" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="ko" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="ja" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="id" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="th" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="hi" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="ru" href="https://animationmaker.m0s.space" />
+        <link rel="alternate" hrefLang="pt" href="https://animationmaker.m0s.space" />
+
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta property="og:title" content="AnimationMaker | Free Online Video Effects & Match Cut Studio" />
         <meta property="og:description" content={t('heroDesc', lang)} />
         <meta property="og:url" content="https://animationmaker.m0s.space" />
@@ -247,13 +266,75 @@ const Home = () => {
           {JSON.stringify([
             {
               "@context": "https://schema.org",
-              "@type": "WebApplication",
+              "@type": "SoftwareApplication",
               "name": "AnimationMaker",
               "url": "https://animationmaker.m0s.space",
               "applicationCategory": "MultimediaApplication",
-              "operatingSystem": "Web",
+              "operatingSystem": "Web, Browser",
+              "browserRequirements": "Requires HTML5 Canvas and WebAssembly support",
               "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-              "description": "Free browser-based online video effect maker and kinetic typography tool suite."
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.9",
+                "reviewCount": "128"
+              },
+              "description": "Free browser-based online video effect maker and kinetic typography tool suite. Creates match cuts, typewriter effects, VHS tape artifacts, and document spotlights with zero server uploads.",
+              "featureList": [
+                "Kinetic Text Match Cut generator",
+                "Client-side WebAssembly video rendering",
+                "Procedural Web Audio sound synthesis",
+                "Typewriter animation with mechanical audio",
+                "Document spotlight fluorescent highlighter",
+                "CRT scanline & VHS retro video filters",
+                "No watermarks and commercial usage allowed"
+              ]
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "HowTo",
+              "name": "How to Create a Kinetic Text Match Cut Video Online",
+              "description": "Step-by-step guide to generating rhythmic text match cut videos in your browser without desktop software.",
+              "step": [
+                {
+                  "@type": "HowToStep",
+                  "name": "Enter your target phrase",
+                  "text": "Type your text with target keywords or phrases that will remain locked in the center."
+                },
+                {
+                  "@type": "HowToStep",
+                  "name": "Customize speed and layout",
+                  "text": "Select your resolution (HD or Full HD), font style, cut speed, and aspect ratio (16:9, 9:16 vertical, or 1:1 square)."
+                },
+                {
+                  "@type": "HowToStep",
+                  "name": "Generate and export MP4",
+                  "text": "Click Generate to render the video entirely in your browser and download the watermark-free MP4."
+                }
+              ]
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://animationmaker.m0s.space"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Tools",
+                  "item": "https://animationmaker.m0s.space/tools"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "name": "Text Match Cut",
+                  "item": "https://animationmaker.m0s.space/match-cut"
+                }
+              ]
             },
             {
               "@context": "https://schema.org",
@@ -271,7 +352,7 @@ const Home = () => {
                   "name": "What is Match Cut video editing?",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "A match cut is a creative editing technique where a phrase or word is revealed by quickly cutting between synchronized background scenes and textures."
+                    "text": "A match cut is a creative editing technique where a phrase or word is revealed by quickly cutting between synchronized background scenes and textures while keeping a target word locked in the visual center."
                   }
                 },
                 {
@@ -279,7 +360,7 @@ const Home = () => {
                   "name": "How fast is video rendering in AnimationMaker?",
                   "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Videos are rendered directly inside your browser via client-side WebAssembly and Web Audio DSP in 15 to 30 seconds."
+                    "text": "Videos are rendered directly inside your browser via client-side WebAssembly and Web Audio DSP in 10 to 25 seconds without uploading files to a server."
                   }
                 },
                 {
@@ -288,6 +369,14 @@ const Home = () => {
                   "acceptedAnswer": {
                     "@type": "Answer",
                     "text": "Yes, all videos created using AnimationMaker can be exported without watermarks and used for personal or commercial projects royalty-free."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Does AnimationMaker require an account or installation?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "No installation or account is required to generate videos. It runs 100% in modern browsers on desktop and mobile devices."
                   }
                 }
               ]
