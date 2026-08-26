@@ -14,6 +14,7 @@ const Layout = () => {
   const toast = useToastStore((state) => state.toast);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const [isPointsDropdownOpen, setIsPointsDropdownOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -308,8 +309,15 @@ const Layout = () => {
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center gap-2 px-2 py-1 bg-zinc-900/50 hover:bg-zinc-800 rounded-full border border-zinc-800 transition-colors cursor-pointer"
                   >
-                    {user.photoURL ? (
-                      <img src={user.photoURL} referrerPolicy="no-referrer" alt="Profile" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full" />
+                    {user.photoURL && !avatarError ? (
+                      <img
+                        src={user.photoURL}
+                        referrerPolicy="no-referrer"
+                        crossOrigin="anonymous"
+                        onError={() => setAvatarError(true)}
+                        alt="Profile"
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
+                      />
                     ) : (
                       <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent-gold text-black flex items-center justify-center font-bold text-xs">
                         {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}

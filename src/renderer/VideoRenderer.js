@@ -4,6 +4,35 @@ import { applyCameraShake, drawVignette } from './effects';
 import { AudioGenerator } from '../lib/audioUtils';
 import { createVideoFromFrames } from '../lib/ffmpeg';
 
+// Feature detection for native CanvasRenderingContext2D filter support (Safari / iPad ignores ctx.filter)
+function checkCanvasFilterSupport() {
+    if (typeof document === 'undefined') return false;
+    try {
+        const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+            (/^((?!chrome|android).)*safari/i.test(navigator.userAgent));
+        
+        const testC = document.createElement('canvas');
+        testC.width = 8;
+        testC.height = 8;
+        const testCtx = testC.getContext('2d');
+        if (!testCtx || typeof testCtx.filter === 'undefined') return false;
+        
+        testCtx.fillStyle = '#000000';
+        testCtx.fillRect(0, 0, 8, 8);
+        testCtx.filter = 'blur(4px)';
+        testCtx.fillStyle = '#ffffff';
+        testCtx.fillRect(3, 3, 2, 2);
+        
+        const pixel = testCtx.getImageData(0, 0, 1, 1).data;
+        const rendersBlur = pixel[0] > 0;
+        
+        return rendersBlur && !isApple;
+    } catch (e) {
+        return false;
+    }
+}
+
 export class VideoRenderer {
     constructor(canvas, settings, textData, onProgress) {
         this.canvas = canvas;
@@ -24,6 +53,20 @@ export class VideoRenderer {
         this.canvas.width = this.resolution.width;
         this.canvas.height = this.resolution.height;
 
+        // Detect if native ctx.filter is supported or if iPad/Safari fallback is required
+        this.isFilterSupported = checkCanvasFilterSupport();
+
+        // Hardware-accelerated offscreen blur buffers for Safari / iPadOS
+        if (!this.isFilterSupported && typeof document !== 'undefined') {
+            this.bgCanvas = document.createElement('canvas');
+            this.bgCanvas.width = this.resolution.width;
+            this.bgCanvas.height = this.resolution.height;
+            this.bgCtx = this.bgCanvas.getContext('2d');
+
+            this.blurDownCanvas = document.createElement('canvas');
+            this.blurDownCtx = this.blurDownCanvas.getContext('2d');
+        }
+
         // Pre-create vignette gradient for high-performance frame drawing
         const maxRadius = Math.max(this.resolution.width, this.resolution.height) * 0.75;
         const minRadius = Math.min(this.resolution.width, this.resolution.height) * 0.25;
@@ -34,6 +77,28 @@ export class VideoRenderer {
         this.vignetteGradient.addColorStop(0, 'rgba(0,0,0,0)');
         this.vignetteGradient.addColorStop(0.5, 'rgba(0,0,0,0.135)');
         this.vignetteGradient.addColorStop(1, 'rgba(0,0,0,0.45)');
+    }
+
+    applyPassageBlur(blurPx) {
+        if (!this.isFilterSupported && this.bgCanvas && this.blurDownCanvas) {
+            const { width, height } = this.resolution;
+            const factor = Math.max(2, Math.min(12, Math.round(blurPx * 0.9)));
+            const downW = Math.max(16, Math.floor(width / factor));
+            const downH = Math.max(16, Math.floor(height / factor));
+
+            this.blurDownCanvas.width = downW;
+            this.blurDownCanvas.height = downH;
+            this.blurDownCtx.imageSmoothingEnabled = true;
+            this.blurDownCtx.imageSmoothingQuality = 'medium';
+            this.blurDownCtx.clearRect(0, 0, downW, downH);
+            this.blurDownCtx.drawImage(this.bgCanvas, 0, 0, downW, downH);
+
+            this.ctx.imageSmoothingEnabled = true;
+            this.ctx.imageSmoothingQuality = 'medium';
+            this.ctx.drawImage(this.blurDownCanvas, 0, 0, width, height);
+
+            this.bgCtx.clearRect(0, 0, width, height);
+        }
     }
 
     _shuffleArray(array) {
@@ -91,36 +156,45 @@ export class VideoRenderer {
         this.ctx.fillRect(0, 0, width, height);
         applyCameraShake(this.ctx, 3);
 
-        this.ctx.filter = `blur(${blurAmount}px)`;
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillStyle = this.settings.darkTheme ? '#ccc' : '#333';
-        this.ctx.textAlign = 'left';
+        const targetCtx = (!this.isFilterSupported && this.bgCtx) ? this.bgCtx : this.ctx;
+        targetCtx.save();
+        if (this.isFilterSupported) {
+            targetCtx.filter = `blur(${blurAmount}px)`;
+        }
+        targetCtx.textBaseline = 'middle';
+        targetCtx.fillStyle = this.settings.darkTheme ? '#ccc' : '#333';
+        targetCtx.textAlign = 'left';
 
         const safeLineText = lineText || '';
         const phraseStartIndex = safeLineText.toLowerCase().indexOf(phrase.toLowerCase());
-        this.ctx.font = `bold ${FONT_SIZE}px ${this.settings.fontFamily}`;
+        targetCtx.font = `bold ${FONT_SIZE}px ${this.settings.fontFamily}`;
         const textBeforePhrase = safeLineText.substring(0, Math.max(0, phraseStartIndex));
-        const prePhraseWidth = this.ctx.measureText(textBeforePhrase).width;
-        const phraseWidth = this.ctx.measureText(phrase).width;
+        const prePhraseWidth = targetCtx.measureText(textBeforePhrase).width;
+        const phraseWidth = targetCtx.measureText(phrase).width;
 
         const horizontalOffset = width / 2 - (prePhraseWidth + phraseWidth / 2);
         const verticalOffset = height / 2 - (lineIndex * LINE_HEIGHT);
 
         if (title) {
-            this.ctx.font = `bold ${TITLE_FONT_SIZE}px ${this.settings.fontFamily}`;
+            targetCtx.font = `bold ${TITLE_FONT_SIZE}px ${this.settings.fontFamily}`;
             const titleY = verticalOffset - LINE_HEIGHT * 2;
-            this.ctx.fillText(title, horizontalOffset, titleY);
-            const titleWidth = this.ctx.measureText(title).width;
-            this.ctx.fillRect(horizontalOffset, titleY + TITLE_FONT_SIZE / 2 + 5, titleWidth, 2);
+            targetCtx.fillText(title, horizontalOffset, titleY);
+            const titleWidth = targetCtx.measureText(title).width;
+            targetCtx.fillRect(horizontalOffset, titleY + TITLE_FONT_SIZE / 2 + 5, titleWidth, 2);
         }
 
-        this.ctx.font = `bold ${FONT_SIZE}px ${this.settings.fontFamily}`;
+        targetCtx.font = `bold ${FONT_SIZE}px ${this.settings.fontFamily}`;
         lines.forEach((line, i) => {
             const y = verticalOffset + i * LINE_HEIGHT;
-            this.ctx.fillText(line, horizontalOffset, y);
+            targetCtx.fillText(line, horizontalOffset, y);
         });
 
-        this.ctx.filter = 'none';
+        targetCtx.restore();
+        if (this.isFilterSupported) {
+            this.ctx.filter = 'none';
+        } else {
+            this.applyPassageBlur(blurAmount);
+        }
 
         const phraseY = height / 2;
         const phraseX = width / 2;
@@ -300,9 +374,12 @@ export class VideoRenderer {
         } = l;
 
         // PASAJ 1: BULANIK ARKA PLAN & GAZETE ÖĞELERİ
-        this.ctx.save();
-        this.ctx.filter = `blur(${Math.max(2, blurAmount + 3.5)}px)`;
-        this.ctx.textBaseline = 'middle';
+        const targetCtx = (!this.isFilterSupported && this.bgCtx) ? this.bgCtx : this.ctx;
+        targetCtx.save();
+        if (this.isFilterSupported) {
+            targetCtx.filter = `blur(${Math.max(2, blurAmount + 3.5)}px)`;
+        }
+        targetCtx.textBaseline = 'middle';
 
         if (placementType === 'HEADLINE' || placementType === 'HEADLINE_MACRO') {
             const headY = targetLineY;
@@ -312,28 +389,28 @@ export class VideoRenderer {
             const bylineY = headY + (headlineSize * (isVertical ? 1.45 : 1.25));
 
             // 1. Gazete Başlığı (Masthead)
-            this.ctx.font = mastheadFont;
-            this.ctx.fillStyle = textColor;
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText(paperName || 'THE DAILY NONSENSE', screenCenterX, mastheadY);
+            targetCtx.font = mastheadFont;
+            targetCtx.fillStyle = textColor;
+            targetCtx.textAlign = 'center';
+            targetCtx.fillText(paperName || 'THE DAILY NONSENSE', screenCenterX, mastheadY);
 
             // Tarih Satırı
-            this.ctx.font = dateFont;
-            this.ctx.fillStyle = mutedColor;
-            this.ctx.fillText(dateLine || 'FRI · JUN 10 2005 · VOL.192 NO.91', screenCenterX, dateY);
+            targetCtx.font = dateFont;
+            targetCtx.fillStyle = mutedColor;
+            targetCtx.fillText(dateLine || 'FRI · JUN 10 2005 · VOL.192 NO.91', screenCenterX, dateY);
 
             // Ayırıcı Çizgiler
-            this.ctx.strokeStyle = ruleColor;
-            this.ctx.lineWidth = 1.5;
-            this.ctx.beginPath();
-            this.ctx.moveTo(leftAlignX, dateY + mastheadSize * 0.42);
-            this.ctx.lineTo(leftAlignX + contentWidth, dateY + mastheadSize * 0.42);
-            this.ctx.stroke();
+            targetCtx.strokeStyle = ruleColor;
+            targetCtx.lineWidth = 1.5;
+            targetCtx.beginPath();
+            targetCtx.moveTo(leftAlignX, dateY + mastheadSize * 0.42);
+            targetCtx.lineTo(leftAlignX + contentWidth, dateY + mastheadSize * 0.42);
+            targetCtx.stroke();
 
             // Üst Dolgu Paragrafları
-            this.ctx.font = bodyFont;
-            this.ctx.fillStyle = mutedColor;
-            this.ctx.textAlign = 'left';
+            targetCtx.font = bodyFont;
+            targetCtx.fillStyle = mutedColor;
+            targetCtx.textAlign = 'left';
             const availableTopSlots = Math.floor((mastheadY - mastheadSize * 1.1 + 40) / (bodyFontSize * lineSpacing));
             const renderTopCount = Math.min(topLines.length, Math.max(1, availableTopSlots));
 
@@ -341,31 +418,31 @@ export class VideoRenderer {
                 const lineIdx = topLines.length - 1 - i;
                 const y = mastheadY - (mastheadSize * 1.1) - (i * bodyFontSize * lineSpacing);
                 if (y > -40) {
-                    this.ctx.fillText(topLines[lineIdx], leftAlignX, y);
+                    targetCtx.fillText(topLines[lineIdx], leftAlignX, y);
                 }
             }
 
             // Başlığın hedef kelime DIŞINDA kalan kısımları (Bulanık)
-            this.ctx.font = targetFont;
-            this.ctx.fillStyle = textColor;
-            this.ctx.textAlign = 'left';
-            this.ctx.fillText(textBefore, targetLineStartX, targetLineY);
-            this.ctx.fillText(textAfter, targetLineStartX + beforeWidth + phraseWidth, targetLineY);
+            targetCtx.font = targetFont;
+            targetCtx.fillStyle = textColor;
+            targetCtx.textAlign = 'left';
+            targetCtx.fillText(textBefore, targetLineStartX, targetLineY);
+            targetCtx.fillText(textAfter, targetLineStartX + beforeWidth + phraseWidth, targetLineY);
 
             // Alt Başlık (Byline)
-            this.ctx.font = bylineFont;
-            this.ctx.fillStyle = mutedColor;
-            this.ctx.fillText(byline || '— Special Reports Desk', leftAlignX, bylineY);
+            targetCtx.font = bylineFont;
+            targetCtx.fillStyle = mutedColor;
+            targetCtx.fillText(byline || '— Special Reports Desk', leftAlignX, bylineY);
 
             // Alt Dolgu Paragrafları
-            this.ctx.font = bodyFont;
-            this.ctx.fillStyle = mutedColor;
+            targetCtx.font = bodyFont;
+            targetCtx.fillStyle = mutedColor;
             const bottomStartY = bylineY + (bylineSize * (isVertical ? 2.0 : 1.7));
 
             for (let i = 0; i < bottomLines.length; i++) {
                 const y = bottomStartY + (i * bodyFontSize * lineSpacing);
                 if (y > height + 40) break;
-                this.ctx.fillText(bottomLines[i], leftAlignX, y);
+                targetCtx.fillText(bottomLines[i], leftAlignX, y);
             }
 
         } else if (placementType === 'PARAGRAPH') {
@@ -373,39 +450,39 @@ export class VideoRenderer {
             const headY = lineY - (headlineSize * (isVertical ? 1.8 : 1.6));
             const mastheadY = headY - (mastheadSize * (isVertical ? 1.8 : 1.5));
 
-            this.ctx.font = mastheadFont;
-            this.ctx.fillStyle = textColor;
-            this.ctx.textAlign = 'center';
+            targetCtx.font = mastheadFont;
+            targetCtx.fillStyle = textColor;
+            targetCtx.textAlign = 'center';
             if (mastheadY > -100) {
-                this.ctx.fillText(paperName || 'THE REGIONAL MURMUR', screenCenterX, mastheadY);
+                targetCtx.fillText(paperName || 'THE REGIONAL MURMUR', screenCenterX, mastheadY);
             }
 
-            this.ctx.font = headlineFont;
-            this.ctx.fillStyle = textColor;
-            this.ctx.textAlign = 'center';
+            targetCtx.font = headlineFont;
+            targetCtx.fillStyle = textColor;
+            targetCtx.textAlign = 'center';
             if (headY > -100) {
-                this.ctx.fillText(headline || 'Celebrity apologizes to everyone', screenCenterX, headY);
+                targetCtx.fillText(headline || 'Celebrity apologizes to everyone', screenCenterX, headY);
             }
 
-            this.ctx.font = targetFont;
-            this.ctx.fillStyle = mutedColor;
-            this.ctx.textAlign = 'left';
-            this.ctx.fillText(textBefore, targetLineStartX, targetLineY);
-            this.ctx.fillText(textAfter, targetLineStartX + beforeWidth + phraseWidth, targetLineY);
+            targetCtx.font = targetFont;
+            targetCtx.fillStyle = mutedColor;
+            targetCtx.textAlign = 'left';
+            targetCtx.fillText(textBefore, targetLineStartX, targetLineY);
+            targetCtx.fillText(textAfter, targetLineStartX + beforeWidth + phraseWidth, targetLineY);
 
-            this.ctx.font = bodyFont;
-            this.ctx.fillStyle = mutedColor;
+            targetCtx.font = bodyFont;
+            targetCtx.fillStyle = mutedColor;
             for (let i = 0; i < topLines.length; i++) {
                 const y = lineY - ((i + 1) * bodyFontSize * lineSpacing);
                 if (y < -40) break;
                 if (y > headY - headlineSize * 0.4 && y < headY + headlineSize * 0.4) continue;
-                this.ctx.fillText(topLines[topLines.length - 1 - i], leftAlignX, y);
+                targetCtx.fillText(topLines[topLines.length - 1 - i], leftAlignX, y);
             }
 
             for (let i = 0; i < bottomLines.length; i++) {
                 const y = lineY + ((i + 1) * bodyFontSize * lineSpacing);
                 if (y > height + 40) break;
-                this.ctx.fillText(bottomLines[i], leftAlignX, y);
+                targetCtx.fillText(bottomLines[i], leftAlignX, y);
             }
 
         } else if (placementType === 'BYLINE') {
@@ -413,36 +490,43 @@ export class VideoRenderer {
             const headY = bylineY - (headlineSize * (isVertical ? 1.6 : 1.4));
             const mastheadY = headY - (mastheadSize * (isVertical ? 2.0 : 1.7));
 
-            this.ctx.font = mastheadFont;
-            this.ctx.fillStyle = textColor;
-            this.ctx.textAlign = 'center';
+            targetCtx.font = mastheadFont;
+            targetCtx.fillStyle = textColor;
+            targetCtx.textAlign = 'center';
             if (mastheadY > -100) {
-                this.ctx.fillText(paperName || 'SAN ANDREAS CHRONICLE', screenCenterX, mastheadY);
+                targetCtx.fillText(paperName || 'SAN ANDREAS CHRONICLE', screenCenterX, mastheadY);
             }
 
-            this.ctx.font = headlineFont;
-            this.ctx.fillStyle = textColor;
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText(headline || 'Investigation continues across region', screenCenterX, headY);
+            targetCtx.font = headlineFont;
+            targetCtx.fillStyle = textColor;
+            targetCtx.textAlign = 'center';
+            if (headY > -100) {
+                targetCtx.fillText(headline || 'Investigation continues across region', screenCenterX, headY);
+            }
 
-            this.ctx.font = targetFont;
-            this.ctx.fillStyle = mutedColor;
-            this.ctx.textAlign = 'left';
-            this.ctx.fillText(textBefore, targetLineStartX, targetLineY);
-            this.ctx.fillText(textAfter, targetLineStartX + beforeWidth + phraseWidth, targetLineY);
+            targetCtx.font = targetFont;
+            targetCtx.fillStyle = mutedColor;
+            targetCtx.textAlign = 'left';
+            targetCtx.fillText(textBefore, targetLineStartX, targetLineY);
+            targetCtx.fillText(textAfter, targetLineStartX + beforeWidth + phraseWidth, targetLineY);
 
-            this.ctx.font = bodyFont;
-            this.ctx.fillStyle = mutedColor;
+            targetCtx.font = bodyFont;
+            targetCtx.fillStyle = mutedColor;
             const bottomStartY = bylineY + (bylineSize * (isVertical ? 1.8 : 1.5));
 
             for (let i = 0; i < bottomLines.length; i++) {
                 const y = bottomStartY + (i * bodyFontSize * lineSpacing);
                 if (y > height + 40) break;
-                this.ctx.fillText(bottomLines[i], leftAlignX, y);
+                targetCtx.fillText(bottomLines[i], leftAlignX, y);
             }
         }
 
-        this.ctx.restore();
+        targetCtx.restore();
+        if (this.isFilterSupported) {
+            this.ctx.filter = 'none';
+        } else {
+            this.applyPassageBlur(Math.max(2, blurAmount + 3.5));
+        }
 
         // PASAJ 2: KESKİN & VURGULU HEDEF KELİME
         this.ctx.save();
