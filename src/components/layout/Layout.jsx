@@ -14,7 +14,6 @@ const Layout = () => {
   const toast = useToastStore((state) => state.toast);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [avatarError, setAvatarError] = useState(false);
   const [isPointsDropdownOpen, setIsPointsDropdownOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -309,20 +308,26 @@ const Layout = () => {
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center gap-2 px-2 py-1 bg-zinc-900/50 hover:bg-zinc-800 rounded-full border border-zinc-800 transition-colors cursor-pointer"
                   >
-                    {user.photoURL && !avatarError ? (
+                    {user.photoURL ? (
                       <img
                         src={user.photoURL}
                         referrerPolicy="no-referrer"
-                        crossOrigin="anonymous"
-                        onError={() => setAvatarError(true)}
                         alt="Profile"
                         className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          if (e.currentTarget.nextElementSibling) {
+                            e.currentTarget.nextElementSibling.style.display = 'flex';
+                          }
+                        }}
                       />
-                    ) : (
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent-gold text-black flex items-center justify-center font-bold text-xs">
-                        {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
-                      </div>
-                    )}
+                    ) : null}
+                    <div
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent-gold text-black flex items-center justify-center font-bold text-xs"
+                      style={{ display: user.photoURL ? 'none' : 'flex' }}
+                    >
+                      {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
+                    </div>
                     <span className="text-sm font-medium hidden md:block max-w-[100px] truncate">{user.displayName || user.email?.split('@')[0]}</span>
                   </button>
 

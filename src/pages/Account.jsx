@@ -33,7 +33,6 @@ const Account = () => {
 
   const [isVerifyingCheckout, setIsVerifyingCheckout] = useState(false);
   const [checkoutVerified, setCheckoutVerified] = useState(false);
-  const [avatarError, setAvatarError] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -214,22 +213,28 @@ const Account = () => {
                 <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
                   <div className="relative group">
                     <div className="absolute inset-0 bg-accent-gold/20 rounded-full blur-xl group-hover:bg-accent-gold/30 transition-all"></div>
-                    {user.photoURL && !avatarError ? (
+                    {user.photoURL ? (
                       <img
                         width="112"
                         height="112"
                         src={user.photoURL}
                         referrerPolicy="no-referrer"
-                        crossOrigin="anonymous"
-                        onError={() => setAvatarError(true)}
                         alt="Profile"
                         className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-zinc-700/50 shadow-2xl relative z-10 object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          if (e.currentTarget.nextElementSibling) {
+                            e.currentTarget.nextElementSibling.style.display = 'flex';
+                          }
+                        }}
                       />
-                    ) : (
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#F5B301] to-[#FF9D00] text-bg-base font-black text-4xl flex items-center justify-center border-2 border-zinc-700/50 shadow-2xl relative z-10">
-                        {user.displayName ? user.displayName.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : 'U')}
-                      </div>
-                    )}
+                    ) : null}
+                    <div
+                      className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-[#F5B301] to-[#FF9D00] text-bg-base font-black text-4xl flex items-center justify-center border-2 border-zinc-700/50 shadow-2xl relative z-10"
+                      style={{ display: user.photoURL ? 'none' : 'flex' }}
+                    >
+                      {user.displayName ? user.displayName.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : 'U')}
+                    </div>
                   </div>
                   
                   <div className="flex flex-col pt-2">

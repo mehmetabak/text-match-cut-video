@@ -44,11 +44,15 @@ export const useAuthStore = create((set, get) => ({
       const userRef = doc(db, 'users', authUser.uid);
       const userSnap = await getDoc(userRef);
 
+      const googlePhotoURL = authUser.photoURL || 
+        authUser.providerData?.find(p => p?.photoURL)?.photoURL || 
+        null;
+
       let userData = {
         uid: authUser.uid,
         email: authUser.email,
         displayName: authUser.displayName,
-        photoURL: authUser.photoURL,
+        photoURL: googlePhotoURL,
         subscriptionPlan: 'free',
         adRewardPoints: 0,
         adRewardsToday: 0,
@@ -65,7 +69,7 @@ export const useAuthStore = create((set, get) => ({
         const updates = { 
           lastLoginAt: serverTimestamp(),
           displayName: authUser.displayName || null,
-          photoURL: authUser.photoURL || null
+          photoURL: googlePhotoURL || userSnap.data()?.photoURL || null
         };
         await setDoc(userRef, updates, { merge: true });
         // Veritabanındaki eski veriyi, güncel Google verisiyle birleştir
@@ -89,12 +93,15 @@ export const useAuthStore = create((set, get) => ({
 
     } catch (error) {
       console.warn("Kullanıcı verisi alınırken/yazılırken hata (offline fallback):", error);
+      const fallbackPhotoURL = authUser.photoURL || 
+        authUser.providerData?.find(p => p?.photoURL)?.photoURL || 
+        null;
       set({ 
         user: {
           uid: authUser.uid,
           email: authUser.email,
           displayName: authUser.displayName,
-          photoURL: authUser.photoURL,
+          photoURL: fallbackPhotoURL,
           subscriptionPlan: 'free',
           adRewardPoints: 0,
         }, 
