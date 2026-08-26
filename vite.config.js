@@ -51,6 +51,9 @@ export default defineConfig({
     }
   },
   server: {
+    watch: {
+      ignored: ['**/dist/**', '**/dist-server/**']
+    },
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'credentialless'

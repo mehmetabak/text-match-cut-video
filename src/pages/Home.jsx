@@ -110,7 +110,7 @@ const BentoCard = ({ num, title, desc, icon, fullWidth, delay }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.4, delay }}
-      className={`group flex flex-col md:flex-row items-start gap-4 p-6 md:p-8 rounded-2xl bg-surface/40 border border-border-color hover:border-[#E5FF00] hover:bg-surface/80 hover:shadow-[0_0_30px_rgba(229,255,0,0.05)] transition-all duration-300 ${fullWidth ? 'md:col-span-2' : ''}`}
+      className={`group flex flex-col md:flex-row items-start gap-4 p-6 md:p-8 rounded-2xl bg-surface/40 border border-border-color hover:border-[#E5FF00] hover:bg-surface/80 hover:shadow-[0_0_30px_rgba(229,255,0,0.05)] transition-[border-color,background-color,box-shadow] duration-200 gpu-layer contain-paint ${fullWidth ? 'md:col-span-2' : ''}`}
     >
       <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-xl border border-border-color bg-bg-base flex items-center justify-center text-[#E5FF00] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 shadow-md">
         {icon}
@@ -160,7 +160,7 @@ const ToolCard = ({ tool, user, lang, onNavigate }) => {
     <Link
       to={tool.link}
       onClick={handleClick}
-      className={`group relative overflow-hidden rounded-2xl border ${tool.border} bg-surface p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col items-center text-center`}
+      className={`group relative overflow-hidden rounded-2xl border ${tool.border} bg-surface p-8 transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-2xl flex flex-col items-center text-center gpu-layer contain-paint`}
     >
       <div className={`absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-15 bg-gradient-to-br ${tool.color}`}></div>
       <div className={`relative mb-6 rounded-2xl bg-bg-base p-4 border border-border-color shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500`}>
@@ -420,8 +420,8 @@ const Home = () => {
       {/* Product Hunt Referral Banner */}
       <ProductHuntBanner />
 
-      {/* Subtle Noise Texture Overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.015] mix-blend-overlay z-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
+      {/* Subtle Background Dots (Zero-overhead CSS pattern) */}
+      <div className="fixed inset-0 pointer-events-none opacity-25 bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:24px_24px] z-0"></div>
 
       {/* --- HERO SECTION --- */}
       <section className="w-full max-w-[1280px] mx-auto px-6 pt-16 md:pt-24 pb-20 flex flex-col items-center text-center relative z-10">
@@ -459,9 +459,25 @@ const Home = () => {
           </Link>
         </motion.div>
 
-        {/* --- PROMINENT PRODUCT HUNT LAUNCH BADGE --- */}
-        <motion.div initial="hidden" animate="visible" variants={revealVar} className="flex items-center justify-center">
+        {/* --- PROMINENT LAUNCH BADGES --- */}
+        <motion.div initial="hidden" animate="visible" variants={revealVar} className="flex flex-wrap items-center justify-center gap-4">
           <ProductHuntBadge />
+          <a
+            href="https://launchbuff.com/products/animation-maker-g1yles"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Featured on LaunchBuff"
+            className="hover:scale-105 transition-transform inline-block duration-200"
+          >
+            <img
+              src="https://launchbuff.com/badge-featured-dark.svg"
+              alt="Featured on LaunchBuff"
+              width="210"
+              height="54"
+              className="h-[54px] w-auto object-contain rounded-xl shadow-md"
+              loading="lazy"
+            />
+          </a>
         </motion.div>
       </section>
 

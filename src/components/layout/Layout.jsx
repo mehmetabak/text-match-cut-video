@@ -70,30 +70,42 @@ const Layout = () => {
   }, [location.pathname, location.hash]);
 
   useEffect(() => {
+    let ticking = false;
+
     const handleUniversalScroll = (e) => {
-      // Modalların (Settings vb.) içindeki scroll hareketlerini yoksay
-      if (e.target && e.target.closest && e.target.closest('[data-modal="true"]')) {
-        return;
-      }
+      if (ticking) return;
+      ticking = true;
 
-      // Güvenilir genel scroll pozisyonu (window veya document üzerinden)
-      let scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-
-      // Eğer spesifik bir element scroll ediliyorsa ve sayfanın büyük bir kısmını kaplıyorsa
-      if (e.target && e.target.scrollTop !== undefined) {
-        if (
-          e.target === document ||
-          e.target === document.documentElement ||
-          e.target === document.body ||
-          e.target === scrollRef.current ||
-          (e.target.clientHeight && e.target.clientHeight >= window.innerHeight * 0.7) // Sayfanın %70'inden büyük olan scroll container'ları ana sayfa scroller'ı kabul et
-        ) {
-          scrollTop = Math.max(scrollTop, e.target.scrollTop);
+      window.requestAnimationFrame(() => {
+        // Modalların (Settings vb.) içindeki scroll hareketlerini yoksay
+        if (e.target && e.target.closest && e.target.closest('[data-modal="true"]')) {
+          ticking = false;
+          return;
         }
-      }
 
-      setIsScrolled(scrollTop > 20);
-      setShowScrollTop(scrollTop > 300);
+        // Güvenilir genel scroll pozisyonu (window veya document üzerinden)
+        let scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+
+        // Eğer spesifik bir element scroll ediliyorsa ve sayfanın büyük bir kısmını kaplıyorsa
+        if (e.target && e.target.scrollTop !== undefined) {
+          if (
+            e.target === document ||
+            e.target === document.documentElement ||
+            e.target === document.body ||
+            e.target === scrollRef.current ||
+            (e.target.clientHeight && e.target.clientHeight >= window.innerHeight * 0.7)
+          ) {
+            scrollTop = Math.max(scrollTop, e.target.scrollTop);
+          }
+        }
+
+        const nextScrolled = scrollTop > 20;
+        const nextShowScrollTop = scrollTop > 300;
+
+        setIsScrolled(prev => (prev !== nextScrolled ? nextScrolled : prev));
+        setShowScrollTop(prev => (prev !== nextShowScrollTop ? nextShowScrollTop : prev));
+        ticking = false;
+      });
     };
 
     // passive: true performansı artırır ve scroll jank'i engeller
@@ -107,13 +119,13 @@ const Layout = () => {
     const { scrollTop, scrollHeight, clientHeight } = target;
 
     if (location.pathname === '/') {
-      if (scrollHeight - scrollTop - clientHeight < 150) {
-        setActiveHash('contact');
-      } else {
-        setActiveHash('');
-      }
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+      setActiveHash(prev => {
+        const next = isNearBottom ? 'contact' : '';
+        return prev !== next ? next : prev;
+      });
     } else {
-      setActiveHash('');
+      setActiveHash(prev => (prev !== '' ? '' : prev));
     }
   };
 
@@ -195,7 +207,7 @@ const Layout = () => {
         transition={{ duration: 0.4, ease: 'easeInOut' }}
         className="fixed top-0 left-0 right-0 z-40 flex justify-center pt-[env(safe-area-inset-top)] pointer-events-none"
       >
-        <div className={`pointer-events-auto flex items-center justify-between transition-all duration-500 w-full ${isScrolled
+        <div className={`pointer-events-auto flex items-center justify-between transition-[max-width,padding,height,background-color,border-color,box-shadow,border-radius,margin] duration-300 w-full gpu-layer ${isScrolled
           ? 'max-w-[92vw] sm:max-w-[850px] mt-3 h-14 px-4 sm:px-6 bg-zinc-950/90 backdrop-blur-md border border-zinc-800/80 shadow-xl rounded-full'
           : 'max-w-full sm:max-w-[1600px] mt-0 h-16 sm:h-20 px-4 sm:px-8 lg:px-12 bg-transparent border-transparent rounded-none'
           }`}>
@@ -391,7 +403,7 @@ const Layout = () => {
         initial={false}
         animate={{ paddingTop: isHeaderCollapsed ? 'env(safe-area-inset-top)' : 'calc(4rem + env(safe-area-inset-top))' }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="flex-1 flex flex-col relative z-10 overflow-x-hidden overflow-y-auto"
+        className="flex-1 flex flex-col relative z-10 overflow-x-hidden overflow-y-auto touch-scroll overscroll-contain"
       >
         <div id="top-anchor" className="absolute top-0 left-0 w-full h-px opacity-0 pointer-events-none -mt-[4rem]"></div>
 

@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
-body {
+html, body {
   margin: 0;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+  text-rendering: optimizeSpeed;
+  scroll-behavior: smooth;
 }
 
 /* GPU Hardware Layer Promotion for Mobile Safari & Chrome */
@@ -16,7 +17,6 @@ body {
   -webkit-backface-visibility: hidden;
   perspective: 1000px;
   -webkit-perspective: 1000px;
-  will-change: transform;
 }
 
 /* Fluid Mobile Touch Scrolling without Stutter */
@@ -33,6 +33,6 @@ body {
 
 .content-auto {
   content-visibility: auto;
-  contain-intrinsic-size: 0 400px;
+  contain-intrinsic-size: 0 300px;
 }
 

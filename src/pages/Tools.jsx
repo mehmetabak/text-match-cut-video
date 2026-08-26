@@ -1198,7 +1198,7 @@ const ToolCard = memo(function ToolCard({ tool, lang, onNavigate, user }) {
       variants={itemVariants}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`group relative h-64 sm:h-72 rounded-[2rem] overflow-hidden bg-gradient-to-br ${tool.bgClass} border border-zinc-800/50 hover:border-zinc-700/80 transition-all duration-300 hover:-translate-y-1 shadow-2xl cursor-pointer block select-none`}
+      className={`group relative h-64 sm:h-72 rounded-[2rem] overflow-hidden bg-gradient-to-br ${tool.bgClass} border border-zinc-800/50 hover:border-zinc-700/80 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-1 shadow-2xl cursor-pointer block select-none content-auto contain-paint gpu-layer`}
     >
       {tool.effect(isHovered)}
 
@@ -1238,30 +1238,6 @@ const Tools = () => {
   const lang = useSettingsStore((state) => state.lang);
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
-  const gridRef = useRef(null);
-  const scrollTimeout = useRef(null);
-  const isScrollingRef = useRef(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!isScrollingRef.current) {
-        isScrollingRef.current = true;
-        if (gridRef.current) gridRef.current.style.pointerEvents = 'none';
-      }
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-
-      scrollTimeout.current = setTimeout(() => {
-        isScrollingRef.current = false;
-        if (gridRef.current) gridRef.current.style.pointerEvents = '';
-      }, 150);
-    };
-
-    window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll, true);
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    };
-  }, []);
 
   return (
     <div className="flex-1 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-12 pt-8 sm:pt-12 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-16 flex flex-col relative z-10 min-h-[calc(100vh-80px)]">
@@ -1365,7 +1341,7 @@ const Tools = () => {
         </h1>
       </motion.div>
 
-      <div ref={gridRef}>
+      <div>
         {/* Available Tools */}
         <div className="mb-12">
           <motion.div 
