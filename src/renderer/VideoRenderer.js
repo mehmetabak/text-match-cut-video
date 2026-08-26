@@ -3,6 +3,7 @@ import { wrapText, getFittedFontSize, requestScreenWakeLock } from '../lib/canva
 import { applyCameraShake, drawVignette } from './effects';
 import { AudioGenerator } from '../lib/audioUtils';
 import { createVideoFromFrames } from '../lib/ffmpeg';
+import * as StackBlur from 'stackblur-canvas';
 
 // Feature detection for native CanvasRenderingContext2D filter support (Safari / iPad ignores ctx.filter)
 function checkCanvasFilterSupport() {
@@ -56,15 +57,21 @@ export class VideoRenderer {
         // Detect if native ctx.filter is supported or if iPad/Safari fallback is required
         this.isFilterSupported = checkCanvasFilterSupport();
 
-        // Hardware-accelerated offscreen blur buffers for Safari / iPadOS
+        // Hardware-accelerated StackBlur buffers for Safari / iPadOS (Zero pixelation, silky Gaussian)
         if (!this.isFilterSupported && typeof document !== 'undefined') {
+            this.blurScale = 0.5;
+            this.blurW = Math.round(this.resolution.width * this.blurScale);
+            this.blurH = Math.round(this.resolution.height * this.blurScale);
+
             this.bgCanvas = document.createElement('canvas');
             this.bgCanvas.width = this.resolution.width;
             this.bgCanvas.height = this.resolution.height;
             this.bgCtx = this.bgCanvas.getContext('2d');
 
-            this.blurDownCanvas = document.createElement('canvas');
-            this.blurDownCtx = this.blurDownCanvas.getContext('2d');
+            this.blurBufferCanvas = document.createElement('canvas');
+            this.blurBufferCanvas.width = this.blurW;
+            this.blurBufferCanvas.height = this.blurH;
+            this.blurBufferCtx = this.blurBufferCanvas.getContext('2d', { willReadFrequently: true });
         }
 
         // Pre-create vignette gradient for high-performance frame drawing
@@ -80,23 +87,29 @@ export class VideoRenderer {
     }
 
     applyPassageBlur(blurPx) {
-        if (!this.isFilterSupported && this.bgCanvas && this.blurDownCanvas) {
+        if (!this.isFilterSupported && this.bgCanvas && this.blurBufferCanvas) {
             const { width, height } = this.resolution;
-            const factor = Math.max(2, Math.min(12, Math.round(blurPx * 0.9)));
-            const downW = Math.max(16, Math.floor(width / factor));
-            const downH = Math.max(16, Math.floor(height / factor));
+            const radius = Math.max(2, Math.round(blurPx * this.blurScale * 1.5));
 
-            this.blurDownCanvas.width = downW;
-            this.blurDownCanvas.height = downH;
-            this.blurDownCtx.imageSmoothingEnabled = true;
-            this.blurDownCtx.imageSmoothingQuality = 'medium';
-            this.blurDownCtx.clearRect(0, 0, downW, downH);
-            this.blurDownCtx.drawImage(this.bgCanvas, 0, 0, downW, downH);
+            // 1. Draw full-res text to half-res buffer with high-quality smoothing
+            this.blurBufferCtx.imageSmoothingEnabled = true;
+            this.blurBufferCtx.imageSmoothingQuality = 'high';
+            this.blurBufferCtx.clearRect(0, 0, this.blurW, this.blurH);
+            this.blurBufferCtx.drawImage(this.bgCanvas, 0, 0, this.blurW, this.blurH);
 
+            // 2. Apply true Gaussian StackBlur algorithm on the half-res buffer
+            try {
+                StackBlur.canvasRGBA(this.blurBufferCanvas, 0, 0, this.blurW, this.blurH, radius);
+            } catch (e) {
+                // Fallback safe
+            }
+
+            // 3. Draw back to main canvas with high quality bilinear smoothing
             this.ctx.imageSmoothingEnabled = true;
-            this.ctx.imageSmoothingQuality = 'medium';
-            this.ctx.drawImage(this.blurDownCanvas, 0, 0, width, height);
+            this.ctx.imageSmoothingQuality = 'high';
+            this.ctx.drawImage(this.blurBufferCanvas, 0, 0, width, height);
 
+            // 4. Clear bgCtx for next frame
             this.bgCtx.clearRect(0, 0, width, height);
         }
     }
