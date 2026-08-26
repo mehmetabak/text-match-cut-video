@@ -19,6 +19,9 @@ const AuthModal = () => {
     if (isLoggingIn) return;
     setIsLoggingIn(true);
     try {
+      if (pendingAction?.type === 'NAVIGATE' && typeof window !== 'undefined') {
+        sessionStorage.setItem('redirect_after_login', pendingAction.payload);
+      }
       await loginWithGoogle();
       handleAction();
     } catch (err) {
@@ -30,6 +33,9 @@ const AuthModal = () => {
   };
 
   const handleGuestContinue = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('guest_mode_enabled', 'true');
+    }
     handleAction();
   };
 

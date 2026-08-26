@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { t } from '../lib/i18n';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAuthStore } from '../store/authStore';
+import { useToastStore } from '../store/toastStore';
 import { Helmet } from 'react-helmet-async';
 
 // Component dışına taşındı: artık her render'da yeniden oluşturulmuyor
@@ -1148,9 +1149,35 @@ const ToolCard = memo(function ToolCard({ tool, lang, onNavigate, user }) {
 
   const handleClick = useCallback((e) => {
     e.preventDefault();
-    if (tool.isPro && !user?.isPro) {
-      onNavigate('/pricing');
-    } else if (tool.path !== '#') {
+    if (tool.isPro) {
+      if (!user) {
+        // PRO araç: Oturum açmamış kullanıcıya önce toast göster, ardından Google girişine yönlendir
+        if (tool.path && tool.path !== '#') {
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('redirect_after_login', tool.path);
+          }
+        }
+        useToastStore.getState().showToast(t('toastSignInRequired', lang) || 'Pro araçları kullanmak için önce oturum açmalısınız.', 'warning', 3500);
+        setTimeout(() => {
+          useAuthStore.getState().loginWithGoogle();
+        }, 600);
+        return;
+      }
+      if (!user.isPro) {
+        onNavigate('/pricing');
+        return;
+      }
+    } else {
+      // FREE araç: Oturum açmamış kullanıcıya "Oturum Aç ya da Misafir Devam Et" modalını göster
+      if (!user) {
+        if (tool.path && tool.path !== '#') {
+          useAuthStore.getState().openAuthModal({ type: 'NAVIGATE', payload: tool.path });
+          return;
+        }
+      }
+    }
+
+    if (tool.path !== '#') {
       onNavigate(tool.path);
     } else {
       const el = e.currentTarget;
@@ -1162,7 +1189,7 @@ const ToolCard = memo(function ToolCard({ tool, lang, onNavigate, user }) {
         { transform: 'translateX(0)' }
       ], { duration: 300 });
     }
-  }, [tool.path, tool.isPro, user?.isPro, onNavigate]);
+  }, [tool.path, tool.isPro, user, lang, onNavigate]);
 
   return (
     <motion.a

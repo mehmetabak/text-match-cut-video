@@ -623,7 +623,8 @@ export const strings = {
     "originalAudioIncluded": "Original Audio Included",
     "sourceVideoPrefix": "Source:",
     "timelineFormatHelp": "Format: Year / Date | Title | Description (1 event per line)",
-    "draftSaved": "Draft Saved"
+    "draftSaved": "Draft Saved",
+    "toastSignInRequired": "Please sign in first to access Pro features."
   },
   "tr": {
     "renderResolutionLabel": "Çıktı Çözünürlüğü",
@@ -1249,7 +1250,8 @@ export const strings = {
     "originalAudioIncluded": "Orijinal Ses Korunuyor",
     "sourceVideoPrefix": "Video:",
     "timelineFormatHelp": "Format: Yıl / Tarih | Başlık | Açıklama (Her satıra 1 olay)",
-    "draftSaved": "Taslak Kaydedildi"
+    "draftSaved": "Taslak Kaydedildi",
+    "toastSignInRequired": "Pro araçları kullanmak için önce oturum açmalısınız."
   },
   "de": {
     "renderResolutionLabel": "Ausgabeauflösung",
@@ -1875,7 +1877,8 @@ export const strings = {
     "originalAudioIncluded": "Originalton enthalten",
     "sourceVideoPrefix": "Quelle:",
     "timelineFormatHelp": "Format: Jahr / Datum | Titel | Beschreibung (1 Ereignis pro Zeile)",
-    "draftSaved": "Entwurf gespeichert"
+    "draftSaved": "Entwurf gespeichert",
+    "toastSignInRequired": "Bitte melden Sie sich an, um Pro-Funktionen zu nutzen."
   },
   "fr": {
     "renderResolutionLabel": "Résolution de sortie",
@@ -2501,7 +2504,8 @@ export const strings = {
     "originalAudioIncluded": "Audio original inclus",
     "sourceVideoPrefix": "Source :",
     "timelineFormatHelp": "Format : Année / Date | Titre | Description (1 événement par ligne)",
-    "draftSaved": "Brouillon enregistré"
+    "draftSaved": "Brouillon enregistré",
+    "toastSignInRequired": "Veuillez vous connecter pour accéder aux outils Pro."
   },
   "es": {
     "renderResolutionLabel": "Resolución de salida",
@@ -3127,7 +3131,8 @@ export const strings = {
     "originalAudioIncluded": "Audio original incluido",
     "sourceVideoPrefix": "Fuente:",
     "timelineFormatHelp": "Formato: Año / Fecha | Título | Descripción (1 evento por línea)",
-    "draftSaved": "Borrador guardado"
+    "draftSaved": "Borrador guardado",
+    "toastSignInRequired": "Inicia sesión primero para acceder a las herramientas Pro."
   },
   "zh": {
     "renderResolutionLabel": "输出分辨率",
@@ -3753,7 +3758,8 @@ export const strings = {
     "originalAudioIncluded": "已保留原始音频",
     "sourceVideoPrefix": "来源视频:",
     "timelineFormatHelp": "格式：年份/日期 | 标题 | 描述（每行一个事件）",
-    "draftSaved": "草稿已保存"
+    "draftSaved": "草稿已保存",
+    "toastSignInRequired": "请先登录以访问 Pro 功能。"
   },
   "ar": {
     "renderResolutionLabel": "دقة الإخراج",
@@ -4379,7 +4385,8 @@ export const strings = {
     "originalAudioIncluded": "الصوت الأصلي مدرج",
     "sourceVideoPrefix": "المصدر:",
     "timelineFormatHelp": "التنسيق: السنة / التاريخ | العنوان | الوصف (حدث واحد لكل سطر)",
-    "draftSaved": "تم حفظ المسودة"
+    "draftSaved": "تم حفظ المسودة",
+    "toastSignInRequired": "يرجى تسجيل الدخول أولاً للوصول إلى ميزات Pro."
   },
   "ko": {
     "renderResolutionLabel": "출력 해상도",
@@ -5005,7 +5012,8 @@ export const strings = {
     "originalAudioIncluded": "원본 오디오 포함",
     "sourceVideoPrefix": "소스:",
     "timelineFormatHelp": "형식: 연도 / 날짜 | 제목 | 설명 (한 줄에 하나의 이벤트)",
-    "draftSaved": "임시 저장됨"
+    "draftSaved": "임시 저장됨",
+    "toastSignInRequired": "Pro 기능을 사용하려면 먼저 로그인하세요."
   },
   "ja": {
     "renderResolutionLabel": "出力解像度",
@@ -5631,7 +5639,8 @@ export const strings = {
     "originalAudioIncluded": "元の音声を含める",
     "sourceVideoPrefix": "ソース:",
     "timelineFormatHelp": "形式: 年 / 日付 | タイトル | 説明 (1行に1イベント)",
-    "draftSaved": "下書きを保存しました"
+    "draftSaved": "下書きを保存しました",
+    "toastSignInRequired": "Pro機能を使用するには、まずログインしてください。"
   },
   "id": {
     "renderResolutionLabel": "Resolusi Output",
@@ -6257,7 +6266,8 @@ export const strings = {
     "originalAudioIncluded": "Audio Asli Disertakan",
     "sourceVideoPrefix": "Sumber:",
     "timelineFormatHelp": "Format: Tahun / Tanggal | Judul | Deskripsi (1 peristiwa per baris)",
-    "draftSaved": "Draf Tersimpan"
+    "draftSaved": "Draf Tersimpan",
+    "toastSignInRequired": "Silakan masuk terlebih dahulu untuk mengakses fitur Pro."
   },
   "th": {
     "renderResolutionLabel": "ความละเอียดของวิดีโอ",
@@ -6883,7 +6893,8 @@ export const strings = {
     "originalAudioIncluded": "รวมเสียงต้นฉบับแล้ว",
     "sourceVideoPrefix": "ที่มา:",
     "timelineFormatHelp": "รูปแบบ: ปี / วันที่ | หัวข้อ | รายละเอียด (1 เหตุการณ์ต่อบรรทัด)",
-    "draftSaved": "บันทึกร่างแล้ว"
+    "draftSaved": "บันทึกร่างแล้ว",
+    "toastSignInRequired": "โปรดเข้าสู่ระบบก่อนเพื่อใช้ฟีเจอร์ Pro"
   },
   "hi": {
     "renderResolutionLabel": "आउटपुट रिज़ॉल्यूशन",
@@ -7509,7 +7520,8 @@ export const strings = {
     "originalAudioIncluded": "मूल ऑडियो शामिल",
     "sourceVideoPrefix": "स्रोत:",
     "timelineFormatHelp": "प्रारूप: वर्ष / दिनांक | शीर्षक | विवरण (प्रति पंक्ति 1 घटना)",
-    "draftSaved": "ड्राफ्ट सहेजा गया"
+    "draftSaved": "ड्राफ्ट सहेजा गया",
+    "toastSignInRequired": "प्रो सुविधाओं का उपयोग करने के लिए कृपया पहले साइन इन करें।"
   },
   "ru": {
     "renderResolutionLabel": "Разрешение видео",
@@ -8135,7 +8147,8 @@ export const strings = {
     "originalAudioIncluded": "Оригинальный звук включен",
     "sourceVideoPrefix": "Источник:",
     "timelineFormatHelp": "Формат: Год / Дата | Заголовок | Описание (1 событие на строку)",
-    "draftSaved": "Черновик сохранен"
+    "draftSaved": "Черновик сохранен",
+    "toastSignInRequired": "Пожалуйста, сначала войдите, чтобы использовать Pro-инструменты."
   },
   "pt": {
     "renderResolutionLabel": "Resolução de Saída",
@@ -8761,7 +8774,8 @@ export const strings = {
     "originalAudioIncluded": "Áudio Original Incluído",
     "sourceVideoPrefix": "Fonte:",
     "timelineFormatHelp": "Formato: Ano / Data | Título | Descrição (1 evento por linha)",
-    "draftSaved": "Rascunho Salvo"
+    "draftSaved": "Rascunho Salvo",
+    "toastSignInRequired": "Faça login primeiro para acessar as ferramentas Pro."
   }
 };
 

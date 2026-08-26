@@ -37,10 +37,18 @@ function MatchCutTool() {
   const experimentalRender = useSettingsStore(state => state.experimentalRender);
   const renderMode = useSettingsStore(state => state.renderMode);
   const vignetteEffect = useSettingsStore(state => state.vignetteEffect);
-  
   const user = useAuthStore(state => state.user);
+  const authLoading = useAuthStore(state => state.loading);
   const saveProject = useAuthStore(state => state.saveProject);
   const projects = useAuthStore(state => state.projects);
+
+  useEffect(() => {
+    if (!authLoading && !user && typeof window !== 'undefined') {
+      if (!sessionStorage.getItem('guest_mode_enabled')) {
+        useAuthStore.getState().openAuthModal();
+      }
+    }
+  }, [authLoading, user]);
 
   const canvasRef = useRef(null);
   const location = useLocation();

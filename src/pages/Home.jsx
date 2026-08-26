@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAuthStore } from '../store/authStore';
+import { useToastStore } from '../store/toastStore';
 import { t } from '../lib/i18n';
 import CookieModal from '../components/modals/CookieModal';
 import { Helmet } from 'react-helmet-async';
@@ -126,24 +127,55 @@ const BentoCard = ({ num, title, desc, icon, fullWidth, delay }) => {
   );
 };
 
-const ToolCard = ({ tool }) => (
-  <Link
-    to={tool.link}
-    className={`group relative overflow-hidden rounded-2xl border ${tool.border} bg-surface p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col items-center text-center`}
-  >
-    <div className={`absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-15 bg-gradient-to-br ${tool.color}`}></div>
-    <div className={`relative mb-6 rounded-2xl bg-bg-base p-4 border border-border-color shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500`}>
-      {tool.icon}
-    </div>
-    <h3 className="mb-3 font-display text-2xl font-bold text-white">{tool.name}</h3>
-    <p className="text-text-muted mb-6 line-clamp-2">{tool.description}</p>
-    <div className="mt-auto">
-      <span className="inline-block rounded-full border border-border-color bg-bg-base px-3 py-1 text-xs font-mono font-medium text-text-muted group-hover:border-accent-gold group-hover:text-accent-gold transition-colors">
-        {tool.badge}
-      </span>
-    </div>
-  </Link>
-);
+const ToolCard = ({ tool, user, lang, onNavigate }) => {
+  const handleClick = (e) => {
+    const isPro = tool.id !== 'match-cut';
+    if (isPro) {
+      if (!user) {
+        e.preventDefault();
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('redirect_after_login', tool.link);
+        }
+        useToastStore.getState().showToast(t('toastSignInRequired', lang) || 'Pro araçları kullanmak için önce oturum açmalısınız.', 'warning', 3500);
+        setTimeout(() => {
+          useAuthStore.getState().loginWithGoogle();
+        }, 600);
+        return;
+      }
+      if (!user.isPro) {
+        e.preventDefault();
+        onNavigate('/pricing');
+        return;
+      }
+    } else {
+      if (!user) {
+        e.preventDefault();
+        useAuthStore.getState().openAuthModal({ type: 'NAVIGATE', payload: tool.link });
+        return;
+      }
+    }
+  };
+
+  return (
+    <Link
+      to={tool.link}
+      onClick={handleClick}
+      className={`group relative overflow-hidden rounded-2xl border ${tool.border} bg-surface p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col items-center text-center`}
+    >
+      <div className={`absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-15 bg-gradient-to-br ${tool.color}`}></div>
+      <div className={`relative mb-6 rounded-2xl bg-bg-base p-4 border border-border-color shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500`}>
+        {tool.icon}
+      </div>
+      <h3 className="mb-3 font-display text-2xl font-bold text-white">{tool.name}</h3>
+      <p className="text-text-muted mb-6 line-clamp-2">{tool.description}</p>
+      <div className="mt-auto">
+        <span className="inline-block rounded-full border border-border-color bg-bg-base px-3 py-1 text-xs font-mono font-medium text-text-muted group-hover:border-accent-gold group-hover:text-accent-gold transition-colors">
+          {tool.badge}
+        </span>
+      </div>
+    </Link>
+  );
+};
 
 const Home = () => {
   const { lang } = useSettingsStore();
@@ -452,7 +484,7 @@ const Home = () => {
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.08, duration: 0.4 }}
               >
-                <ToolCard tool={tool} />
+                <ToolCard tool={tool} user={user} lang={lang} onNavigate={navigate} />
               </motion.div>
             ))}
           </div>

@@ -1,6 +1,6 @@
-// src/App.jsx
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useAuthStore } from './store/authStore';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import MatchCutTool from './pages/MatchCutTool';
@@ -14,6 +14,19 @@ import Pricing from './pages/Pricing';
 import NoConnection from './components/layout/NoConnection';
 
 function App() {
+  const user = useAuthStore(state => state.user);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && typeof window !== 'undefined') {
+      const redirectPath = sessionStorage.getItem('redirect_after_login');
+      if (redirectPath) {
+        sessionStorage.removeItem('redirect_after_login');
+        navigate(redirectPath, { replace: true });
+      }
+    }
+  }, [user, navigate]);
+
   return (
     <>
       <NoConnection />

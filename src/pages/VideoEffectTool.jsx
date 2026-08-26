@@ -5,6 +5,7 @@ import { db, auth } from '../lib/firebase';
 import { t } from '../lib/i18n';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAuthStore } from '../store/authStore';
+import { useToastStore } from '../store/toastStore';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -315,10 +316,28 @@ export default function VideoEffectTool() {
       return;
     }
 
-    if (!authLoading && isProTool && !user?.isPro) {
-      navigate('/pricing', { replace: true });
+    if (!authLoading) {
+      if (isProTool && !user?.isPro) {
+        if (!user) {
+          // PRO araç & oturum açılmamış: önce toast göster, ardından Google girişine yönlendir
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('redirect_after_login', `/effects/${type}`);
+          }
+          useToastStore.getState().showToast(t('toastSignInRequired', lang) || 'Pro araçları kullanmak için önce oturum açmalısınız.', 'warning', 3500);
+          setTimeout(() => {
+            useAuthStore.getState().loginWithGoogle();
+          }, 600);
+        } else {
+          navigate('/pricing', { replace: true });
+        }
+      } else if (!isProTool && !user) {
+        // FREE araç & oturum açılmamış: misafir seçimi yapılmamışsa "oturum aç ya da misafir devam et" modalını göster
+        if (typeof window !== 'undefined' && !sessionStorage.getItem('guest_mode_enabled')) {
+          useAuthStore.getState().openAuthModal();
+        }
+      }
     }
-  }, [type, isProTool, authLoading, user?.isPro, navigate]);
+  }, [type, isProTool, authLoading, user, user?.isPro, lang, navigate]);
 
   // Tool Meta (Title & Description formatted like MatchCutTool)
   const toolMetaMap = {

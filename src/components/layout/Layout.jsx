@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Settings, Menu, X, ChevronsDown, ChevronsUp, ArrowUp, User, LogOut, Folder, Star, Coins, LayoutGrid } from 'lucide-react';
+import { Settings, Menu, X, ChevronsDown, ChevronsUp, ArrowUp, User, LogOut, Folder, Star, Coins, LayoutGrid, Sparkles, Lock, LogIn, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SettingsModal from '../modals/SettingsModal';
 import AuthModal from '../modals/AuthModal';
 import RewardAdModal from '../monetization/RewardAdModal';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useAuthStore } from '../../store/authStore';
+import { useToastStore } from '../../store/toastStore';
 import { t } from '../../lib/i18n';
 
 const Layout = () => {
+  const toast = useToastStore((state) => state.toast);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPointsDropdownOpen, setIsPointsDropdownOpen] = useState(false);
@@ -415,6 +417,32 @@ const Layout = () => {
         onClose={() => setRewardModalOpen(false)}
         onReward={(points) => earnRewardPoints(points)}
       />
+      {/* Global Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -25, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 320 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 px-5 py-3 rounded-2xl bg-zinc-900/95 border border-[#F5B301]/50 text-white shadow-[0_12px_36px_rgba(0,0,0,0.8),0_0_24px_rgba(245,179,1,0.25)] backdrop-blur-xl text-sm font-medium pointer-events-auto max-w-[90vw]"
+          >
+            <div className="w-7 h-7 rounded-xl bg-[#F5B301]/15 border border-[#F5B301]/30 flex items-center justify-center text-[#F5B301] shrink-0 shadow-[0_0_12px_rgba(245,179,1,0.25)]">
+              {toast.icon === 'login' ? (
+                <LogIn size={15} />
+              ) : toast.icon === 'sparkles' ? (
+                <Sparkles size={15} />
+              ) : toast.type === 'success' ? (
+                <CheckCircle2 size={15} className="text-emerald-400" />
+              ) : (
+                <Lock size={15} />
+              )}
+            </div>
+            <span className="tracking-wide text-zinc-100">{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AuthModal />
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>

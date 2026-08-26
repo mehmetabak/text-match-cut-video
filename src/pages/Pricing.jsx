@@ -19,7 +19,10 @@ const Pricing = () => {
 
   const handleCheckout = async () => {
     if (!user) {
-      alert('Please login first before upgrading to Pro.');
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('redirect_after_login', '/pricing');
+      }
+      useAuthStore.getState().loginWithGoogle();
       return;
     }
     
