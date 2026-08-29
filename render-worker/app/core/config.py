@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     FIREBASE_CLIENT_EMAIL: str = ""
     FIREBASE_PRIVATE_KEY: str = ""
 
+    # ON/OFF & On-Demand Render Engine Control
+    RENDER_ENGINE_ENABLED: bool = True
+    ON_DEMAND_MODE: bool = True
+
     model_config = ConfigDict(env_file=".env")
 
 settings = Settings()

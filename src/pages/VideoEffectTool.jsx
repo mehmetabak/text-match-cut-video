@@ -1622,6 +1622,13 @@ export default function VideoEffectTool() {
         created_at: serverTimestamp()
       });
 
+      // Render sunucusunu istek üzerine uyandır (On-Demand Wakeup)
+      try {
+        fetch('/api/trigger-render', { method: 'POST' }).catch(() => {});
+      } catch (e) {
+        // Standby/On-Demand fallback
+      }
+
       // Listen for Render Completion
       const unsubscribe = onSnapshot(jobRef, (docSnap) => {
         if (!docSnap.exists()) return;

@@ -76,6 +76,14 @@ def get_api_key(api_key_header: str = Security(api_key_header)):
 
 worker_lock = threading.Lock()
 
+# --- Render Engine State & ON/OFF Control ---
+ENGINE_STATE = {
+    "status": "ACTIVE" if settings.RENDER_ENGINE_ENABLED else "PAUSED",
+    "mode": "on_demand",
+    "last_job_time": None,
+    "total_jobs_processed": 0
+}
+
 def cleanup_orphans(max_age_hours: float = 2):
     """Worker başlangıcında çalıştır: eski/öksüz dosyaları temizle"""
     now = time.time()
@@ -108,6 +116,10 @@ def run_isolated_job(job_id, tool_type, input_path, output_path, params, timeout
     return False, (result.stderr or "")[-1500:]
 
 def process_queue():
+    if ENGINE_STATE["status"] == "PAUSED":
+        print("Worker engine is in PAUSED / OFF state. Skipping queue processing.")
+        return
+
     if not worker_lock.acquire(blocking=False):
         print("Queue is already being processed. Ping ignored.")
         return
@@ -184,6 +196,8 @@ def process_queue():
                         'completed_at': firestore.SERVER_TIMESTAMP,
                         'result_url': f"/download/{job_id}"
                     })
+                    ENGINE_STATE["total_jobs_processed"] += 1
+                    ENGINE_STATE["last_job_time"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                     print(f"[{job_id}] Processing SUCCESSFUL.")
                     
                     # Smart Temp Cleaning: Delete input immediately on success
@@ -211,7 +225,36 @@ def process_queue():
 # --- Endpoints ---
 @app.get("/")
 def health_check():
-    return {"status": "ok", "message": "Render Worker API is running (Firestore Queue Active)"}
+    return {
+        "status": "ok",
+        "engine": ENGINE_STATE,
+        "message": "Render Worker API is operational (On-Demand Mode Active)"
+    }
+
+@app.get("/admin/engine/status")
+def get_engine_status():
+    """Engine durumunu ve aktiflik bilgisini döner"""
+    return {
+        "engine": ENGINE_STATE,
+        "is_busy": worker_lock.locked(),
+        "temp_dir": TEMP_DIR
+    }
+
+@app.post("/admin/engine/toggle")
+def toggle_engine(action: str = None, api_key: str = Depends(get_api_key)):
+    """Engine durumunu ON / OFF (ACTIVE / PAUSED) olarak değiştirir"""
+    if action in ("enable", "on", "active"):
+        ENGINE_STATE["status"] = "ACTIVE"
+    elif action in ("disable", "off", "paused", "standby"):
+        ENGINE_STATE["status"] = "PAUSED"
+    else:
+        ENGINE_STATE["status"] = "PAUSED" if ENGINE_STATE["status"] == "ACTIVE" else "ACTIVE"
+        
+    return {
+        "status": "success",
+        "message": f"Render engine is now {ENGINE_STATE['status']}",
+        "engine": ENGINE_STATE
+    }
 
 @app.post("/upload")
 async def upload_video(file: UploadFile = File(...)):
@@ -249,14 +292,19 @@ def download_video(job_id: str):
 
 @app.get("/jobs/ping")
 def ping_queue_public(background_tasks: BackgroundTasks):
-    """Frontend Firestore'a yazdıktan sonra işlemi anında başlatmak için"""
+    """Frontend Firestore'a yazdıktan sonra işlemi anında başlatmak için (On-Demand Wakeup)"""
     background_tasks.add_task(process_queue)
-    return {"status": "accepted", "message": "Queue check triggered."}
+    return {
+        "status": "accepted", 
+        "engine": ENGINE_STATE["status"],
+        "message": "Queue check triggered on-demand."
+    }
 
 @app.post("/jobs/ping")
 def ping_queue(background_tasks: BackgroundTasks, api_key: str = Depends(get_api_key)):
     background_tasks.add_task(process_queue)
     return {
         "status": "accepted",
+        "engine": ENGINE_STATE["status"],
         "message": "Ping received. Worker will check Firestore queue."
     }
